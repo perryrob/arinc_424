@@ -4,7 +4,7 @@ ARINC_FIELD_WIDTH=1
 FIELD_TRANSLATOR=2
 
 ARINC_424_PARSE_DEF = {
-    '':
+    ' ':
     [
         ('ST',1,'noop'),
         ('CUST',3,'noop'),
@@ -57,33 +57,33 @@ ARINC_424_PARSE_DEF = {
         ]
     },
     'D':{
-        '':
+        ' ':
         [
-            ('RecordType',1,'record_type'),
+            ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
-            ('SectionCode',1,'noop'),
+            ('SectionCode',1,'section_code'),
             ('SubSectionCode',1,'subsection_code'),
             ('LandingFacilityIcaoIdentifier',4,'noop'),
             ('LandingFacilityIcaoRegionCode',2,'noop'),
             ('BlankSpacing',1,'noop'),
-            ('VORIdentifier',4,'noop'),
+            ('VORIdentifier',4,'strip'),
             ('BlankSpacing',2,'noop'),
             ('VorIcaoRegionCode',2,'noop'),
             ('ContinuationRecordNumber',1,'noop'),
-            ('VORFrequency',5,'vhf_freq','noop'),
-            ('NAVAIDClass',5,'noop'),
+            ('VORFrequency',5,'vhf_freq'),
+            ('NAVAIDClass',5,'nav_class'),
             ('VORLatitude',9,'dec_latitude'),
             ('VORLongitude',10,'dec_longitude'),
-            ('DMEIdent',4,'noop'),
-            ('DMELatitude',9,'noop'),
-            ('DMELongitude',10,'noop'),
-            ('StationDeclination',5,'noop'),
-            ('DMEElevation',5,'noop'),
+            ('DMEIdent',4,'strip'),
+            ('DMELatitude',9,'dec_latitude'),
+            ('DMELongitude',10,'dec_longitude'),
+            ('StationDeclination',5,'declination'),
+            ('DMEElevation',5,'elevation'),
             ('FigureofMerit',1,'noop'),
             ('ILSDMEBias',2,'noop'),
             ('FrequencyProtection',3,'noop'),
             ('DatumCode',3,'noop'),
-            ('VORName',30,'noop'),
+            ('VORName',30,'strip'),
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
         ],
@@ -96,27 +96,27 @@ ARINC_424_PARSE_DEF = {
             ('LandingFacilityIcaoIdentifier',4,'noop'),
             ('LandingFacilityIcaoRegionCode',2,'noop'),
             ('BlankSpacing',1,'noop'),
-            ('NDBIdentifier',4,'noop'),
+            ('NDBIdentifier',4,'strip'),
             ('BlankSpacing',2,'noop'),
             ('NdbIcaoRegionCode',2,'noop'),
             ('ContinuationRecordNumber',1,'noop'),
             ('NDBFrequency',5,'noop'),
-            ('NDBClass',5,'noop'),
-            ('NDBLatitude',9,'noop'),
-            ('NDBLongitude',10,'noop'),
+            ('NDBClass',5,'ndb_class'),
+            ('NDBLatitude',9,'dec_latitude'),
+            ('NDBLongitude',10,'dec_longitude'),
             ('BlankSpacing',23,'noop'),
-            ('MagneticVariation',5,'noop'),
+            ('MagneticVariation',5,'declination'),
             ('BlankSpacing',6,'noop'),
             ('ReservedExpansion',5,'noop'),
             ('DatumCode',3,'noop'),
-            ('NDBName',30,'noop'),
+            ('NDBName',30,'strip'),
             ('FileRecordNumber',5,'noop'),
             ('CycleData',4 ,'noop')
         ]
     },
-    #See pg15(30 of PDF) for clarification on repeated SubSectionCode
-    'E':{
-        'A':
+    # See pg15(30 of PDF) for clarification on repeated SubSectionCode
+    'E':{ # Enroute
+        'A': # Waypoints
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
@@ -125,27 +125,27 @@ ARINC_424_PARSE_DEF = {
             ('RegionCode',4,'noop'),
             ('IcaoRegionCode',2,'noop'),
             ('BlankSubSectionCode',1,'noop'),
-            ('WaypointIdentifier',5,'noop'),
+            ('WaypointIdentifier',5,'strip'),
             ('BlankSpacing',1,'noop'),
             ('WaypointIcaoRegionCode',2,'noop'),
             ('ContinuationRecordNumber',1,'noop'),
             ('BlankSpacing',4,'noop'),
-            ('WaypointType',3,'noop'),
-            ('WaypointUsage',2,'noop'),
+            ('WaypointType',3,'waypoint_type'),
+            ('WaypointUsage',2,'waypoint_usage'),
             ('BlankSpacing',1,'noop'),
-            ('WaypointLatitude',9,'noop'),
-            ('WaypointLongitude',10,'noop'),
+            ('WaypointLatitude',9,'dec_latitude'),
+            ('WaypointLongitude',10,'dec_longitude'),
             ('BlankSpacing',23,'noop'),
-            ('DynamicMagVariation',5,'noop'),
+            ('DynamicMagVariation',5,'declination'),
             ('ReservedExpansion',5,'noop'),
             ('DatumCode',3,'noop'),
             ('ReservedExpansion',8,'noop'),
             ('NameFormatIndicator',3,'noop'),
-            ('WaypointNameDescription',25,'noop'),
+            ('WaypointNameDescription',25,'strip'),
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
         ],
-        'M':
+        'M': # Airway Markers * None
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
@@ -173,7 +173,7 @@ ARINC_424_PARSE_DEF = {
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop'),
         ],
-        'P':
+        'P': # Holding Patterns * None
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
@@ -202,17 +202,17 @@ ARINC_424_PARSE_DEF = {
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
         ],
-        'R':[
+        'R':[ # Airways and Routes
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
             ('SectionCode',1,'noop'),
             ('SubSectionCode',1,'noop'),
             ('BlankSpacing',7,'noop'),
-            ('RouteIdentifier',5,'noop'),
+            ('RouteIdentifier',5,'strip'),
             ('Reserved',1,'noop'),
             ('BlankSpacing',6,'noop'),
             ('SequenceNumber',4,'noop'),
-            ('FixIdentifier',5,'noop'),
+            ('FixIdentifier',5,'strip'),
             ('FixIcaoRegionCode',2,'noop'),
             ('FixSectionCode',1,'noop'),
             ('FixSubSectionCode',1,'noop'),
@@ -237,7 +237,7 @@ ARINC_424_PARSE_DEF = {
             ('RouteDistanceFrom',4,'noop'),
             ('InboundMagneticCourse',4,'noop'),
             ('BlankSpacing',1,'noop'),
-            ('MinimumAltitude',5,'noop'),
+            ('MinimumAltitude',5,'int_blank'),
             ('MinimumAltitude',5,'noop'),
             ('MaximumAltitude',5,'noop'),
             ('FixRadiusTransitionIndicator',3,'noop'),
@@ -245,7 +245,7 @@ ARINC_424_PARSE_DEF = {
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
         ],
-        'T':
+        'T': # Preferred Routes * None
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
@@ -286,7 +286,7 @@ ARINC_424_PARSE_DEF = {
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
             ],
-        'U':
+        'U': # Airway Restrictions * None
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),
@@ -333,7 +333,7 @@ ARINC_424_PARSE_DEF = {
             ('FileRecordNumber',5,'noop'),
             ('CycleDate',4,'noop')
         ],
-        'V':
+        'V': # Communications * None
         [
             ('RecordType',1,'noop'),
             ('CustomerAreaCode',3,'noop'),

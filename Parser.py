@@ -1,20 +1,18 @@
 
-from Record import RecordType
-from NavAid import Navaid,VHF,NDB
-from Route import Enroute,Waypoint,Airway
-from Port import Airport
 from arinc_424_18_parser import ARINC_424_PARSE_DEF
 from arinc_424_18_parser import ARINC_FIELD_NAME,ARINC_FIELD_WIDTH,\
     FIELD_TRANSLATOR
     
 class RecordParser:
 
-    def __init__(self, ARINC_file, parse_sections=[], stats={} ):
+    def __init__(self, ARINC_file, parse_sections=[], stats={},
+                 field_translators=None):
         self.inf = open( ARINC_file,'r' )
         self.count = 0
         self.record_objs = []
         self.stats = stats
         self.parse_sections = parse_sections
+        self.field_translators = field_translators
         self._parse()
 
     def _parse(self):
@@ -34,7 +32,7 @@ class RecordParser:
         self.inf.close()
 
     def get_record_section_subsection(self, data_line,tokens=[]):
-        parse_def = ARINC_424_PARSE_DEF['']
+        parse_def = ARINC_424_PARSE_DEF[' ']
         start_parse=0
         internal_tokens = {}
         section_code = ''
@@ -62,7 +60,7 @@ class RecordParser:
                 end_parse = start_parse + token_parse[ARINC_FIELD_WIDTH]
                 if field_name == 'SubSectionCode':
                     sub_section_code = \
-                        str(data_line[start_parse:end_parse]).strip()
+                        str(data_line[start_parse:end_parse]) # Do not use strip
                     break
                 start_parse = end_parse
             # Let's do some BS detection here. Check the section and sub section
@@ -84,16 +82,32 @@ class RecordParser:
             # is just iterated and not changed.
             start_parse=0
             for token_parse in section_subsection_def:
-                field_name = token_parse[ARINC_FIELD_NAME]
+
                 end_parse = start_parse + token_parse[ARINC_FIELD_WIDTH]
+                
+                field_name = token_parse[ARINC_FIELD_NAME]
+                field_val = str(data_line[start_parse:end_parse]) # Do not strip
+                # Get the name of the translator from the token_parse object
+                # and send that into translate_filed with the parsed variable
+                # to translate the val into a usable value.
+                translator_name = token_parse[FIELD_TRANSLATOR]
+                # Try to translate the field
+                translated_field_val = self.translate_field( translator_name,
+                                                             field_val )
                 tokens.append(
                     [ field_name,
-                      str(data_line[start_parse:end_parse]),
-                      token_parse[FIELD_TRANSLATOR]]
+                      field_val,
+                      translated_field_val]
                 )
+                # Update the start from the end of the last field
                 start_parse = end_parse            
         return section_code,sub_section_code
 
     def get_records(self):
         return self.record_objs
-            
+
+    def translate_field(self, translator, val ):
+        if self.field_translators is None:
+            return val
+        field_translator = getattr(self.field_translators,translator)
+        return field_translator(val)
