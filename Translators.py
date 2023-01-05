@@ -232,3 +232,14 @@ def waypoint_usage(arg):
     for i in range(0,2):
         ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
     return ret_val
+
+def route_type(arg):
+    switch={'A':'Airline Airway',
+            'C':'Control',
+            'D': 'Direct Route',
+            'H': 'Helicopter Airway',
+            'O': 'Official Airway',
+            'R': 'RNAV Airway',
+            'S': 'Undesignated ATS Route'
+            }
+    return switch.get(arg,'UNK'+'/' + arg)
