@@ -6,7 +6,7 @@ ARINC424_INPUT_FILE='/home/perryr/proj/cifp/cifp/FAACIFP18'
 last_vhf = None
 STATS={}
 
-parser = RecordParser( ARINC424_INPUT_FILE, [('E','R')], STATS, Translators )
+parser = RecordParser( ARINC424_INPUT_FILE, [], STATS, Translators )
 
 
 

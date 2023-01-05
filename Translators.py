@@ -1,4 +1,6 @@
 
+from datetime import datetime, timedelta
+
 LAST_SECTION_CODE = None
 
 def noop(arg):
@@ -13,6 +15,16 @@ def int_blank(arg):
     except:
         return arg
 
+def datum(arg):
+    switch={'NAR' :'North American 1983 GRS 80'}
+    return switch.get(arg,'UNK' + '/' + arg)
+
+def cycle_date( arg ):
+    yr = int('20' + arg[0:2])
+    days = 28 * int(arg[2:4])
+    d = datetime(yr,1,1) + timedelta( days-1)
+    return d.strftime('%m/%d/%Y')
+               
 def section_code( arg ):
     switch={
         'A':'MORA',
@@ -219,6 +231,48 @@ def waypoint_type(arg):
         ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
     return ret_val
 
+def waypoint_description(arg):
+    switch=[
+        {'A' : 'Airport as Waypoint',
+         'E' : 'Essential Waypoint',
+         'F' : 'Off Airway Waypoint',
+         'G' : 'Runway/Helipad as Waypoint',
+         'H' : 'Heliport as Waypoint',
+         'N' : 'NDB as Waypoint',
+         'P' : 'Phantom Waypoint',
+         'R' : 'Non Essential Waypoint',
+         'T' : 'Transition Essential Waypoint',
+         'V' : 'VHF Navaid as Waypoint',
+         ' ' : ''},
+        {'B' : 'Flyover Waypoint, End of SID.STAR, Route, Final',
+         'E' : 'End of Route',
+         'U' : 'Uncharted Intersection',
+         'Y' : 'Flyover Waypoint',
+         ' ' : ''},
+        {'A' : 'Unnamed Stepdown Fix After Final Approach Fix',
+         'B' : 'Unnamed Stepdown Fix Before Final Approach Fix',
+         'C' : 'ATC Compulsory Waypoint',
+         'G' : 'Oceanic Waypoint',
+         'M' : 'First Leg of Missed Approach Procedure',
+         'P' : 'Path Point Fix',
+         'S' : 'Named Stepdown Fix',
+         ' ' : ''},
+        {'A' : 'Initial Approach Fix',
+         'B' : 'Intermediate Approach Fix',
+         'C' : 'Initial Approach Fix with Hold',
+         'D' : 'Initial Approach Fix with Final Approach Course Fix',
+         'E' : 'Final End Point Fix',
+         'F' : 'Published Final Approach Fix or DB Final Approach Fix',
+         'H' : 'Holding Fix',
+         'I' : 'Final Approach Course Fix',
+         'M' : 'Published Missed Approach Fix',
+         ' ' : ''}
+        ]
+    ret_val = []
+    for i in range(0,4):
+        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
+    return ret_val
+
 def waypoint_usage(arg):
     switch=[
         {' ' :'',
@@ -243,3 +297,52 @@ def route_type(arg):
             'S': 'Undesignated ATS Route'
             }
     return switch.get(arg,'UNK'+'/' + arg)
+
+def route_level(arg):
+    switch={
+        'B' : 'HI and LO Altitude',
+        'H' : 'HI Altitude',
+        'L' : 'LO Altitude'}
+    return switch.get(arg,'UNK'+'/' + arg)
+
+def route_direction(arg):
+    switch={
+        ' ' : 'Bi-Directional',
+        'F' : 'Forward',
+        'B' : 'Back'}
+    return switch.get(arg,'UNK'+'/' + arg)
+
+def cruise_table_ind(arg):
+    switch={'AA': 'ICAO Standard cruise table',
+            'AO': 'Exception to ICAO Standard cruise table'}
+
+    return switch.get(arg,'UNK'+'/' + arg)
+
+def four_float_last_tenth(arg):
+    try:
+        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
+        return ret_val
+    except:
+        return -1.0
+
+def three_float_last_tenth(arg):
+    try:
+        ret_val = float(arg[0:2]) + float(arg[2:3]) / 10.0
+        return ret_val
+    except:
+        return -1.0
+
+    
+def mag_course( arg ):
+    try:
+        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
+        return ret_val
+    except:
+        return 'Possible True(T) Entry'
+
+def route_distance( arg ):
+    try:
+         ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
+         return ret_val
+    except:
+        return 'Possible Holding Time (T) Entry'

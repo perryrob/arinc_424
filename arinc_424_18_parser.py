@@ -52,98 +52,98 @@ ARINC_424_PARSE_DEF = {
             ('MORA',3,'noop'),
             ('MORA',3,'noop'),
             ('ReservedExpansion',3,'noop'),
-            ('FileRecordNumber',5,'noop'),
-            ('CycleDate',4,'noop')
+            ('FileRecordNumber',5,'int_blank'),
+            ('CycleDate',4,'cycle_date')
         ]
     },
     'D':{
         ' ':
         [
-            ('RecordType',1,'noop'),
-            ('CustomerAreaCode',3,'noop'),
-            ('SectionCode',1,'section_code'),
-            ('SubSectionCode',1,'subsection_code'),
-            ('LandingFacilityIcaoIdentifier',4,'noop'),
-            ('LandingFacilityIcaoRegionCode',2,'noop'),
-            ('BlankSpacing',1,'noop'),
-            ('VORIdentifier',4,'strip'),
+            ('RecordType',1,'noop'), # 5.2
+            ('CustomerAreaCode',3,'noop'), # 5.3
+            ('SectionCode',1,'section_code'), # 5.4
+            ('SubSectionCode',1,'subsection_code'), # 5.5
+            ('Airport ICAO Identifier',4,'noop'), # 5.4
+            ('ICAORegionCode',2,'noop'), # 5.14
+            ('BlankSpacing',1,'noop'),  
+            ('VORIdentifier',4,'strip'), # 5.33
             ('BlankSpacing',2,'noop'),
-            ('VorIcaoRegionCode',2,'noop'),
-            ('ContinuationRecordNumber',1,'noop'),
-            ('VORFrequency',5,'vhf_freq'),
-            ('NAVAIDClass',5,'nav_class'),
-            ('VORLatitude',9,'dec_latitude'),
-            ('VORLongitude',10,'dec_longitude'),
-            ('DMEIdent',4,'strip'),
-            ('DMELatitude',9,'dec_latitude'),
-            ('DMELongitude',10,'dec_longitude'),
-            ('StationDeclination',5,'declination'),
-            ('DMEElevation',5,'elevation'),
-            ('FigureofMerit',1,'noop'),
-            ('ILSDMEBias',2,'noop'),
-            ('FrequencyProtection',3,'noop'),
-            ('DatumCode',3,'noop'),
-            ('VORName',30,'strip'),
-            ('FileRecordNumber',5,'noop'),
-            ('CycleDate',4,'noop')
+            ('ICAORegionCode',2,'noop'), # 5.14 
+            ('ContinuationRecordNumber',1,'noop'), # 5.16
+            ('VORFrequency',5,'vhf_freq'), # 5.34
+            ('NAVAIDClass',5,'nav_class'), # 5.35
+            ('VORLatitude',9,'dec_latitude'), # 5.36
+            ('VORLongitude',10,'dec_longitude'), # 5.37
+            ('DMEIdent',4,'strip'), # 5.38
+            ('DMELatitude',9,'dec_latitude'), # 5.36
+            ('DMELongitude',10,'dec_longitude'),  # 5.37
+            ('StationDeclination',5,'declination'), # 5.66
+            ('DMEElevation',5,'elevation'), # 5.40
+            ('FigureofMerit',1,'noop'), # 5.149
+            ('ILSDMEBias',2,'noop'), # 5.90
+            ('FrequencyProtection',3,'noop'), # 5.150
+            ('DatumCode',3,'datum'), # 5.197
+            ('VORName',30,'strip'), # 5.71
+            ('FileRecordNumber',5,'int_blank'), # 5.31
+            ('CycleDate',4,'cycle_date') # 5.32
         ],
         'B':
         [
-            ('RecordType',1,'noop'),
-            ('CustomerAreaCode',3,'noop'),
-            ('SectionCode',1,'noop'),
-            ('SubSectionCode',1,'noop'),
-            ('LandingFacilityIcaoIdentifier',4,'noop'),
-            ('LandingFacilityIcaoRegionCode',2,'noop'),
-            ('BlankSpacing',1,'noop'),
-            ('NDBIdentifier',4,'strip'),
+            ('RecordType',1,'noop'), # 5.2
+            ('CustomerAreaCode',3,'noop'), # 5.3
+            ('SectionCode',1,'noop'), # 5.4
+            ('SubSectionCode',1,'noop'), # 5.5
+            ('Airport ICAO Identifier',4,'noop'), # 5.6
+            ('ICAORegionCode',2,'noop'), # 5.14
+            ('BlankSpacing',1,'noop'), 
+            ('NDBIdentifier',4,'strip'), # 5.33
             ('BlankSpacing',2,'noop'),
-            ('NdbIcaoRegionCode',2,'noop'),
-            ('ContinuationRecordNumber',1,'noop'),
-            ('NDBFrequency',5,'noop'),
-            ('NDBClass',5,'ndb_class'),
-            ('NDBLatitude',9,'dec_latitude'),
-            ('NDBLongitude',10,'dec_longitude'),
-            ('BlankSpacing',23,'noop'),
-            ('MagneticVariation',5,'declination'),
-            ('BlankSpacing',6,'noop'),
+            ('NdbIcaoRegionCode',2,'noop'), # 5.14
+            ('ContinuationRecordNumber',1,'noop'), # 5.16
+            ('NDBFrequency',5,'noop'), # 5.34
+            ('NDBClass',5,'ndb_class'), # 5.35
+            ('NDBLatitude',9,'dec_latitude'), # 5.36
+            ('NDBLongitude',10,'dec_longitude'), # 5.37
+            ('BlankSpacing',23,'noop'), 
+            ('MagneticVariation',5,'declination'), # 5.39
+            ('BlankSpacing',6,'noop'), 
             ('ReservedExpansion',5,'noop'),
-            ('DatumCode',3,'noop'),
-            ('NDBName',30,'strip'),
-            ('FileRecordNumber',5,'noop'),
-            ('CycleData',4 ,'noop')
+            ('DatumCode',3,'datum'), # 5.197
+            ('NDBName',30,'strip'), # 5.71
+            ('FileRecordNumber',5,'int_blank'), # 5.31
+            ('CycleData',4 ,'cycle_date') # 5.32
         ]
     },
     # See pg15(30 of PDF) for clarification on repeated SubSectionCode
     'E':{ # Enroute
         'A': # Waypoints
         [
-            ('RecordType',1,'noop'),
-            ('CustomerAreaCode',3,'noop'),
-            ('SectionCode',1,'noop'),
-            ('SubSectionCode',1,'noop'),
-            ('RegionCode',4,'noop'),
-            ('IcaoRegionCode',2,'noop'),
+            ('RecordType',1,'noop'), # 5.2
+            ('CustomerAreaCode',3,'noop'), # 5.3
+            ('SectionCode',1,'noop'), # 5.4
+            ('SubSectionCode',1,'noop'), # 5.5
+            ('RegionCode',4,'noop'), # 5.41
+            ('IcaoRegionCode',2,'noop'), # 5.14
             ('BlankSubSectionCode',1,'noop'),
-            ('WaypointIdentifier',5,'strip'),
-            ('BlankSpacing',1,'noop'),
-            ('WaypointIcaoRegionCode',2,'noop'),
-            ('ContinuationRecordNumber',1,'noop'),
+            ('WaypointIdentifier',5,'strip'), # 5.14
+            ('BlankSpacing',1,'noop'), 
+            ('ICAORegionCode',2,'noop'), # 5.14 
+            ('ContinuationRecordNumber',1,'noop'), # 5.16
             ('BlankSpacing',4,'noop'),
-            ('WaypointType',3,'waypoint_type'),
-            ('WaypointUsage',2,'waypoint_usage'),
+            ('WaypointType',3,'waypoint_type'), # 5.42
+            ('WaypointUsage',2,'waypoint_usage'), # 5.82
             ('BlankSpacing',1,'noop'),
-            ('WaypointLatitude',9,'dec_latitude'),
-            ('WaypointLongitude',10,'dec_longitude'),
+            ('WaypointLatitude',9,'dec_latitude'), # 5.36
+            ('WaypointLongitude',10,'dec_longitude'), # 5.37
             ('BlankSpacing',23,'noop'),
-            ('DynamicMagVariation',5,'declination'),
+            ('DynamicMagVariation',5,'declination'), # 5.39
             ('ReservedExpansion',5,'noop'),
-            ('DatumCode',3,'noop'),
+            ('DatumCode',3,'datum'), # 5.197
             ('ReservedExpansion',8,'noop'),
-            ('NameFormatIndicator',3,'noop'),
-            ('WaypointNameDescription',25,'strip'),
-            ('FileRecordNumber',5,'noop'),
-            ('CycleDate',4,'noop')
+            ('NameFormatIndicator',3,'noop'), # 5.196
+            ('WaypointNameDescription',25,'strip'), # 5.43
+            ('FileRecordNumber',5,'int_blank'), # 5.31
+            ('CycleDate',4,'cycle_date') # 5.32
         ],
         'M': # Airway Markers * None
         [
@@ -203,44 +203,44 @@ ARINC_424_PARSE_DEF = {
             ('CycleDate',4,'noop')
         ],
         'R':[ # Airways and Routes
-            ('RecordType',1,'noop'),
-            ('CustomerAreaCode',3,'noop'),
-            ('SectionCode',1,'noop'),
-            ('SubSectionCode',1,'noop'),
+            ('RecordType',1,'noop'), # 5.2
+            ('CustomerAreaCode',3,'noop'), # 5.3
+            ('SectionCode',1,'noop'), # 5.4
+            ('SubSectionCode',1,'noop'), # 5.5
             ('BlankSpacing',7,'noop'),
-            ('RouteIdentifier',5,'strip'),
-            ('Reserved',1,'noop'),
+            ('RouteIdentifier',5,'strip'), # 5.8
+            ('Reserved',1,'noop'), 
             ('BlankSpacing',6,'noop'),
-            ('SequenceNumber',4,'noop'),
-            ('FixIdentifier',5,'strip'),
-            ('FixIcaoRegionCode',2,'noop'),
-            ('FixSectionCode',1,'noop'),
-            ('FixSubSectionCode',1,'noop'),
-            ('ContinuationRecordNumber',1,'noop'),
-            ('WaypointDescriptionCode',4,'noop'),
-            ('BoundaryCode',1,'noop'),
-            ('RouteType',1,'route_type'),
-            ('Level',1,'noop'),
-            ('DirectionRestriction',1,'noop'),
-            ('CruiseTableIndicator',2,'noop'),
-            ('EUIndicator',1,'noop'),
-            ('RecommendedNavaid',4,'noop'),
-            ('RecommendedNavaidIcaoRegionCode',2,'noop'),
-            ('RNP',3,'noop'),
-            ('BlankSpacing',3,'noop'),
-            ('Theta',4,'noop'),
-            ('Rho',4,'noop'),
-            ('OutboundMagneticCourse',4,'noop'),
-            ('RouteDistanceFrom',4,'noop'),
-            ('InboundMagneticCourse',4,'noop'),
-            ('BlankSpacing',1,'noop'),
-            ('MinimumAltitude',5,'int_blank'),
-            ('MinimumAltitude',5,'noop'),
-            ('MaximumAltitude',5,'noop'),
-            ('FixRadiusTransitionIndicator',3,'noop'),
+            ('SequenceNumber',4,'int_blank'), # 5.12
+            ('FixIdentifier',5,'strip'), # 5.13
+            ('ICAORegionCode',2,'noop'), # 5.14
+            ('FixSectionCode',1,'noop'), # 5.4
+            ('FixSubSectionCode',1,'noop'), # 5.5
+            ('ContinuationRecordNumber',1,'noop'), # 5.16
+            ('WaypointDescriptionCode',4,'waypoint_description'), # 5.17
+            ('BoundaryCode',1,'noop'), # 5.18
+            ('RouteType',1,'route_type'), # 5.7
+            ('Level',1,'route_level'), # 5.19
+            ('DirectionRestriction',1,'route_direction'), # 5.115
+            ('CruiseTableIndicator',2,'noop'), # 5.134
+            ('EUIndicator',1,'noop'), # 5.164
+            ('RecommendedNavaid',4,'noop'), # 5.23
+            ('RecommendedNavaidIcaoRegionCode',2,'noop'), # 5.14
+            ('RNP',3,'noop'), # 5.211
+            ('BlankSpacing',3,'noop'), 
+            ('Theta',4,'four_float_last_tenth'), # 5.24
+            ('Rho',4,'four_float_last_tenth'), # 5.25
+            ('OutboundMagneticCourse',4,'mag_course'), # 5.26
+            ('RouteDistanceFrom',4,'route_distance'), # 5.27
+            ('InboundMagneticCourse',4,'mag_course'), # 5.28
+            ('BlankSpacing',1,'noop'), 
+            ('MinimumAltitude',5,'int_blank'), # 5.30
+            ('MinimumAltitude',5,'int_blank'), # 5.30 
+            ('MaximumAltitude',5,'noop'), # 5.127 
+            ('FixRadiusTransitionIndicator',3,'three_float_last_tenth'), # 5.254
             ('ReservedExpansion',22,'noop'),
-            ('FileRecordNumber',5,'noop'),
-            ('CycleDate',4,'noop')
+            ('FileRecordNumber',5,'int_blank'),
+            ('CycleDate',4,'cycle_date')
         ],
         'T': # Preferred Routes * None
         [
