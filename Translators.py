@@ -1,348 +1,288 @@
 
-from datetime import datetime, timedelta
 
-LAST_SECTION_CODE = None
+TRANSLATOR_FUNC=0
+SQL_TYPE=1
 
-def noop(arg):
-    return arg
+from translator_funcs import *
 
-def strip(arg):
-    return arg.strip()
+# The field references will also contian formatting for postgresql
+# ( format function to pass a singe arg, DB Column type )
 
-def int_blank(arg):
-    try:
-        return int(arg)
-    except:
-        return arg
+FIELD_REFERENCES={
+    '0'     : (noop,'varchar'),
+    '5.2'   : (func52,'char[3]'), 
+    '5.3'   : (func53,'char[3]'),
+    '5.4'   : (func54,'varchar'),
+    '5.5'   : (func55,'varchar'),
+    '5.6'   : (func56,'char[4]'),
+    '5.7'   : (func57,'varchar'),
+    '5.8'   : (func58,'char[10]'),
+    '5.9'   : (func59,'char[6]'),
+    '5.10'  : (func510,'char[6]'),
+    '5.11'  : (noop,'varchar'),
+    '5.12'  : (noop,'varchar'),
+    '5.13'  : (noop,'varchar'),
+    '5.14'  : (noop,'varchar'),
+    '5.15'  : (noop,'varchar'),
+    '5.16'  : (noop,'varchar'),
+    '5.17'  : (noop,'varchar'),
+    '5.18'  : (noop,'varchar'),
+    '5.19'  : (noop,'varchar'),
+    '5.20'  : (noop,'varchar'),
+    '5.21'  : (noop,'varchar'),
+    '5.22'  : (noop,'varchar'),
+    '5.23'  : (noop,'varchar'),
+    '5.24'  : (noop,'varchar'),
+    '5.25'  : (noop,'varchar'),
+    '5.26'  : (noop,'varchar'),
+    '5.27'  : (noop,'varchar'),
+    '5.28'  : (noop,'varchar'),
+    '5.29'  : (noop,'varchar'),
+    '5.30'  : (noop,'varchar'),
+    '5.31'  : (func531,'integer'),
+    '5.32'  : (func532,'date'),
+    '5.33'  : (func533,'char[4]'),
+    '5.34'  : (func534,'real'),
+    '5.35'  : (func535,'varchar'),
+    '5.36'  : (func536,'double precision'),
+    '5.37'  : (func537,'double precision'),
+    '5.38'  : (noop,'varchar'),
+    '5.39'  : (noop,'varchar'),
+    '5.40'  : (func540,'integer'),
+    '5.41'  : (noop,'varchar'),
+    '5.42'  : (noop,'varchar'),
+    '5.43'  : (noop,'varchar'),
+    '5.44'  : (noop,'varchar'),
+    '5.45'  : (noop,'varchar'),
+    '5.46'  : (noop,'varchar'),
+    '5.47'  : (noop,'varchar'),
+    '5.48'  : (noop,'varchar'),
+    '5.49'  : (noop,'varchar'),
+    '5.50'  : (noop,'varchar'),
+    '5.51'  : (noop,'varchar'),
+    '5.52'  : (noop,'varchar'),
+    '5.53'  : (noop,'varchar'),
+    '5.54'  : (noop,'varchar'),
+    '5.55'  : (noop,'varchar'),
+    '5.56'  : (noop,'varchar'),
+    '5.57'  : (noop,'varchar'),
+    '5.58'  : (noop,'varchar'),
+    '5.59'  : (noop,'varchar'),
+    '5.60'  : (noop,'varchar'),
+    '5.61'  : (noop,'varchar'),
+    '5.62'  : (noop,'varchar'),
+    '5.63'  : (noop,'varchar'),
+    '5.64'  : (noop,'varchar'),
+    '5.65'  : (noop,'varchar'),
+    '5.66'  : (func566, 'float'),
+    '5.67'  : (noop,'varchar'),
+    '5.68'  : (noop,'varchar'),
+    '5.69'  : (noop,'varchar'),
+    '5.70'  : (noop,'varchar'),
+    '5.71'  : (func571,'char[30]'),
+    '5.72'  : (noop,'varchar'),
+    '5.73'  : (noop,'varchar'),
+    '5.74'  : (noop,'varchar'),
+    '5.75'  : (noop,'varchar'),
+    '5.76'  : (noop,'varchar'),
+    '5.77'  : (noop,'varchar'),
+    '5.78'  : (noop,'varchar'),
+    '5.79'  : (noop,'varchar'),
+    '5.80'  : (noop,'varchar'),
+    '5.81'  : (noop,'varchar'),
+    '5.82'  : (noop,'varchar'),
+    '5.83'  : (noop,'varchar'),
+    '5.84'  : (noop,'varchar'),
+    '5.85'  : (noop,'varchar'),
+    '5.86'  : (noop,'varchar'),
+    '5.87'  : (noop,'varchar'),
+    '5.88'  : (noop,'varchar'),
+    '5.89'  : (noop,'varchar'),
+    '5.90'  : (noop,'varchar'),
+    '5.91'  : (noop,'varchar'),
+    '5.92'  : (noop,'varchar'),
+    '5.93'  : (noop,'varchar'),
+    '5.94'  : (noop,'varchar'),
+    '5.95'  : (noop,'varchar'),
+    '5.96'  : (noop,'varchar'),
+    '5.97'  : (noop,'varchar'),
+    '5.98'  : (noop,'varchar'),
+    '5.99'  : (noop,'varchar'),
+    '5.100' : (noop,'varchar'),
+    '5.101' : (noop,'varchar'),
+    '5.102' : (noop,'varchar'),
+    '5.103' : (noop,'varchar'),
+    '5.104' : (noop,'varchar'),
+    '5.105' : (noop,'varchar'),
+    '5.106' : (noop,'varchar'),
+    '5.107' : (noop,'varchar'),
+    '5.108' : (noop,'varchar'),
+    '5.109' : (noop,'varchar'),
+    '5.110' : (noop,'varchar'),
+    '5.111' : (noop,'varchar'),
+    '5.112' : (noop,'varchar'),
+    '5.113' : (noop,'varchar'),
+    '5.114' : (noop,'varchar'),
+    '5.115' : (noop,'varchar'),
+    '5.116' : (noop,'varchar'),
+    '5.117' : (noop,'varchar'),
+    '5.118' : (noop,'varchar'),
+    '5.119' : (noop,'varchar'),
+    '5.120' : (noop,'varchar'),
+    '5.121' : (noop,'varchar'),
+    '5.122' : (noop,'varchar'),
+    '5.123' : (noop,'varchar'),
+    '5.124' : (noop,'varchar'),
+    '5.125' : (noop,'varchar'),
+    '5.126' : (noop,'varchar'),
+    '5.127' : (noop,'varchar'),
+    '5.128' : (noop,'varchar'),
+    '5.129' : (noop,'varchar'),
+    '5.130' : (noop,'varchar'),
+    '5.131' : (noop,'varchar'),
+    '5.132' : (noop,'varchar'),
+    '5.133' : (noop,'varchar'),
+    '5.134' : (noop,'varchar'),
+    '5.135' : (noop,'varchar'),
+    '5.136' : (noop,'varchar'),
+    '5.137' : (noop,'varchar'),
+    '5.138' : (noop,'varchar'),
+    '5.139' : (noop,'varchar'),
+    '5.140' : (noop,'varchar'),
+    '5.141' : (noop,'varchar'),
+    '5.142' : (noop,'varchar'),
+    '5.143' : (noop,'varchar'),
+    '5.144' : (noop,'varchar'),
+    '5.145' : (noop,'varchar'),
+    '5.146' : (noop,'varchar'),
+    '5.147' : (noop,'varchar'),
+    '5.148' : (noop,'varchar'),
+    '5.149' : (noop,'varchar'),
+    '5.150' : (noop,'varchar'),
+    '5.151' : (noop,'varchar'),
+    '5.152' : (noop,'varchar'),
+    '5.153' : (noop,'varchar'),
+    '5.154' : (noop,'varchar'),
+    '5.155' : (noop,'varchar'),
+    '5.156' : (noop,'varchar'),
+    '5.157' : (noop,'varchar'),
+    '5.158' : (noop,'varchar'),
+    '5.159' : (noop,'varchar'),
+    '5.160' : (noop,'varchar'),
+    '5.161' : (noop,'varchar'),
+    '5.162' : (noop,'varchar'),
+    '5.163' : (noop,'varchar'),
+    '5.164' : (noop,'varchar'),
+    '5.165' : (noop,'varchar'),
+    '5.166' : (noop,'varchar'),
+    '5.167' : (noop,'varchar'),
+    '5.168' : (noop,'varchar'),
+    '5.169' : (noop,'varchar'),
+    '5.170' : (noop,'varchar'),
+    '5.171' : (noop,'varchar'),
+    '5.172' : (noop,'varchar'),
+    '5.173' : (noop,'varchar'),
+    '5.174' : (noop,'varchar'),
+    '5.175' : (noop,'varchar'),
+    '5.176' : (noop,'varchar'),
+    '5.177' : (noop,'varchar'),
+    '5.178' : (noop,'varchar'),
+    '5.179' : (noop,'varchar'),
+    '5.180' : (noop,'varchar'),
+    '5.181' : (noop,'varchar'),
+    '5.182' : (noop,'varchar'),
+    '5.183' : (noop,'varchar'),
+    '5.184' : (noop,'varchar'),
+    '5.185' : (noop,'varchar'),
+    '5.186' : (noop,'varchar'),
+    '5.187' : (noop,'varchar'),
+    '5.188' : (noop,'varchar'),
+    '5.189' : (noop,'varchar'),
+    '5.190' : (noop,'varchar'),
+    '5.191' : (noop,'varchar'),
+    '5.192' : (noop,'varchar'),
+    '5.193' : (noop,'varchar'),
+    '5.194' : (noop,'varchar'),
+    '5.195' : (noop,'varchar'),
+    '5.196' : (noop,'varchar'),
+    '5.197' : (func5197,'varchar'),
+    '5.198' : (noop,'varchar'),
+    '5.199' : (noop,'varchar'),
+    '5.200' : (noop,'varchar'),
+    '5.201' : (noop,'varchar'),
+    '5.202' : (noop,'varchar'),
+    '5.203' : (noop,'varchar'),
+    '5.204' : (noop,'varchar'),
+    '5.205' : (noop,'varchar'),
+    '5.206' : (noop,'varchar'),
+    '5.207' : (noop,'varchar'),
+    '5.208' : (noop,'varchar'),
+    '5.209' : (noop,'varchar'),
+    '5.210' : (noop,'varchar'),
+    '5.211' : (noop,'varchar'),
+    '5.212' : (noop,'varchar'),
+    '5.213' : (noop,'varchar'),
+    '5.214' : (noop,'varchar'),
+    '5.215' : (noop,'varchar'),
+    '5.216' : (noop,'varchar'),
+    '5.217' : (noop,'varchar'),
+    '5.218' : (noop,'varchar'),
+    '5.219' : (noop,'varchar'),
+    '5.220' : (noop,'varchar'),
+    '5.221' : (noop,'varchar'),
+    '5.222' : (noop,'varchar'),
+    '5.223' : (noop,'varchar'),
+    '5.224' : (noop,'varchar'),
+    '5.225' : (noop,'varchar'),
+    '5.226' : (noop,'varchar'),
+    '5.227' : (noop,'varchar'),
+    '5.228' : (noop,'varchar'),
+    '5.229' : (noop,'varchar'),
+    '5.230' : (noop,'varchar'),
+    '5.231' : (noop,'varchar'),
+    '5.232' : (noop,'varchar'),
+    '5.233' : (noop,'varchar'),
+    '5.234' : (noop,'varchar'),
+    '5.235' : (noop,'varchar'),
+    '5.236' : (noop,'varchar'),
+    '5.237' : (noop,'varchar'),
+    '5.238' : (noop,'varchar'),
+    '5.239' : (noop,'varchar'),
+    '5.240' : (noop,'varchar'),
+    '5.241' : (noop,'varchar'),
+    '5.242' : (noop,'varchar'),
+    '5.243' : (noop,'varchar'),
+    '5.244' : (noop,'varchar'),
+    '5.245' : (noop,'varchar'),
+    '5.246' : (noop,'varchar'),
+    '5.247' : (noop,'varchar'),
+    '5.248' : (noop,'varchar'),
+    '5.249' : (noop,'varchar'),
+    '5.250' : (noop,'varchar'),
+    '5.251' : (noop,'varchar'),
+    '5.252' : (noop,'varchar'),
+    '5.253' : (noop,'varchar'),
+    '5.254' : (noop,'varchar'),
+    '5.255' : (noop,'varchar'),
+    '5.256' : (noop,'varchar'),
+    '5.257' : (noop,'varchar'),
+    '5.258' : (noop,'varchar'),
+    '5.259' : (noop,'varchar'),
+    '5.260' : (noop,'varchar'),
+    '5.261' : (noop,'varchar'),
+    '5.262' : (noop,'varchar'),
+    '5.263' : (noop,'varchar'),
+    '5.264' : (noop,'varchar'),
+    '5.265' : (noop,'varchar'),
+    '5.266' : (noop,'varchar'),
+    '5.267' : (noop,'varchar'),
+    '5.268' : (noop,'varchar'),
+    '5.269' : (noop,'varchar'),
+    '5.270' : (noop,'varchar')
+}
 
-def datum(arg):
-    switch={'NAR' :'North American 1983 GRS 80'}
-    return switch.get(arg,'UNK' + '/' + arg)
 
-def cycle_date( arg ):
-    yr = int('20' + arg[0:2])
-    days = 28 * int(arg[2:4])
-    d = datetime(yr,1,1) + timedelta( days-1)
-    return d.strftime('%m/%d/%Y')
-               
-def section_code( arg ):
-    switch={
-        'A':'MORA',
-        'D':'Navaid',
-        'E':'Enroute',
-        'H':'Heliport',
-        'P':'Airport',
-        'R':'Company Route',
-        'T':'Tables',
-        'U':'Airspace'
-    }
-    global LAST_SECTION_CODE
-    LAST_SECTION_CODE = arg
-    return switch.get(arg,'UNK')
 
-def vfr_freq( arg ):
-    return arg
+def field_reference_parse_lookup(arg):
 
-def dec_latitude( arg ):
-    # N 32 05 5497
-    try:
-        ns = arg[0:1]
-        if ns == 'S':
-            ns = -1.0
-        else:
-            ns = 1.0
-            
-        degs = float(arg[1:3])
-        mins = float(arg[3:5]) / 60.0
-        secs = arg[5:7]
-        dsecs = arg[7:9]
-        secs = float(secs+'.'+dsecs) / 3600.0
-        return ns * (degs + mins + secs)
-    except:
-        return arg
-
-def dec_longitude( arg ):
-    try:
-        ew = arg[0:1]
-        if ew == 'W':
-            ew = -1.0
-        else:
-            ew = 1.0
-            
-        degs = float(arg[1:4])
-        mins = float(arg[4:6]) / 60.0
-        secs = arg[6:8]
-        dsecs = arg[8:9]
-        secs = float(secs+'.'+dsecs) / 3600.0
-        return ew * (degs + mins + secs)
-    except:
-        return arg
-
-def subsection_code( arg ):
-    switch={ 'D':
-             {
-                 '': 'VHF Navaid',
-                 'B':'NDB'
-             }
-    }
-    return switch.get(LAST_SECTION_CODE,{}).get(arg,'UNK')
-
-def vhf_freq( arg ):
-    base = arg[0:3]
-    dec = arg[3:5]
-    return float(base + '.'+dec)
-
-def elevation( arg ):
-    try:
-        return float(arg)
-    except:
-        return arg
-    
-def declination( arg ):
-    try:
-        ewt = arg[0:1]
-        if ewt == 'E':
-            ewt = -1.0
-        elif ewt == 'W':
-            ewt = 1.0
-        else:
-            return 0.0
-        deg = float(arg[1:4])
-        tens = float(arg[4:5]) / 10.0
-        return ewt * ( deg + tens )
-    except:
-        return arg
-
-def nav_class( arg ):
-    '''
-    Used On: Navaid Records (VHF, NDB and
-    Airport/Heliport
-    Localizer/Markers/Locators)
-    Length: 5 characters (including "blanks")
-    Character Type: Alpha
-    '''
-    switch=[{'V': 'VOR'},
-            {'D': 'DME',
-             'T': 'TACAN 17,59, 70-169',
-             'M' : 'MIL TACAN 1-16,60-69',
-             'I': 'ILS/DME ILS/TACAN',
-             'N': 'MLS/DME/N',
-             'P':'MLS/DME/P'},
-            {'T': 'Terminal',
-             'L': 'Low Altitude',
-             'H': 'High Altitude',
-             'U': 'UND',
-             'C': 'ILS/TACAN'},
-             {'D': 'BIASED ILSDME or ILSTACAN',
-              'A': 'Automatic Transcribed Weather Broadcast',
-              'B': 'Scheduled Weather Broadcast',
-              'W':'No Voice',
-              ' ': 'Voice'},
-            {' ': 'Colocated Navaids',
-             'N': 'Non-Collocated Navaids'}
-            ]
-    ret_val = []
-    for i in range(0,5):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-             
-            
-def ndb_class( arg ):
-    switch=[
-        {'H': 'NDB',
-         'S':' SABH',
-         'M': 'Marine Beacon'},
-        {'I': 'Inner Marker',
-         'M': 'Middle marker',
-         'O': 'Outer Marker',
-         'C': 'Back Marker'},
-        {'H': '200 Watts or More',
-         ' ': '50 - 1999 Watts',
-         'M': '25 to less than 50 Watts',
-         'L': 'Less than 25 Watts'},
-        {'A': 'Automatic Weather',
-         'B': 'Scheduled Weather',
-         'W': 'No Voice',
-         ' ': 'Voice'},
-        {'B': 'BFO Ops'}
-        ]
-    ret_val = []
-    for i in range(0,5):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def apt_ndb_class( arg ):
-    switch=[
-        {'H': 'NDB',
-         'S':' SABH',
-         'M': 'Marine Beacon'},
-        {'I': 'Inner Marker',
-         'M': 'Middle marker',
-         'O': 'Outer Marker',
-         'C': 'Back Marker'},
-        {'H': '200 Watts or More',
-         ' ': '50 - 1999 Watts',
-         'M': '25 to less than 50 Watts',
-         'L': 'Less than 25 Watts'},
-        {'A': 'Automatic Weather',
-         'B': 'Scheduled Weather',
-         'W': 'No Voice',
-         ' ': 'Voice'},
-        {'B': 'BFO Ops',
-         'A': 'Locator/Marker Collocated',
-         'N': 'Locator/Middle Marker not collocated'}
-        ]
-    ret_val = []
-    for i in range(0,5):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def waypoint_type(arg):
-    switch=[
-        {'C': 'Combined Named Intersection and RNAV',
-         'I' : 'Unnamed, Chart Intersection',
-         'N' : 'NDB Navaid as Waypoint',
-         'R' : 'Named Intersection',
-         'U' : 'Uncharted Airway Intersection',
-         'V' : 'VFR Waypoint',
-         'W' : 'RNAV Waypoint'},
-        {'A' : 'Final Approach Fix',
-         'B' : 'Initial and Final Approach Fix',
-         'C' : 'Final Approach Course Fix',
-         'D' : 'Intermediate Approach Fix',
-         'E' : 'Off-Route intersection in the FAA National Reference System',
-         'F' : 'Off Route Intersection',
-         'I' : 'Initial Approach Fix',
-         'K' : 'Final Approach Course Fixat Initial Approach Fix',
-         'L' : 'Final Approach Course at Intermediate Approach Fix',
-         'M' : 'Missed Approach Fix',
-         'N' : 'Initial Approach Fix and Missed Approach FIx',
-         'O' : 'Oceanic Entry/Exit Waypoint',
-         'P' : 'Pitch and Catch Point in the FAA High Altitude Redesign',
-         'S' : 'AACAA and SUA Waypoints in FAA High Altitude Redesign',
-         'U' : 'FIR/UIR or Controoled Airspace Intersection',
-         'V' : 'Latitude/Longitude Intersection, Full Degree of Latitude',
-         'W' : 'Latitude/Longitude Intersection, Half Degree of Latitude',
-         ' ' : ''},
-        {' ': ''}
-        ]
-    ret_val = []
-    for i in range(0,3):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def waypoint_description(arg):
-    switch=[
-        {'A' : 'Airport as Waypoint',
-         'E' : 'Essential Waypoint',
-         'F' : 'Off Airway Waypoint',
-         'G' : 'Runway/Helipad as Waypoint',
-         'H' : 'Heliport as Waypoint',
-         'N' : 'NDB as Waypoint',
-         'P' : 'Phantom Waypoint',
-         'R' : 'Non Essential Waypoint',
-         'T' : 'Transition Essential Waypoint',
-         'V' : 'VHF Navaid as Waypoint',
-         ' ' : ''},
-        {'B' : 'Flyover Waypoint, End of SID.STAR, Route, Final',
-         'E' : 'End of Route',
-         'U' : 'Uncharted Intersection',
-         'Y' : 'Flyover Waypoint',
-         ' ' : ''},
-        {'A' : 'Unnamed Stepdown Fix After Final Approach Fix',
-         'B' : 'Unnamed Stepdown Fix Before Final Approach Fix',
-         'C' : 'ATC Compulsory Waypoint',
-         'G' : 'Oceanic Waypoint',
-         'M' : 'First Leg of Missed Approach Procedure',
-         'P' : 'Path Point Fix',
-         'S' : 'Named Stepdown Fix',
-         ' ' : ''},
-        {'A' : 'Initial Approach Fix',
-         'B' : 'Intermediate Approach Fix',
-         'C' : 'Initial Approach Fix with Hold',
-         'D' : 'Initial Approach Fix with Final Approach Course Fix',
-         'E' : 'Final End Point Fix',
-         'F' : 'Published Final Approach Fix or DB Final Approach Fix',
-         'H' : 'Holding Fix',
-         'I' : 'Final Approach Course Fix',
-         'M' : 'Published Missed Approach Fix',
-         ' ' : ''}
-        ]
-    ret_val = []
-    for i in range(0,4):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def waypoint_usage(arg):
-    switch=[
-        {' ' :'',
-         'R' : 'RNAV'},
-        {'B' : 'HI and LO Altitude',
-         'H' : 'HI Altitude',
-         'L' : 'LO Altitude',
-         ' ' : 'Terminal Use Only'
-         }]
-    ret_val = []
-    for i in range(0,2):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def route_type(arg):
-    switch={'A':'Airline Airway',
-            'C':'Control',
-            'D': 'Direct Route',
-            'H': 'Helicopter Airway',
-            'O': 'Official Airway',
-            'R': 'RNAV Airway',
-            'S': 'Undesignated ATS Route'
-            }
-    return switch.get(arg,'UNK'+'/' + arg)
-
-def route_level(arg):
-    switch={
-        'B' : 'HI and LO Altitude',
-        'H' : 'HI Altitude',
-        'L' : 'LO Altitude'}
-    return switch.get(arg,'UNK'+'/' + arg)
-
-def route_direction(arg):
-    switch={
-        ' ' : 'Bi-Directional',
-        'F' : 'Forward',
-        'B' : 'Back'}
-    return switch.get(arg,'UNK'+'/' + arg)
-
-def cruise_table_ind(arg):
-    switch={'AA': 'ICAO Standard cruise table',
-            'AO': 'Exception to ICAO Standard cruise table'}
-
-    return switch.get(arg,'UNK'+'/' + arg)
-
-def four_float_last_tenth(arg):
-    try:
-        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
-        return ret_val
-    except:
-        return -1.0
-
-def three_float_last_tenth(arg):
-    try:
-        ret_val = float(arg[0:2]) + float(arg[2:3]) / 10.0
-        return ret_val
-    except:
-        return -1.0
-
-    
-def mag_course( arg ):
-    try:
-        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
-        return ret_val
-    except:
-        return 'Possible True(T) Entry'
-
-def route_distance( arg ):
-    try:
-         ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
-         return ret_val
-    except:
-        return 'Possible Holding Time (T) Entry'
+    return FIELD_REFERENCES.get(arg,(noop,None))

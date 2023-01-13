@@ -1,15 +1,21 @@
 
 from arinc_424_18_parser import ARINC_424_PARSE_DEF
 from arinc_424_18_parser import ARINC_FIELD_NAME,ARINC_FIELD_WIDTH,\
-    FIELD_TRANSLATOR
-    
+    SECTION_CODE, SUBSECTION_CODE, FIELD_REFERENCE, IGNORE
+
+from Translators import TRANSLATOR_FUNC
+
+COLUMN_NAME_POS=0
+RAW_VAL_POS=1
+TRANSLATED_VAL_POS=2
+
 class RecordParser:
 
     def __init__(self, ARINC_file, parse_sections=[], stats={},
                  field_translators=None):
         self.inf = open( ARINC_file,'r' )
         self.count = 0
-        self.record_objs = []
+        self.record_objs = {}
         self.stats = stats
         self.parse_sections = parse_sections
         self.field_translators = field_translators
@@ -22,16 +28,15 @@ class RecordParser:
                 tokens=[]
                 section, sub_section = \
                     self.get_record_section_subsection( data_line,tokens )
-                if len(self.parse_sections) == 0:
-                    self.record_objs.append( tokens )
-                elif (section,sub_section) in self.parse_sections:
-                    self.record_objs.append( tokens )
-                elif section in self.parse_sections:
-                    self.record_objs.append( tokens )
-                
+                if len(tokens) > 0:
+                    if (section,sub_section) in self.record_objs.keys():         
+                        self.record_objs[(section,sub_section)].append( tokens )
+                    else:
+                        self.record_objs[(section,sub_section)] = []
+                        self.record_objs[(section,sub_section)].append( tokens ) 
         self.inf.close()
 
-    def get_record_section_subsection(self, data_line,tokens=[]):
+    def get_record_section_subsection(self, data_line, tokens):
         parse_def = ARINC_424_PARSE_DEF[' ']
         start_parse=0
         internal_tokens = {}
@@ -45,7 +50,7 @@ class RecordParser:
             start_parse = end_parse
         # If this is an S record, figure out the sub section
         if internal_tokens['ST'] == 'S':
-            section_code = internal_tokens['SectionCode']
+            section_code = internal_tokens[SECTION_CODE]
             section_field_def = ARINC_424_PARSE_DEF[section_code]
             # Now just pick any subsection and parse the first 10 tokens to
             # get the subsection. I believe that any subsection definition
@@ -54,11 +59,13 @@ class RecordParser:
             # Now iterate the first section definition to see which subsection
             # to use
             start_parse=0
-            for i in range(0,10):
+            # subsection definition is sliced. The first record is reserved
+            # for the database table name.
+            for i in range(1,10):
                 token_parse = subsection_field_def[i]
                 field_name = token_parse[ARINC_FIELD_NAME]
                 end_parse = start_parse + token_parse[ARINC_FIELD_WIDTH]
-                if field_name == 'SubSectionCode':
+                if field_name == SUBSECTION_CODE:
                     sub_section_code = \
                         str(data_line[start_parse:end_parse]) # Do not use strip
                     break
@@ -77,37 +84,85 @@ class RecordParser:
                 sub_section_code = 'N'
             section_subsection_def = \
                 ARINC_424_PARSE_DEF[section_code][sub_section_code]
+            # Moving the filter down here to speed up parsing
+            if len(self.parse_sections) != 0 and \
+               (section_code,sub_section_code) not in self.parse_sections:
+                return section_code,sub_section_code
+            
             # Now that we know the section and subsection we can parse the data
             # line and load the values. Note that up to this point data_line
-            # is just iterated and not changed.
+            # is just iterated and not changed. Not that the section/
             start_parse=0
-            for token_parse in section_subsection_def:
+            # subsection definition is sliced. The first record is reserved
+            # for the database table name.
+            for token_parse in section_subsection_def[1:]:
 
                 end_parse = start_parse + token_parse[ARINC_FIELD_WIDTH]
                 
                 field_name = token_parse[ARINC_FIELD_NAME]
-                field_val = str(data_line[start_parse:end_parse]) # Do not strip
+
+                # Do not strip
                 # Get the name of the translator from the token_parse object
                 # and send that into translate_filed with the parsed variable
                 # to translate the val into a usable value.
-                translator_name = token_parse[FIELD_TRANSLATOR]
-                # Try to translate the field
-                translated_field_val = self.translate_field( translator_name,
-                                                             field_val )
+                field_val = str(data_line[start_parse:end_parse])
+                start_parse = end_parse
+
+                # There are some fields I do not want in the DB
+                if field_name in IGNORE: continue
+
+                translator_tup = None
+                translator_field_val = None
+                try:                    
+                    translator_tup= self.translator_field_lookup(
+                        token_parse[FIELD_REFERENCE])
+                except NameError as ne:
+                    print( ne )
+                    print( data_line )
+                    print( token_parse )
+                    raise( ne)                    
+
+                try:
+                    # Try to translate the field
+                    translated_field_val = self.translate_field(
+                        translator_tup[TRANSLATOR_FUNC],
+                        field_val )
+                except ValueError as ve:
+                    print( ve )
+                    print( data_line )
+                    print( token_parse )
+                    raise(ve)
+                except TypeError as te:
+                    print( te )
+                    print( data_line )
+                    print( token_parse )
+                    raise(te)
+
+                
                 tokens.append(
                     [ field_name,
                       field_val,
                       translated_field_val]
                 )
                 # Update the start from the end of the last field
-                start_parse = end_parse            
         return section_code,sub_section_code
 
     def get_records(self):
         return self.record_objs
 
+    def translator_field_lookup(self, field_reference):
+        if self.field_translators is None:
+            return None
+        
+        field_translator_name = \
+            self.field_translators.field_reference_parse_lookup(
+                field_reference
+            )
+
+        return field_translator_name
+        
+    
     def translate_field(self, translator, val ):
         if self.field_translators is None:
             return val
-        field_translator = getattr(self.field_translators,translator)
-        return field_translator(val)
+        return translator(val)
