@@ -34,7 +34,7 @@ SUPPORTED=[
     ('U','R'), # Special Use Airspace    
 ]
 
-supported = SUPPORTED[1:2]
+supported = SUPPORTED[1:3]
 
 parser = RecordParser( ARINC424_INPUT_FILE, supported, STATS, Translators )
 parsed_record_dict = parser.get_records()

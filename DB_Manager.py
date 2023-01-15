@@ -69,17 +69,22 @@ class DB_ARINC_data:
         return self.insert_statements
 
     def _assemble_field(self, field_val):
+        # This value is the translated value after parsing
         translated_val = field_val[TRANSLATED_VAL_POS]
         ret_val = ''
         if isinstance( translated_val, str ):
-            if ret_val.isspace() or len(ret_val) == 0:                
+            if ret_val.isspace() or len(ret_val) == 0:            
                 ret_val = 'NULL'
             else:
                 ret_val =  "'" + translated_val.strip() +"'"
+        # To do, need to insert the text from a list by concatinating it
+        # then putting in quotes
         elif isinstance( translated_val, type([]) ):
             ret_val = "'" + field_val[RAW_VAL_POS] + "'"
         else:
+            # Assume here that everything is a number (float or int)
             ret_val = str(translated_val)
+            
         return ret_val
 
     
