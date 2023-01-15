@@ -79,7 +79,7 @@ FIELD_REFERENCES={
     '5.68'  : (noop,'varchar'),
     '5.69'  : (noop,'varchar'),
     '5.70'  : (noop,'varchar'),
-    '5.71'  : (func571,'char[30]'),
+    '5.71'  : (func571,'varchar'),
     '5.72'  : (noop,'varchar'),
     '5.73'  : (noop,'varchar'),
     '5.74'  : (noop,'varchar'),

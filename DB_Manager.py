@@ -64,26 +64,34 @@ class DB_ARINC_data:
                         self._assemble_field( field_val ) + ","
                 statement = statement[:-1] + ');' # Remove the trainling comma
                 self.insert_statements.append(statement)
-                print(statement)
                 self.index = self.index + 1
         return self.insert_statements
 
     def _assemble_field(self, field_val):
         # This value is the translated value after parsing
         translated_val = field_val[TRANSLATED_VAL_POS]
-        ret_val = ''
+        ret_val = None
         if isinstance( translated_val, str ):
-            if ret_val.isspace() or len(ret_val) == 0:            
+            ret_val =  translated_val.strip()
+            if ret_val == '' :
                 ret_val = 'NULL'
             else:
-                ret_val =  "'" + translated_val.strip() +"'"
+                ret_val = ret_val
+                ret_val = ret_val.replace("'","")
+                ret_val = "'" + ret_val + "'"
         # To do, need to insert the text from a list by concatinating it
         # then putting in quotes
         elif isinstance( translated_val, type([]) ):
-            ret_val = "'" + field_val[RAW_VAL_POS] + "'"
+            ret_val = str(field_val[RAW_VAL_POS])
+            ret_val = ret_val.replace("'","")
+            ret_val = "'" + ret_val + "'"
         else:
             # Assume here that everything is a number (float or int)
             ret_val = str(translated_val)
+            return ret_val
+        
+        if ret_val.isspace():
+            ret_val = 'NULL'
             
         return ret_val
 
@@ -144,4 +152,16 @@ class DB_connect:
             raise( error )
         
         return count
-        
+    
+    def commit(self):
+        try:
+            self.con.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            raise( error )
+    def close(self):
+        try:
+            self.con.close()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print( error )
+            raise( error )
+

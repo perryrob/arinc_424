@@ -34,7 +34,7 @@ SUPPORTED=[
     ('U','R'), # Special Use Airspace    
 ]
 
-supported = SUPPORTED[1:3]
+supported = SUPPORTED
 
 parser = RecordParser( ARINC424_INPUT_FILE, supported, STATS, Translators )
 parsed_record_dict = parser.get_records()
@@ -51,20 +51,22 @@ drop_statements = db_tables.table_drop_sql()
 
 db_connect = DB_connect()
 
-try:
-    for statement in drop_statements:
+
+for statement in drop_statements:
+    try:
         db_connect.exec( statement )        
-except Exception as e:
-    pass
+    except Exception as e:
+        pass
 
 for statement in create_statements:
-    db_connect.exec( statement )
+    db_connect.exec( statement,False )
 
 
 arinc_data = DB_ARINC_data( supported, ARINC_424_PARSE_DEF, parsed_record_dict )
 insert_arinc_data_list = arinc_data.create_inserts()
 
 for insert in insert_arinc_data_list:
-    print( parsed_record_dict[('D',' ')][0])
-    db_connect.exec( insert )
-    
+    db_connect.exec( insert, False )
+
+db_connect.commit()
+db_connect.close()
