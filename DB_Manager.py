@@ -61,24 +61,26 @@ class DB_ARINC_data:
                     str(self.index) + ','
                 for field_val in record:
                     statement = statement + \
-                        self._assemble_field( field_val ).strip()
-                statement = statement[:-1] + ');'
+                        self._assemble_field( field_val ) + ","
+                statement = statement[:-1] + ');' # Remove the trainling comma
                 self.insert_statements.append(statement)
+                print(statement)
                 self.index = self.index + 1
         return self.insert_statements
 
     def _assemble_field(self, field_val):
         translated_val = field_val[TRANSLATED_VAL_POS]
+        ret_val = ''
         if isinstance( translated_val, str ):
-            return "'" + translated_val +"',"
-        elif isinstance( translated_val, list ):
-            ret_val = "'"
-            for tok in field_val:
-                ret_val + str(tok) + ","
-            ret_val = ret_val[:-1]
-            return ret_val + "'"
+            if ret_val.isspace() or len(ret_val) == 0:                
+                ret_val = 'NULL'
+            else:
+                ret_val =  "'" + translated_val.strip() +"'"
+        elif isinstance( translated_val, type([]) ):
+            ret_val = "'" + field_val[RAW_VAL_POS] + "'"
         else:
-            return str(translated_val)+','
+            ret_val = str(translated_val)
+        return ret_val
 
     
 class DB_connect:
@@ -117,6 +119,8 @@ class DB_connect:
             print( statement )
             print( error )
             cur.execute('rollback;')
+            if commit:
+                self.con.commit()
             cur.close()
             raise( error )
 

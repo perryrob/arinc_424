@@ -62,6 +62,9 @@ for statement in create_statements:
 
 
 arinc_data = DB_ARINC_data( supported, ARINC_424_PARSE_DEF, parsed_record_dict )
-insert_arinc_data = arinc_data.create_inserts()
+insert_arinc_data_list = arinc_data.create_inserts()
 
-print( insert_arinc_data )
+for insert in insert_arinc_data_list:
+    print( parsed_record_dict[('D',' ')][0])
+    db_connect.exec( insert )
+    
