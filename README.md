@@ -5,7 +5,7 @@
 Do not use this as a primary source of navigation. It is for instructional and planning purposes only. Always verify with official sources.
 
 This python parser and database stuffer is designed to consume publicly
-available file from the [Government FAA Website](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/)
+available data files from the [Government FAA Website](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/)
 
 ## Requirements
 
