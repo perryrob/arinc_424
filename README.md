@@ -54,7 +54,7 @@ python arinc_parse.py
 You don't have to use the database simply comment out
 
 ``` Python
-b_connect = DB_connect()
+db_connect = DB_connect()
 
 
 for statement in drop_statements:
