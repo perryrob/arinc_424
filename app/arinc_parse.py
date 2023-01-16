@@ -1,11 +1,10 @@
+from parser.Parse import RecordParser
+from translator import Translators
 
-from Parser import RecordParser
-import Translators
+from translator.Translators import FIELD_REFERENCES
+from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
 
-from Translators import FIELD_REFERENCES
-from arinc_424_18_parser import ARINC_424_PARSE_DEF
-
-from DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
+from db.DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
 
 ARINC424_INPUT_FILE='/home/perryr/proj/cifp/cifp/FAACIFP18'
 last_vhf = None
