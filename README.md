@@ -47,3 +47,32 @@ update_cifp.sh
 python arinc_parse.py
 '''
 
+
+## Notes
+
+You don't have to use the database simply comment out
+
+'''
+b_connect = DB_connect()
+
+
+for statement in drop_statements:
+    try:
+        db_connect.exec( statement )        
+    except Exception as e:
+        pass
+
+for statement in create_statements:
+    db_connect.exec( statement,False )
+
+
+arinc_data = DB_ARINC_data( supported, ARINC_424_PARSE_DEF, parsed_record_dict )
+insert_arinc_data_list = arinc_data.create_inserts()
+
+for insert in insert_arinc_data_list:
+    db_connect.exec( insert, False )
+
+db_connect.commit()
+db_connect.close()
+
+'''
