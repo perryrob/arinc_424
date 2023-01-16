@@ -47,4 +47,7 @@ coverage.xml
 target/
 
 # CIFP Files
-cifp/
+cifp/**/CI*/
+cifp/**/FAA*/
+cifp/**/IN*/
+cifp/**/Not*/
