@@ -1,4 +1,4 @@
-from parser.Parse import RecordParser
+from parser.Parser import RecordParser
 from translator import Translators
 
 from translator.Translators import FIELD_REFERENCES
@@ -6,7 +6,7 @@ from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
 
 from db.DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
 
-ARINC424_INPUT_FILE='/home/perryr/proj/cifp/cifp/FAACIFP18'
+ARINC424_INPUT_FILE='cifp/FAACIFP18'
 last_vhf = None
 STATS={}
 

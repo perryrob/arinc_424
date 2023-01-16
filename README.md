@@ -7,7 +7,7 @@ available file from the [Government FAA Website](https://www.faa.gov/air_traffic
 
 To run this code you will need to install postgres for your appropriate operating system and make a connection available from where you run this python code. The default connection parameters in the code are:
 
-'''Python
+''' Python
 class DB_connect:
 
     def __init__(self, host='localhost',

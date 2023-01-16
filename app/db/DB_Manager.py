@@ -1,8 +1,8 @@
 
-from arinc_424_18_parser import ARINC_FIELD_NAME, FIELD_REFERENCE, IGNORE
-from Translators import SQL_TYPE
+from spec.arinc_424_18_parser import ARINC_FIELD_NAME, FIELD_REFERENCE, IGNORE
+from translator.Translators import SQL_TYPE
 
-from Parser import COLUMN_NAME_POS,RAW_VAL_POS, TRANSLATED_VAL_POS
+from parser.Parser import COLUMN_NAME_POS,RAW_VAL_POS, TRANSLATED_VAL_POS
 
 import psycopg2
 

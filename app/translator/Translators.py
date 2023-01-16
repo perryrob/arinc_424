@@ -3,7 +3,7 @@
 TRANSLATOR_FUNC=0
 SQL_TYPE=1
 
-from translator_funcs import *
+from translator.translator_funcs import *
 
 # The field references will also contian formatting for postgresql
 # ( format function to pass a singe arg, DB Column type )
