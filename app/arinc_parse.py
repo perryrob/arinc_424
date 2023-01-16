@@ -38,10 +38,6 @@ supported = SUPPORTED
 parser = RecordParser( ARINC424_INPUT_FILE, supported, STATS, Translators )
 parsed_record_dict = parser.get_records()
 
-#for record_key in supported:
-#    print(parsed_record_dict[record_key])
-
-
 db_tables = DB_ARINC_Tables( supported, ARINC_424_PARSE_DEF, FIELD_REFERENCES)
 
 create_statements = db_tables.table_create_sql()

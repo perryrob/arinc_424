@@ -7,7 +7,7 @@ available file from the [Government FAA Website](https://www.faa.gov/air_traffic
 
 To run this code you will need to install postgres for your appropriate operating system and make a connection available from where you run this python code. The default connection parameters in the code are:
 
-''' Python
+'''
 class DB_connect:
 
     def __init__(self, host='localhost',
@@ -19,7 +19,7 @@ class DB_connect:
 
 ## Installation of dependencies on Ubuntu
 
-'''Bash
+'''
 
 $ sudo apt install postgresql postgresql-contrib libpq-dev
 $ mkdir [target_dir]
@@ -32,5 +32,18 @@ $ pip install psycopg2
 
 Follow google instructions for setting up a "arinc_424" database for your user account on localhost.
 
+## Running
 
+* First get the latest CIFP file. Edit update_cifp after visiting the [Government FAA Website](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/)
+
+* then run:
+
+'''
+update_cifp.sh
+'''
+
+* Change to the app directory and run
+'''
+python arinc_parse.py
+'''
 
