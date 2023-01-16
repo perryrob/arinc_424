@@ -7,7 +7,8 @@ available file from the [Government FAA Website](https://www.faa.gov/air_traffic
 
 To run this code you will need to install postgres for your appropriate operating system and make a connection available from where you run this python code. The default connection parameters in the code are:
 
-'''
+``` Python
+
 class DB_connect:
 
     def __init__(self, host='localhost',
@@ -15,11 +16,11 @@ class DB_connect:
                  user='[USER]',
                  password='peer',
                  debug=False):
-'''
+```
 
 ## Installation of dependencies on Ubuntu
 
-'''
+```
 
 $ sudo apt install postgresql postgresql-contrib libpq-dev
 $ mkdir [target_dir]
@@ -27,7 +28,7 @@ $ python3 -m venv env
 $ source ./env/bin/activate
 $ pip install psycopg2
 
-'''
+```
 ## Setting up postgres
 
 Follow google instructions for setting up a "arinc_424" database for your user account on localhost.
@@ -38,21 +39,21 @@ Follow google instructions for setting up a "arinc_424" database for your user a
 
 * then run:
 
-'''
+```
 update_cifp.sh
-'''
+```
 
 * Change to the app directory and run
-'''
+```
 python arinc_parse.py
-'''
+```
 
 
 ## Notes
 
 You don't have to use the database simply comment out
 
-'''
+``` Python
 b_connect = DB_connect()
 
 
@@ -74,5 +75,4 @@ for insert in insert_arinc_data_list:
 
 db_connect.commit()
 db_connect.close()
-
-'''
+```
