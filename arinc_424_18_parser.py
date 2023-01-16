@@ -67,7 +67,7 @@ ARINC_424_PARSE_DEF = {
         [
             ('VOR'),
             ('record_type',1,'5.2'), # 5.2
-            ('CustomerAreaCode',3,'5.3'), # 5.3
+            ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
             ('subsection_code',1,'5.5'), # 5.5
             ('ICAO_id',4,'5.4'), # 5.4
