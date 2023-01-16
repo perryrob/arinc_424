@@ -56,15 +56,26 @@ class DB_ARINC_data:
             arinc_table_def = self.arinc_424_parse_def[section][subsection]
             records = self.records[(section,subsection)]
             table_name = arinc_table_def[0]
+            # Form the table column names for the insert statemetn
             for record in records:
-                statement = 'INSERT INTO ' + table_name + ' VALUES (' +\
+                statement = 'INSERT INTO ' + table_name + ' ( id, '
+                for field_val in record:
+                    statement = statement + field_val[COLUMN_NAME_POS] + ", "
+                # Remove trailing comma and space
+                statement = statement[:-2] + ' )'
+                # Form the values part tof the insert statement
+                statement = statement + ' VALUES ( ' +\
                     str(self.index) + ','
                 for field_val in record:
-                    statement = statement + \
-                        self._assemble_field( field_val ) + ","
-                statement = statement[:-1] + ');' # Remove the trainling comma
+                    statement = statement+\
+                        self._assemble_field( field_val ) + ", "
+                # Remove the trainling comma and space
+                statement = statement[:-2] + ');'
+                # Append this insert to the rest of the insert statements
                 self.insert_statements.append(statement)
+                # add one to the index to support inserting the ID
                 self.index = self.index + 1
+                
         return self.insert_statements
 
     def _assemble_field(self, field_val):

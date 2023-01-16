@@ -196,6 +196,78 @@ def func510(arg):
     ret_val = typ + ' ' + rwy + ' ' + desig + ' ' + mult
     return ret_val.strip()
 
+def func510(arg):
+    return arg.strip()
+
+def func511(arg):
+    return arg.strip()
+
+def func512(arg):
+    return arg.strip()
+
+def func513(arg):
+    return arg.strip()
+
+def func514(arg):
+    return arg.strip()
+
+def func515(arg):
+    return arg.strip()
+
+def func516(arg):
+    return arg.strip()
+
+def func517(arg):
+    return arg.strip()
+
+def func518(arg):
+    return arg.strip()
+
+def func519(arg):
+    return arg.strip()
+
+def func520(arg):
+    return arg.strip()
+
+def func521(arg):
+    return arg.strip()
+
+def func522(arg):
+    return arg.strip()
+
+def func522(arg):
+    return arg.strip()
+
+def func523(arg):
+    return arg.strip()
+
+def func524(arg):
+    try:
+        base = float(arg[0:3])
+        tenths = float(arg[3:4]) / 10
+        return base + tenths
+    except:
+        return -1.0
+    return 0
+
+def func525(arg):
+    return func524(arg)
+
+def func526(arg):
+    return func524(arg)
+
+def func527(arg):
+    return arg.strip()
+
+def func528(arg):
+    return arg.strip()
+
+def func529(arg):
+    return arg.strip()
+
+def func530(arg):
+    return arg.strip()
+
 def func531(arg):
     try:
         return int(arg)
@@ -279,11 +351,126 @@ def func537( arg ):
     except:
         return arg
 
+
+def func539(arg):
+    try:
+        ew = arg[0:1]
+        if ew == 'W':
+            ew = -1.0
+        elif ew == 'E':
+            ew = 1.0
+        elif ew == 'T':
+            return 0
+            
+        degs = float(arg[1:4])
+        tenths = float(arg[4:5]) / 10
+        return ew * (degs + tenths)
+    except:
+        return -1.0
+
+    
+def func538(arg):
+    return arg.strip()
+
 def func540( arg ):
     try:
         return float(arg)
     except:
         return arg
+
+def func541(arg):
+    return arg.strip()    
+    
+def func542(arg):
+    switch=[
+        {'C': 'Combined Named Intersection and RNAV',
+         'I' : 'Unnamed, Chart Intersection',
+         'N' : 'NDB Navaid as Waypoint',
+         'R' : 'Named Intersection',
+         'U' : 'Uncharted Airway Intersection',
+         'V' : 'VFR Waypoint',
+         'W' : 'RNAV Waypoint'},
+        {'A' : 'Final Approach Fix',
+         'B' : 'Initial and Final Approach Fix',
+         'C' : 'Final Approach Course Fix',
+         'D' : 'Intermediate Approach Fix',
+         'E' : 'Off-Route intersection in the FAA National Reference System',
+         'F' : 'Off Route Intersection',
+         'I' : 'Initial Approach Fix',
+         'K' : 'Final Approach Course Fixat Initial Approach Fix',
+         'L' : 'Final Approach Course at Intermediate Approach Fix',
+         'M' : 'Missed Approach Fix',
+         'N' : 'Initial Approach Fix and Missed Approach FIx',
+         'O' : 'Oceanic Entry/Exit Waypoint',
+         'P' : 'Pitch and Catch Point in the FAA High Altitude Redesign',
+         'S' : 'AACAA and SUA Waypoints in FAA High Altitude Redesign',
+         'U' : 'FIR/UIR or Controoled Airspace Intersection',
+         'V' : 'Latitude/Longitude Intersection, Full Degree of Latitude',
+         'W' : 'Latitude/Longitude Intersection, Half Degree of Latitude',
+         ' ' : ''},
+        {' ': ''}
+        ]
+    ret_val = []
+    for i in range(0,3):
+        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
+    return ret_val
+
+def func543(arg):
+    return arg.strip()
+
+def func544(arg):
+    return arg.strip()
+
+def func545(arg):
+    try:
+        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
+        return ret_val
+    except:
+        return -1.0
+
+def func546(arg):
+    return arg.strip()
+
+def func547(arg):
+    return arg.strip()
+
+def func548(arg):
+    return func531(arg)
+
+def func549(arg):
+    return arg.strip()
+
+def func550(arg):
+    return func531(arg)
+
+def func551(arg):
+    try:
+        deg = float(arg[0:1])
+        huns = float(arg[1:3])
+        return  deg+huns
+    except:
+        return -1.0
+
+def func552(arg):
+    return func551(arg)
+    
+def func553(arg):
+    try:
+        return int(arg)
+    except:
+        return -1
+    
+def func554(arg):
+    return func553(arg)
+
+def func555(arg):
+    return func553(arg)
+
+def func556(arg):
+    return arg.strip()
+
+def func557(arg):
+    return func553(arg)
 
 def func571(arg):
     return arg.strip()
@@ -317,7 +504,9 @@ def func566( arg ):
     except:
         return arg
 
-             
+def func5170(arg):
+    return arg.strip()
+
             
 def ndb_class( arg ):
     switch=[
@@ -366,40 +555,6 @@ def apt_ndb_class( arg ):
         ]
     ret_val = []
     for i in range(0,5):
-        ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
-    return ret_val
-
-def waypoint_type(arg):
-    switch=[
-        {'C': 'Combined Named Intersection and RNAV',
-         'I' : 'Unnamed, Chart Intersection',
-         'N' : 'NDB Navaid as Waypoint',
-         'R' : 'Named Intersection',
-         'U' : 'Uncharted Airway Intersection',
-         'V' : 'VFR Waypoint',
-         'W' : 'RNAV Waypoint'},
-        {'A' : 'Final Approach Fix',
-         'B' : 'Initial and Final Approach Fix',
-         'C' : 'Final Approach Course Fix',
-         'D' : 'Intermediate Approach Fix',
-         'E' : 'Off-Route intersection in the FAA National Reference System',
-         'F' : 'Off Route Intersection',
-         'I' : 'Initial Approach Fix',
-         'K' : 'Final Approach Course Fixat Initial Approach Fix',
-         'L' : 'Final Approach Course at Intermediate Approach Fix',
-         'M' : 'Missed Approach Fix',
-         'N' : 'Initial Approach Fix and Missed Approach FIx',
-         'O' : 'Oceanic Entry/Exit Waypoint',
-         'P' : 'Pitch and Catch Point in the FAA High Altitude Redesign',
-         'S' : 'AACAA and SUA Waypoints in FAA High Altitude Redesign',
-         'U' : 'FIR/UIR or Controoled Airspace Intersection',
-         'V' : 'Latitude/Longitude Intersection, Full Degree of Latitude',
-         'W' : 'Latitude/Longitude Intersection, Half Degree of Latitude',
-         ' ' : ''},
-        {' ': ''}
-        ]
-    ret_val = []
-    for i in range(0,3):
         ret_val.append(switch[i].get(arg[i],'UNK'+'/'+arg[i]))
     return ret_val
 
@@ -490,12 +645,6 @@ def cruise_table_ind(arg):
 
     return switch.get(arg,'UNK'+'/' + arg)
 
-def four_float_last_tenth(arg):
-    try:
-        ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
-        return ret_val
-    except:
-        return -1.0
 
 def three_float_last_tenth(arg):
     try:

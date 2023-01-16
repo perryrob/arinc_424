@@ -303,7 +303,7 @@ ARINC_424_PARSE_DEF = {
             ('ATC_indicator',1,'5.81'),
             ('altitude',5,'5.30'),
             ('altitude1',5,'5.30'),
-            ('transition_altitude',5,'5.33'),
+            ('transition_altitude',5,'5.53'),
             ('speed_limit',3,'5.72'),
             ('vertical_angle',4,'5.70'),
             ('center_fix_or_TAA_procedure_turn_indicator',5,'5.144'),
@@ -480,7 +480,7 @@ ARINC_424_PARSE_DEF = {
               ('ATC_indicator',1,'5.81'),
               ('altitude',5,'5.30'),
               ('altitude1',5,'5.30'),
-              ('transition_altitude',5,'5.33'),
+              ('transition_altitude',5,'5.53'),
               ('speed_limit',3,'5.72'),
               ('vertical_angle',4,'5.70'),
               ('center_fix_or_TAA_procedure_turn_indicator',5,'5.144'), # Or 5.271
@@ -535,7 +535,7 @@ ARINC_424_PARSE_DEF = {
               ('ATC_indicator',1,'5.81'),
               ('altitude',5,'5.30'),
               ('altitude1',5,'5.30'),
-              ('transition_altitude',5,'5.33'),
+              ('transition_altitude',5,'5.53'),
               ('speed_limit',3,'5.72'),
               ('vertical_angle',4,'5.70'),
               ('center_fix_or_TAA_procedure_turn_indicator',5,'5.144'), # Or 5.271
@@ -590,7 +590,7 @@ ARINC_424_PARSE_DEF = {
               ('ATC_indicator',1,'5.81'),
               ('altitude',5,'5.30'),
               ('altitude1',5,'5.30'),
-              ('transition_altitude',5,'5.33'),
+              ('transition_altitude',5,'5.53'),
               ('speed_limit',3,'5.72'),
               ('vertical_angle',4,'5.70'),
               ('center_fix_or_TAA_procedure_turn_indicator',5,'5.144'), # Or 5.271
