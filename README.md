@@ -1,5 +1,9 @@
 # arinc_424
 
+## Disclaimer
+
+Do not use this as a primary source of navigation. It is for instructional and planning purposes only. Always verify with official sources.
+
 This python parser and database stuffer is designed to consume publicly
 available file from the [Government FAA Website](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/)
 
@@ -76,3 +80,8 @@ for insert in insert_arinc_data_list:
 db_connect.commit()
 db_connect.close()
 ```
+
+## TODO
+
+* Handle continuations
+* Add more formatters
