@@ -1,5 +1,6 @@
 
 from spec.arinc_424_18_parser import ARINC_FIELD_NAME, FIELD_REFERENCE, IGNORE
+from spec.arinc_424_18_parser import SQL_TABLE, ADDITIONAL_SQL_LIST, SQL_DEF
 from translator.Translators import SQL_TYPE
 
 from parser.Parser import COLUMN_NAME_POS,RAW_VAL_POS, TRANSLATED_VAL_POS
@@ -20,7 +21,7 @@ class DB_ARINC_Tables:
         self.create_table_statements=[]
         for section, subsection in self.section_subsections:
             arinc_table_def = self.arinc_424_parse_def[section][subsection]
-            table_name = arinc_table_def[0]
+            table_name = arinc_table_def[SQL_DEF][SQL_TABLE]
             statement = 'CREATE TABLE ' + table_name + '( id integer, '
             for column in arinc_table_def[1:]:
                 column_name = column[ARINC_FIELD_NAME]
@@ -30,7 +31,14 @@ class DB_ARINC_Tables:
                 field_ref = column[FIELD_REFERENCE]
                 sql_type = self.field_references[field_ref][SQL_TYPE]
                 statement = statement + column_name + ' ' + sql_type + ','
-            statement = statement + 'PRIMARY KEY( id ));'
+            statement = statement + 'PRIMARY KEY( id ) '
+            # Load any additional table create statements here
+            for additional_statement in \
+                arinc_table_def[SQL_DEF][ADDITIONAL_SQL_LIST]:
+                statement = statement + additional_statement
+
+            statement = statement + ');'
+            
             self.create_table_statements.append(statement)
         return self.create_table_statements
 
@@ -38,8 +46,8 @@ class DB_ARINC_Tables:
         self.create_table_statements=[]
         for section, subsection in self.section_subsections:
             arinc_table_def = self.arinc_424_parse_def[section][subsection]
-            table_name = arinc_table_def[0]
-            statement = 'DROP TABLE ' + table_name
+            table_name = arinc_table_def[SQL_DEF][SQL_TABLE]
+            statement = 'DROP TABLE ' + table_name + ' CASCADE;'
             self.create_table_statements.append(statement)
         return self.create_table_statements
 
@@ -55,9 +63,11 @@ class DB_ARINC_data:
         for section, subsection in self.section_subsections:
             arinc_table_def = self.arinc_424_parse_def[section][subsection]
             records = self.records[(section,subsection)]
-            table_name = arinc_table_def[0]
+            table_name = arinc_table_def[SQL_DEF][SQL_TABLE]
             # Form the table column names for the insert statemetn
             for record in records:
+                # There are currently 3 assumed columns outside of the
+                # ARINC spec used to link up the data. It is id.
                 statement = 'INSERT INTO ' + table_name + ' ( id, '
                 for field_val in record:
                     statement = statement + field_val[COLUMN_NAME_POS] + ", "

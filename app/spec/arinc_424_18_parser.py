@@ -8,6 +8,10 @@ SUBSECTION_CODE='subsection_code'
 
 IGNORE=['blank','reserved']
 
+SQL_DEF=0
+SQL_TABLE=0
+ADDITIONAL_SQL_LIST=1
+
 ARINC_424_PARSE_DEF = {
     ' ':
     [
@@ -18,7 +22,7 @@ ARINC_424_PARSE_DEF = {
     'A': {
         'S': # (AS) Supported // Grid MORA
         [
-            ('MORA'),
+            ('MORA',[]),
             ('record_type',1,'5.2'),
             ('blank',3,'0'),
             ('section_code',1,'5.4'),
@@ -65,12 +69,12 @@ ARINC_424_PARSE_DEF = {
     'D':{
         ' ': # (D) Supported // VHF Navaid
         [
-            ('VOR'),
+            ('VOR',[]),
             ('record_type',1,'5.2'), # 5.2
             ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
             ('subsection_code',1,'5.5'), # 5.5
-            ('ICAO_id',4,'5.4'), # 5.4
+            ('ICAO_id',4,'5.6'), # 5.4
             ('ICAO_region_code',2,'5.14'), # 5.14
             ('blank',1,'0'),  
             ('VOR_id',4,'5.33'), # 5.33
@@ -96,7 +100,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'B': # (DB) Supported // NDB Navaids
         [
-            ('NDB'),
+            ('NDB',[]),
             ('record_type',1,'5.2'), # 5.2
             ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
@@ -126,7 +130,7 @@ ARINC_424_PARSE_DEF = {
     'E':{ # Enroute
         'A': # (EA) Supported // Enroute Waypoint
         [
-            ('ENROUTE_WAYPOINT'),
+            ('WAYPOINT',[]),
             ('record_type',1,'5.2'), # 5.2
             ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
@@ -156,7 +160,16 @@ ARINC_424_PARSE_DEF = {
         ],
         'R': # (ER) Supeported // Airways
         [ 
-            ('AIRWAY'),
+            ('AIRWAY', [
+                ',vor_id integer,',
+                'waypoint_id integer,',
+                'constraint vor_id foreign key(vor_id) '+\
+                'references vor(id) '+\
+                'on delete set null, ',
+                'constraint waypoint_id foreign key(waypoint_id) '+\
+                'references waypoint(id) '+\
+                'on delete set null',
+            ]),
             ('record_type',1,'5.2'), # 5.2
             ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
@@ -200,7 +213,7 @@ ARINC_424_PARSE_DEF = {
     'H': {
         'A': # (HA) Supported // Airports and heliport
         [
-            ('HELIPORT'),
+            ('HELIPORT',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -236,7 +249,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'C': # (HC) Supported // Terminal Waypoints
         [
-            ('HELIPORT_TERMINAL_WAYPOINT'),
+            ('HELIPORT_TERMINAL_WAYPOINT',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -266,7 +279,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'F': # (HF) Supported // Approaches, including LOS continuation records
         [
-            ('HELIPORT_APPROACHES'),
+            ('HELIPORT_APPROACHES',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -321,7 +334,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'S': # (HS) Supported // MSA Records
         [
-            ('HELIPORT_MSA'),
+            ('HELIPORT_MSA',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -376,7 +389,7 @@ ARINC_424_PARSE_DEF = {
     {
         'A': # (PA) Supported // Airports and heliport
         [
-            ('AIRPORT'),
+            ('AIRPORT',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -413,7 +426,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'C': # (PC) Supported // Terminal Waypoints
         [
-            ('AIRPORT_TERMINAL_WAYPOINT'),
+            ('AIRPORT_TERMINAL_WAYPOINT',[]),
             ('record_type',1,'0'),
             ('area_code',3,'0'),
             ('section_code',1,'0'),
@@ -443,7 +456,7 @@ ARINC_424_PARSE_DEF = {
         ],
         'D': # (PD) Supported // SIDs
           [
-              ('SID'),
+              ('SID',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -498,7 +511,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'E': # (PE) Supported // STARs
           [
-              ('STAR'),
+              ('STAR',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -553,7 +566,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'F': # (PF) Supported // Approaches, including LOS continuation records
           [
-              ('APPROACH'),
+              ('APPROACH',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -608,7 +621,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'G': # (PG) Supported // Runways
           [
-              ('RUNWAY'),
+              ('RUNWAY',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -643,7 +656,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'I': # (PI) Supported // Localizer and Glide Slope Records
           [
-              ('LOCALIZER'),
+              ('LOCALIZER',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -680,7 +693,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'N': # (PN) Supported // Terminal Navaids
           [
-              ('AIRPORT_TERMINAL_NAVAID'),
+              ('AIRPORT_TERMINAL_NAVAID',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -707,7 +720,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'P': # (PP) Supported // Path Point Records, Primary and Continuation
           [
-              ('AIRPORT_PATHPOINT'),
+              ('AIRPORT_PATHPOINT',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -742,7 +755,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'S': # (PS) Supported // MSA Records 
           [
-              ('AIRPORT_MSA'),
+              ('AIRPORT_MSA',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -788,7 +801,7 @@ ARINC_424_PARSE_DEF = {
     'U':{
         'C': # (UC) Supported // Class B,C and D Airspace
         [
-            ('CONTROLLED_AIRSPACE'),
+            ('CONTROLLED_AIRSPACE',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
@@ -825,12 +838,12 @@ ARINC_424_PARSE_DEF = {
         ],
         'R': # (UR) Supported // Special Use Airspace, Primary and Continuation
         [
-            ('SPECIAL_AIRSPACE'),
+            ('SPECIAL_AIRSPACE',[]),
             ('record_type',1,'5.2'),
             ('area_code',3,'5.3'),
             ('section_code',1,'5.4'),
             ('subsection_code',1,'5.5'),
-            ('ICAO_region_code',2,'5.4'),
+            ('ICAO_region_code',2,'5.14'),
             ('restrictive_type',1,'5.128'),
             ('restrictive_airspace_designation',10,'5.129'),
             ('multiple_code',1,'5.130'),

@@ -1,0 +1,14 @@
+
+# Link up airway with waypoints
+
+update airway A set waypoint_id = ( select id from waypoint B where A.fix_id = B.waypoint_id );
+
+# Link up airway with vor
+
+update airway A set vor_id = ( select id from vor B where A.fix_id = B.VOR_id ); 
+
+#  Join airway, waypoints and navaids
+
+select A.route_id, V.longitude, V.latitude, W.latitude, W.longitude from airway A left join vor V on A.vor_id = V.id left join waypoint W on A.waypoint_id = W.id where A.route_id = 'V395';
+
+select A.route_id, V.longitude, V.latitude, W.latitude, W.longitude, W.waypoint_id, V.vor_id,A.sequence,A.minimum_altitude from airway A left join vor V on A.vor_id = V.id left join waypoint W on A.waypoint_id = W.id where A.route_id = 'V66';

@@ -17,95 +17,16 @@ def func53(arg):
     return arg.strip()
 
 def func54( arg ):
-    switch={
-        'A':'MORA',
-        'D':'Navaid',
-        'E':'Enroute',
-        'H':'Heliport',
-        'P':'Airport',
-        'R':'Company Route',
-        'T':'Tables',
-        'U':'Airspace'
-    }
     global SECTION_SUBSECTION
     if SECTION_SUBSECTION[0] is None:
         SECTION_SUBSECTION[0]=arg
-    return switch.get(arg,'UNK')
+    return arg
 
 def func55( arg ):
-    switch={
-        'A':
-        {
-            'S': 'Grid MORA'
-        },
-        'D':
-        {
-            ' ' : 'VHF Navaid',
-            'B' : 'NDB'
-        },
-        'E':
-        {
-            'A' : 'Waypoint',
-            'M' : 'Marker',
-            'P' : 'Hold',
-            'R' : 'Airways',
-            'T' : 'Preferred',
-            'U' : 'Restrictions',
-            'V' : 'Communication'
-        },
-        'H':
-        {
-            'A' : 'Pad',
-            'C' : 'Waypoint',
-            'D' : 'SID',
-            'E' : 'STAR',
-            'F' : 'Approach',
-            'K' : 'TAA',
-            'S' : 'MSA',
-            'V' : 'Communication'
-        },
-        'P':
-        {
-            'A': 'Reference',
-            'B': 'Gate',
-            'C': 'Waypoint',
-            'D': 'SID',
-            'E': 'STAR',
-            'F': 'Approach',
-            'G': 'Runway',
-            'I': 'Localizer',
-            'K': 'TAA',
-            'L': 'MLS',
-            'M': 'Marker',
-            'N': 'NDB',
-            'P': 'Path',
-            'R': 'ARR_DEP',
-            'S': 'MSA',
-            'T': 'GLS',
-            'V': 'Communication'
-        },
-        'R':
-        {
-            ' ': 'Company',
-            'A': 'Alternate',            
-        },
-        'T':
-        {
-            'C' : 'Cruising',
-            'G' : 'GEO'
-        },
-        'U':
-        {
-            'C': 'Controlled',
-            'F': 'FIR_UIR',
-            'R': 'Restricted'
-        }
-    }
     global SECTION_SUBSECTION
     if SECTION_SUBSECTION[1] is None:
         SECTION_SUBSECTION[1]=arg
-    return switch.get(SECTION_SUBSECTION[0]).get(
-        arg,'UNK')
+    return arg
 
 
 def func56(arg):
