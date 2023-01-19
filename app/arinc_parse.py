@@ -23,13 +23,13 @@ SUPPORTED=[
     ('H','F'), # Approaches
     ('H','S'), # MSA
     ('P','A'), # Airports
+    ('P','I'), # Localizer
+    ('P','N'), # airport Navaid
+    ('P','P'), # airport waypoint
     ('P','D'), # SID
     ('P','E'), # STAR
     ('P','F'), # Approaches
     ('P','G'), # Runways
-    ('P','I'), # Localizer
-    ('P','N'), # Terminal Navaid
-    ('P','P'), # Path Point
     ('P','S'), # MSA
     ('U','C'), # CLASS B,C and D Airsapce
     ('U','R'), # Special Use Airspace    
@@ -55,7 +55,8 @@ for statement in drop_statements:
     try:
         db_connect.exec( statement )        
     except Exception as e:
-        pass
+        print('\t Ignored!')
+        
 print('Creating new empty tables...')
 for statement in create_statements:
     db_connect.exec( statement )
