@@ -105,7 +105,7 @@ ARINC_424_PARSE_DEF = {
             ('area_code',3,'5.3'), # 5.3
             ('section_code',1,'5.4'), # 5.4
             ('subsection_code',1,'5.5'), # 5.5
-            ('airport_ICAO_id',4,'5.6'), # 5.6
+            ('airport_id',4,'5.6'), # 5.6
             ('ICAO_region_code',2,'5.14'), # 5.14
             ('blank',1,'0'), 
             ('NDB_id',4,'5.33'), # 5.33
@@ -425,62 +425,41 @@ ARINC_424_PARSE_DEF = {
             ('reserved',4,'0'),
             ('name',30,'5.71'),
             ('record_number',5,'5.31'),
-            ('cycle_date',4,'5.32','18')
+            ('cycle_date',4,'5.32')
         ],
         'C': # (PC) Supported // Airport Waypoints
         [
-            ('AIRPORT_WAYPOINT',[
-                ',airport_id integer, '+\
-                  'constraint navaid_id foreign key(navaid_id) '+\
-                  'references airport_navaid(id) '+\
-                  'on delete set null ',
-            ]),
-            ('record_type',1,'0'),
-            ('area_code',3,'0'),
-            ('section_code',1,'0'),
-            ('subsection_code',1,'0'),
-            ('region_code',4,'0'),
-            ('ICAO_region_code',2,'0'),
-            ('subsection',1,'0'),
-            ('waypoint_id',5,'0'),
+            ('AIRPORT_WAYPOINT',[] ),
+            ('record_type',1,'5.2'),
+            ('area_code',3,'5.3'),
+            ('section_code',1,'5.4'),
+            ('subsection_code',1,'5.5'),
+            ('region_code',4,'5.41'),
+            ('ICAO_region_code',2,'5.14'),
+            ('subsection',1,'5.5'),
+            ('waypoint_id',5,'5.13'),
             ('blank',1,'0'),
-            ('waypoint_ICAO_region_code',2,'0'),
-            ('continuation_number',1,'0'),
+            ('waypoint_ICAO_region_code',2,'5.14'),
+            ('continuation_number',1,'5.16'),
             ('blank',4,'0'),
-            ('waypoint_type',3,'0'),
-            ('waypoint_usage',2,'0'),
+            ('waypoint_type',3,'5.42'),
+            ('waypoint_usage',2,'5.82'),
             ('blank',1,'0'),
-            ('latitude',9,'0'),
-            ('longitude',10,'0'),
+            ('latitude',9,'5.36'),
+            ('longitude',10,'5.37'),
             ('blank',23,'0'),
-            ('dynamic_mag_variation',5,'0'),
+            ('dynamic_mag_variation',5,'5.39'),
             ('reserved',5,'0'),
-            ('datum',3,'0'),
+            ('datum',3,'5.197'),
             ('reserved',8,'0'),
-            ('name_format_indicator',3,'0'),
-            ('waypoint_name_description',25,'0'),
-            ('record_number',5,'0'),
-            ('cycle_date',4,'0','20')
+            ('name_format_indicator',3,'5.196'),
+            ('waypoint_name_description',25,'5.43'),
+            ('record_number',5,'5.31'),
+            ('cycle_date',4,'5.32')
         ],
         'D': # (PD) Supported // SIDs
           [
-              ('SID',[
-                  ',airport_fid integer,'+\
-                  'navaid_id integer,'+\
-                  'waypoint_id integer,',
-
-                  'constraint airport_fid foreign key(airport_fid) '+\
-                  'references airport(id) '+\
-                  'on delete set null, ',
-                  
-                  'constraint navaid_id foreign key(navaid_id) '+\
-                  'references airport_navaid(id) '+\
-                  'on delete set null, ',
-                
-                  'constraint waypoint_id foreign key(waypoint_id) '+\
-                  'references airport_waypoint(id) '+\
-                  'on delete set null'
-              ]),
+              ('SID',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -535,23 +514,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'E': # (PE) Supported // STARs
           [
-              ('STAR',[
-                  ',airport_fid integer,'+\
-                  'navaid_id integer,'+\
-                  'waypoint_id integer,',
-
-                  'constraint airport_fid foreign key(airport_fid) '+\
-                  'references airport(id) '+\
-                  'on delete set null, ',
-                  
-                  'constraint navaid_id foreign key(navaid_id) '+\
-                  'references airport_navaid(id) '+\
-                  'on delete set null, ',
-                
-                  'constraint waypoint_id foreign key(waypoint_id) '+\
-                  'references airport_waypoint(id) '+\
-                  'on delete set null'
-              ]),
+              ('STAR',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -606,23 +569,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'F': # (PF) Supported // Approaches, including LOS continuation records
           [
-              ('APPROACH',[
-                  ',airport_fid integer,'+\
-                  'navaid_id integer,'+\
-                  'waypoint_id integer,',
-
-                  'constraint airport_fid foreign key(airport_fid) '+\
-                  'references airport(id) '+\
-                  'on delete set null, ',
-                  
-                  'constraint navaid_id foreign key(navaid_id) '+\
-                  'references airport_navaid(id) '+\
-                  'on delete set null, ',
-                
-                  'constraint waypoint_id foreign key(waypoint_id) '+\
-                  'references airport_waypoint(id) '+\
-                  'on delete set null'
-              ]),
+              ('APPROACH',[]),
               ('record_type',1,'5.2'),
               ('area_code',3,'5.3'),
               ('section_code',1,'5.4'),
@@ -630,7 +577,7 @@ ARINC_424_PARSE_DEF = {
               ('airport_id',4,'5.6'),
               ('facility_ICAO_region_code',2,'5.14'),
               ('subsection_code',1,'5.5'),
-              ('SIDSTAR_approach_id',6,'5.9'), # 5.10 too
+              ('approach_id',6,'5.9'), # 5.10 too
               ('route_type',1,'5.7'),
               ('transition_id',5,'5.11'),
               ('blank',1,'0'),
@@ -718,9 +665,9 @@ ARINC_424_PARSE_DEF = {
         'I': # (PI) Supported // Localizer and Glide Slope Records
           [
               ('LOCALIZER',[
-                  ',airport_fid integer,'+\
-                  'constraint airport_fid foreign key(airport_fid) '+\
-                  'references airport(id) '+\
+                  ',runway_fid integer,'+\
+                  'constraint runway_fid foreign key(runway_fid) '+\
+                  'references runway(id) '+\
                   'on delete set null ',
               ]),
               ('record_type',1,'5.2'),
@@ -759,7 +706,7 @@ ARINC_424_PARSE_DEF = {
           ],
         'N': # (PN) Supported // Terminal Navaids
           [
-              ('AIRPORT_NAVAID',[
+              ('AIRPORT_NDB',[
                   ',airport_fid integer,'+\
                   'constraint airport_fid foreign key(airport_fid) '+\
                   'references airport(id) '+\
@@ -804,11 +751,11 @@ ARINC_424_PARSE_DEF = {
               ('airport_id',4,'5.6'),
               ('LandingFacilityIcaoRegionCode',2,'5.14'),
               ('subsection_code',1,'5.5'),
-              ('ApproachProcedureIdent',6,'5.10'),
-              ('RunwayOrHelipadIdentifier',5,'5.46'), # Could be 5.180
+              ('approach_id',6,'5.10'),
+              ('runway_id',5,'5.46'), # Could be 5.180
               ('OperationType',2,'5.223'),
               ('continuation_number',1,'5.16'),
-              ('RouteIndicator',1,'5.224'),
+              ('route_id',1,'5.224'),
               ('SBASServiceProviderIdentifier',2,'5.255'),
               ('ReferencePathDataSelector',2,'5.256'),
               ('ReferencePathIdentifier',4,'5.257'),

@@ -23,23 +23,19 @@ SUPPORTED=[
     ('H','F'), # Approaches
     ('H','S'), # MSA
     ('P','A'), # Airports
+    ('P','G'), # Runways
     ('P','I'), # Localizer
     ('P','N'), # airport Navaid
     ('P','P'), # airport waypoint
     ('P','D'), # SID
     ('P','E'), # STAR
     ('P','F'), # Approaches
-    ('P','G'), # Runways
     ('P','S'), # MSA
     ('U','C'), # CLASS B,C and D Airsapce
     ('U','R'), # Special Use Airspace    
 ]
 
 supported = SUPPORTED
-
-print('parsing the raw data....')
-parser = RecordParser( ARINC424_INPUT_FILE, supported, STATS, Translators )
-parsed_record_dict = parser.get_records()
 
 db_tables = DB_ARINC_Tables( supported, ARINC_424_PARSE_DEF, FIELD_REFERENCES)
 
@@ -56,11 +52,15 @@ for statement in drop_statements:
         db_connect.exec( statement )        
     except Exception as e:
         print('\t Ignored!')
-        
+
 print('Creating new empty tables...')
 for statement in create_statements:
     db_connect.exec( statement )
 
+
+print('parsing the raw data....')
+parser = RecordParser( ARINC424_INPUT_FILE, supported, STATS, Translators )
+parsed_record_dict = parser.get_records()
 
 print('Building insert statements')
 arinc_data = DB_ARINC_data( supported, ARINC_424_PARSE_DEF, parsed_record_dict )
@@ -71,7 +71,8 @@ for insert in insert_arinc_data_list:
     db_connect.exec( insert, False )
 
 print('Running post create sql to link up the foreign keys...')
-for sql in POST_CREATE_SQL:
+for msg,sql in POST_CREATE_SQL:
+    print('\t' + msg)
     db_connect.exec( sql )
 
 print('Committing changes.') 
