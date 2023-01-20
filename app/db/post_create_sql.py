@@ -16,7 +16,7 @@ POST_CREATE_SQL=[
     ('Link up the airport NDBs',
     'update airport_ndb N set airport_fid = (select id from airport A where N.airport_id = A.airport_id);'),
 
-    ('Link up the MSA',
+    ('Link up the MSAs',
     'update airport_msa M set airport_fid = (select id from airport A where A.airport_id = M.airport_id);')
 
 

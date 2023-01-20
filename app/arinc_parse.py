@@ -2,6 +2,9 @@ from parser.Parser import RecordParser
 from translator import Translators
 
 from translator.Translators import FIELD_REFERENCES
+
+import sys
+
 from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
 
 from db.DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
@@ -67,8 +70,14 @@ arinc_data = DB_ARINC_data( supported, ARINC_424_PARSE_DEF, parsed_record_dict )
 insert_arinc_data_list = arinc_data.create_inserts()
 
 print('Inserting data into the DB..')
+count=0
 for insert in insert_arinc_data_list:
+    count = count + 1
+    if divmod(count,10000)[1] == 0:
+        print('<>',end='')
+        sys.stdout.flush()
     db_connect.exec( insert, False )
+print('!')
 
 print('Running post create sql to link up the foreign keys...')
 for msg,sql in POST_CREATE_SQL:
