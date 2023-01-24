@@ -1,34 +1,60 @@
 
-from geo_json.build_json import VOR
+from geo_json.build_json import VOR,NDB
 
 from geojson import FeatureCollection, dump
 from geo_json.build_kml import kml_conversion
 
 from db.DB_Manager import DB_connect
+from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
+
 
 if __name__ == '__main__':
     db_connect = DB_connect()
     conn = db_connect.get_connection()
     cursor = conn.cursor()
-
-    cursor.execute('''
-    select DME_longitude,DME_latitude,vor_id,frequency,declination from vor where DME_longitude is not NULL and navaid_class like 'V%'
-    ''')
+    
+    cursor.execute(FEATURE_SQL_QUERIES['VORS'][FEATURE_SQL])
+    feature_values = FEATURE_SQL_QUERIES['VORS'][FEATURE_VALUES]
 
     vors = cursor.fetchall()
+    
     collection = []
-
+    
     for vor in vors:
         
-        center = (vor[0],vor[1])
+        center = (vor[feature_values['longitude']],
+                      vor[feature_values['latitude']])
         collection.append(VOR(radius=2.5,
                               segments=36,
                               center=center,
-                              variation=vor[4],
-                              properties={'name':vor[2],
-                                          'frequency':vor[3]
-                                          }))
+                              variation=vor[feature_values['declination']],
+                              properties={
+                                  'name':vor[feature_values['name']],
+                                  'frequency':vor[feature_values['frequency']]
+                              }))
 
+    cursor.close()
+    cursor = conn.cursor()
+
+    cursor.execute(FEATURE_SQL_QUERIES['NDBS'][FEATURE_SQL])
+    feature_values = FEATURE_SQL_QUERIES['NDBS'][FEATURE_VALUES]
+                      
+    ndbs = cursor.fetchall()
+
+    for ndb in ndbs:
+        center = (ndb[feature_values['longitude']],
+                  ndb[feature_values['latitude']])
+
+        collection.append(NDB(radius=1,
+                              segments=20,
+                              center=center,
+                              properties={
+                                  'name':ndb[feature_values['name']],
+                                  'frequency':ndb[feature_values['frequency']]
+                              }))
+
+
+        
     conn.commit()
     conn.close()
     

@@ -161,9 +161,11 @@ ARINC_424_PARSE_DEF = {
         'R': # (ER) Supeported // Airways
         [ 
             ('AIRWAY', [
-                ',vor_id integer,',
-                
+                ',longitude double precision,',
+                'latitude double precision,',
+                'vor_id integer,',
                 'waypoint_id integer,',
+                'ndb_id integer,',
                 
                 'constraint vor_id foreign key(vor_id) '+\
                 'references vor(id) '+\
@@ -172,6 +174,11 @@ ARINC_424_PARSE_DEF = {
                 ',constraint waypoint_id foreign key(waypoint_id) '+\
                 'references waypoint(id) '+\
                 'on delete set null',
+
+                ',constraint ndb_id foreign key(ndb_id) '+\
+                'references ndb(id) '+\
+                'on delete set null',
+
             ]),
             ('record_type',1,'5.2'), # 5.2
             ('area_code',3,'5.3'), # 5.3

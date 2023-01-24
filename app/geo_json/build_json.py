@@ -38,4 +38,31 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
     gc = GeometryCollection( geometry_collection , properties=properties)
     return Feature(geometry=gc)
 
+def NDB( radius=1, segments=36, center=(0,0), properties={} ):
+
+    geometry_collection = [
+        Polygon(
+            circle_center_polygon(radius, segments, center),
+            properties={'line_color':'aqua',
+                        'line_width':0,
+                        'fill_color':'aqua',
+                        'alpha':100,
+                        'name':properties['name'],
+                        'description':properties['frequency']
+                        }
+        ),
+        Polygon(
+            circle_center_polygon(0.25, 4, center, 0),
+            properties={'line_color':'black',
+                        'line_width':1,
+                        'fill_color':'black',
+                        'alpha':100,
+                        'name':properties['name'],
+                        'description':properties['frequency']
+                        }
+        )
+    ]
+    gc = GeometryCollection( geometry_collection , properties=properties)
+    return Feature(geometry=gc)
+
 

@@ -77,7 +77,12 @@ for insert in insert_arinc_data_list:
     if divmod(count,10000)[1] == 0:
         print('<>',end='')
         sys.stdout.flush()
-    db_connect.exec( insert, False )
+    try:        
+        db_connect.exec( insert, False )
+    except Exception as e:
+        print('!',end='')
+        sys.stdout.flush()
+        
 print('!')
 
 print('Running post create sql to link up the foreign keys...')

@@ -199,8 +199,13 @@ def func533(arg):
     return arg.strip()
 
 def func534( arg ):
-    base = arg[0:3]
-    dec = arg[3:5]
+    global SECTION_SUBSECTION
+    if SECTION_SUBSECTION is ['D',' ']:
+        base = arg[0:3]
+        dec = arg[3:5]
+    else:
+        base = arg[0:4]
+        dec = arg[4:5]
     return float(base + '.'+dec)
 
 
