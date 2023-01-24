@@ -157,7 +157,7 @@ class DB_connect:
                 self.con.commit()
             cur.close()
             raise( error )
-
+    
     def exec_from_list(self, statements=[], commit=True):
         count = 0
         try:

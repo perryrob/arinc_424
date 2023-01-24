@@ -56,6 +56,7 @@ for statement in drop_statements:
     except Exception as e:
         print('\t Ignored!')
 
+        
 print('Creating new empty tables...')
 for statement in create_statements:
     db_connect.exec( statement )
