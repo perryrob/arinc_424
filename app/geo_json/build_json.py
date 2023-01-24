@@ -65,4 +65,48 @@ def NDB( radius=1, segments=36, center=(0,0), properties={} ):
     gc = GeometryCollection( geometry_collection , properties=properties)
     return Feature(geometry=gc)
 
+def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
+    p = Polygon(
+        circle_center_polygon(radius, segments, center),
+        properties={'line_color':'black',
+                    'line_width':1,
+                    'fill_color':'black',
+                    'alpha':200,
+                    'name':properties['name'],
+                    }
+    )
+    return Feature(geometry=p)
 
+def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
+
+    if route_id is None:
+        geometry_collection=[]
+        for route_id in airways.keys():
+            if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
+                continue # ignore
+            try:                
+                geometry_collection.append(
+                    LineString(
+                        airways[route_id],
+                        properties={'line_color':'black',
+                                    'line_width':2,
+                                    'fill_color':'black',
+                                    'alpha':255,
+                                    'name':route_id,
+                                    }
+                    )
+                )
+            except Exception as e:
+                print( e )
+                print('err',route_id, airways[route_id])
+                
+        gc = GeometryCollection( geometry_collection ,
+                                 properties=properties)
+        return Feature(geometry=gc)
+    
+    if route_id in airways.keys():
+        points = airways[route_id].append(center)
+    else:
+        airways[route_id]=[center]
+
+    return airways

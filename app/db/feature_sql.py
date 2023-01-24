@@ -16,7 +16,15 @@ FEATURE_SQL_QUERIES={
         'name':2,
         'frequency':3,
         }),
-    'AIRWAY_NAMES':('''select distinct(route_id)) from airway''',{
-        'route_id':0
-        })
-    }
+    'WAYPOINTS':('''select  longitude, latitude,waypoint_id from waypoint''',{
+        'longitude':0,
+        'latitude':1,
+        'name':2,
+    }),
+    'AIRWAYS':('''select route_id, sequence, longitude, latitude from airway order by route_id,sequence''',{
+        'name':0,
+        'sequence':1,
+        'longitude':2,
+        'latitude':3
+    })
+}

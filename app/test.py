@@ -1,5 +1,5 @@
 
-from geo_json.build_json import VOR,NDB
+from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY
 
 from geojson import FeatureCollection, dump
 from geo_json.build_kml import kml_conversion
@@ -34,8 +34,8 @@ if __name__ == '__main__':
                               }))
 
     cursor.close()
-    cursor = conn.cursor()
 
+    cursor = conn.cursor()
     cursor.execute(FEATURE_SQL_QUERIES['NDBS'][FEATURE_SQL])
     feature_values = FEATURE_SQL_QUERIES['NDBS'][FEATURE_VALUES]
                       
@@ -53,8 +53,49 @@ if __name__ == '__main__':
                                   'frequency':ndb[feature_values['frequency']]
                               }))
 
+    cursor.close()
+    
+    cursor = conn.cursor()
+    cursor.execute(FEATURE_SQL_QUERIES['WAYPOINTS'][FEATURE_SQL])
+    feature_values = FEATURE_SQL_QUERIES['WAYPOINTS'][FEATURE_VALUES]
+                      
+    wps = cursor.fetchall()
 
+    for wp in wps:
+        center = (wp[feature_values['longitude']],
+                  wp[feature_values['latitude']])
+
+        collection.append(WAYPOINT(radius=0.25,
+                                   segments=3,
+                                   center=center,
+                                   properties={
+                                       'name':wp[feature_values['name']],
+                                   }))
+
+
+    cursor.close()
+    
+    cursor = conn.cursor()
+    cursor.execute(FEATURE_SQL_QUERIES['AIRWAYS'][FEATURE_SQL])
+    feature_values = FEATURE_SQL_QUERIES['AIRWAYS'][FEATURE_VALUES]
+                      
+    wps = cursor.fetchall()
+
+    airways = {}
+    
+    for wp in wps:
+        center = (wp[feature_values['longitude']],
+                  wp[feature_values['latitude']])
         
+        AIRWAY(airways,
+               route_id = wp[feature_values['name']],
+               center=center,
+               properties={
+                   'name':wp[feature_values['name']],
+               })
+    
+    collection.append( AIRWAY( airways, None, None, None))
+                        
     conn.commit()
     conn.close()
     
