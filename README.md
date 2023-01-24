@@ -11,7 +11,7 @@ available data files from the [Government FAA Website](https://www.faa.gov/air_t
 
 There are currently 2 programs in app. arinc_424_18_parser.py and test.py. The first parses the CIFP data and the second one, test.py creates a geojson and kml file that display NDBs, VORs, waypoints and airways.
 
-![Google Earth](url "https://github.com/perryrob/arinc_424/blob/main/img/TUS_nav.png")
+![Google Earth](url "https://github.com/perryrob/arinc_424/img/TUS_nav.png")
 
 ## Requirements
 
