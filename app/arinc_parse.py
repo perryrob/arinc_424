@@ -11,7 +11,8 @@ from db.DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
 
 from db.post_create_sql import POST_CREATE_SQL
 
-ARINC424_INPUT_FILE='cifp/FAACIFP18'
+from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
+
 last_vhf = None
 STATS={}
 
