@@ -7,6 +7,12 @@ Do not use this as a primary source of navigation. It is for instructional and p
 This python parser and database stuffer is designed to consume publicly
 available data files from the [Government FAA Website](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/)
 
+## Useage
+
+There are currently 2 programs in app. arinc_424_18_parser.py and test.py. The first parses the CIFP data and the second one, test.py creates a geojson and kml file that display NDBs, VORs, waypoints and airways.
+
+![Google Earth](url "https://github.com/perryrob/arinc_424/blob/main/img/TUS_nav.png")
+
 ## Requirements
 
 To run this code you will need to install postgres for your appropriate operating system and make a connection available from where you run this python code. The default connection parameters in the code are:
