@@ -60,7 +60,7 @@ python app/build_geojson_kml.py
 
 ```
 
-#D DB Tables Created
+## DB Tables Created
 
 ```
  Schema |        Name         
