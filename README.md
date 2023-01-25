@@ -1,4 +1,4 @@
-# arinc_424
+# Arinc 424 Parser to GEOJson and KML
 
 ## Disclaimer
 
