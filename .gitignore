@@ -51,3 +51,5 @@ app/cifp/CI*
 app/cifp/FAA*
 app/cifp/IN*
 app/cifp/Not*
+ARINC_DATA_FILE.kml
+ARINC_DATA_FILE.geojson

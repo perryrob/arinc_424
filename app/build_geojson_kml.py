@@ -9,8 +9,6 @@ from geo_json.build_kml import kml_conversion
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
 
-from CONFIG import ARINC_DATA_FILE
-
 if __name__ == '__main__':
 
     db_connect = DB_connect()
@@ -107,7 +105,7 @@ if __name__ == '__main__':
 
     kml = kml_conversion( f_collection )
 
-    kml.save( path.join('/tmp','ARINC_DATA_FILE.kml') )
+    kml.save( 'ARINC_DATA_FILE.kml' )
     
-    with open(path.join('/tmp','ARINC_DATA_FILE.geojson'),'w') as f:
+    with open('ARINC_DATA_FILE.geojson','w') as f:
         dump(f_collection, f)
