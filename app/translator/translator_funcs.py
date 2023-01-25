@@ -200,7 +200,8 @@ def func533(arg):
 
 def func534( arg ):
     global SECTION_SUBSECTION
-    if SECTION_SUBSECTION is ['D',' ']:
+
+    if 'D' in SECTION_SUBSECTION and ' '  in SECTION_SUBSECTION:
         base = arg[0:3]
         dec = arg[3:5]
     else:
