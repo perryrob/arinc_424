@@ -56,3 +56,15 @@ def line_center_angle( radius_nm=1, center_deg=(0,0), variation_deg=0 ):
     return [(rad_to_deg(lon1),rad_to_deg(lat1)),
             (rad_to_deg(lon),rad_to_deg(lat))]
 
+def true_course_rad(p1_deg=(0,0),p2_deg=(1,1)):
+
+    lat1 = deg_to_rad(p1_deg[1])
+    lon1 = deg_to_rad(p1_deg[0])
+    
+    lat2 = deg_to_rad(p2_deg[1])
+    lon2 = deg_to_rad(p2_deg[0])
+
+    
+    return fmod(mod(atan2(sin(lon1-lon2)*cos(lat2),
+           cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)), 2*pi))
+

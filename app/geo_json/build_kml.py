@@ -15,6 +15,7 @@ def get_color( color ):
         'blue': skml.Color.blue,
         'blueviolet': skml.Color.blueviolet,
         'brown': skml.Color.brown,
+        'red': skml.Color.red,
         'burlywood': skml.Color.burlywood,
         'cadetblue': skml.Color.cadetblue,
     }

@@ -9,6 +9,10 @@ from geo_json.build_kml import kml_conversion
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
 
+VOR_RADIUS=2.5
+NDB_RADIUS=1.0
+WAYPOINT_RADIUS=0.25
+
 if __name__ == '__main__':
 
     db_connect = DB_connect()
@@ -26,7 +30,7 @@ if __name__ == '__main__':
         
         center = (vor[feature_values['longitude']],
                       vor[feature_values['latitude']])
-        collection.append(VOR(radius=2.5,
+        collection.append(VOR(radius=VOR_RADIUS,
                               segments=36,
                               center=center,
                               variation=vor[feature_values['declination']],
@@ -47,7 +51,7 @@ if __name__ == '__main__':
         center = (ndb[feature_values['longitude']],
                   ndb[feature_values['latitude']])
 
-        collection.append(NDB(radius=1,
+        collection.append(NDB(radius=NDB_RADIUS,
                               segments=20,
                               center=center,
                               properties={
@@ -67,7 +71,7 @@ if __name__ == '__main__':
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
 
-        collection.append(WAYPOINT(radius=0.25,
+        collection.append(WAYPOINT(radius=WAYPOINT_RADIUS,
                                    segments=3,
                                    center=center,
                                    properties={
@@ -94,6 +98,12 @@ if __name__ == '__main__':
                center=center,
                properties={
                    'name':wp[feature_values['name']],
+                   'SECTION_SUBSECTION': wp[feature_values['fix_section_code']]+\
+                   wp[feature_values['fix_subsection_code']],
+                   'outbound_course': feature_values['fix_section_code'],
+                   'WAYPOINT_RADIUS': WAYPOINT_RADIUS,
+                   'VOR_RADIUS': VOR_RADIUS,
+                   'NDB_RADIUS': NDB_RADIUS
                })
     
     collection.append( AIRWAY( airways, None, None, None))

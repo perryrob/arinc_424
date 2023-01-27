@@ -22,14 +22,14 @@ POST_CREATE_SQL=[
     ('Link up airways to WAYPOINTSs',
      "update airway A set waypoint_id = (select id from waypoint W where waypoint_id = A.fix_id) where A.fix_section_code='E' and A.fix_subsection_code='A';"),
 
-    ('Populate lon/lat from Waypoints',
-     "update airway A set latitude = (select latitude from waypoint W where A.waypoint_id = W.id), longitude = (select longitude from waypoint W where A.waypoint_id = W.id) where A.fix_section_code='E' and A.fix_subsection_code='A';"),
+    ('AIRWAY Populate lon/lat from Waypoints',
+     "update airway A set latitude = (select latitude from waypoint W where A.waypoint_id = W.id), longitude = (select longitude from waypoint W where A.waypoint_id = W.id), declination = (select dynamic_mag_variation from waypoint W where A.waypoint_id = W.id) where A.fix_section_code='E' and A.fix_subsection_code='A';"),
 
-    ('Populate lon/lat from VOR DME position',
-     "update airway A set latitude = (select latitude from vor V where A.vor_id = V.id), longitude = (select longitude from vor V where A.vor_id = V.id) where A.fix_section_code='D' and COALESCE(A.fix_subsection_code,'')='';"),
+    ('AIRWAY Populate lon/lat from VOR DME position',
+     "update airway A set latitude = (select latitude from vor V where A.vor_id = V.id), longitude = (select longitude from vor V where A.vor_id = V.id),declination = -(select declination from vor V where A.vor_id = V.id) where A.fix_section_code='D' and COALESCE(A.fix_subsection_code,'')='';"),
 
     
-    ('Populate latitude from NDB',
-     "update airway A set latitude = (select latitude from ndb N where A.ndb_id = N.id), longitude = (select longitude from ndb N where A.ndb_id = N.id) where A.fix_section_code='D' and A.fix_subsection_code='B';"),
+    ('AIRWAY Populate lat/lon from NDB',
+     "update airway A set latitude = (select latitude from ndb N where A.ndb_id = N.id), longitude = (select longitude from ndb N where A.ndb_id = N.id), declination=(select variation from ndb N where A.ndb_id = N.id) where A.fix_section_code='D' and A.fix_subsection_code='B';"),
 
 ]

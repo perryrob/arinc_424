@@ -163,6 +163,7 @@ ARINC_424_PARSE_DEF = {
             ('AIRWAY', [
                 ',longitude double precision,',
                 'latitude double precision,',
+                'declination real,'
                 'vor_id integer,',
                 'waypoint_id integer,',
                 'ndb_id integer,',
@@ -207,7 +208,7 @@ ARINC_424_PARSE_DEF = {
             ('blank',3,'0'), 
             ('theta',4,'5.24'), # 5.24
             ('rho',4,'5.25'), # 5.25
-            ('outbound_magnetic_course',4,'5.26'), # 5.26
+            ('outbound_mag_course',4,'5.26'), # 5.26
             ('route_distance_from',4,'5.27'), # 5.27
             ('inbound_mag_course',4,'5.28'), # 5.28
             ('blank',1,'0'), 
