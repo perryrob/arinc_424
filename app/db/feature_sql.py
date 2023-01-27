@@ -21,7 +21,7 @@ FEATURE_SQL_QUERIES={
         'latitude':1,
         'name':2,
     }),
-    'AIRWAYS':('''select A.route_id, A.sequence, A.longitude, A.latitude,A.fix_section_code,A.fix_subsection_code,A.outbound_mag_course,A.inbound_mag_course from airway A where A.fix_section_code is not NULL and A.fix_subsection_code is not NULL order by A.route_id,A.sequence''',{
+    'AIRWAYS':('''select A.route_id, A.sequence, A.longitude, A.latitude,A.fix_section_code,A.fix_subsection_code,A.outbound_mag_course,A.inbound_mag_course,A.description_code from airway A where A.fix_section_code is not NULL and A.fix_subsection_code is not NULL order by A.route_id,A.sequence''',{
         'name':0,
         'sequence':1,
         'longitude':2,
@@ -29,6 +29,7 @@ FEATURE_SQL_QUERIES={
         'fix_section_code':4,
         'fix_subsection_code':5,
         'outbound_course':6,
-        'inbound_course':6
+        'inbound_course':7,
+        'description_code':8
     })
 }

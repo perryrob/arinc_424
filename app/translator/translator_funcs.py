@@ -139,7 +139,7 @@ def func516(arg):
     return arg.strip()
 
 def func517(arg):
-    return arg.strip()
+    return arg
 
 def func518(arg):
     return arg.strip()

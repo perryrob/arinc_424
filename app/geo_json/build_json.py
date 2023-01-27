@@ -94,39 +94,50 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
     if route_id is None: # None is passed in as a termination of the route
         geometry_collection=[]
         for route_id in airways.keys():
-            if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
-                continue # ignore
-            try:                
-                geometry_collection.append(
-                    LineString(
-                        airways[route_id],
-                        properties={'line_color':'black',
-                                    'line_width':2,
-                                    'fill_color':'black',
-                                    'alpha':255,
-                                    'name':route_id,
-                                    }
-                    )
-                )
-            except Exception as e:
-                print( e )
-                print('err',route_id, airways[route_id])
+            for line_string in airways[route_id]:
+                if type(line_string) == type(LineString()):
+                    geometry_collection.append( line_string )
                 
         gc = GeometryCollection( geometry_collection ,
                                  properties=properties)
         return Feature(geometry=gc)
 
-              
+    if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
+        return airways
+    
     if route_id in airways.keys():
-        points = airways[route_id].append([center,properties])
+        # I ave at least 2 - n points on the route so I'm going to greate a
+        # LineString with the last two points and replace the firt point with
+        # the object
+        airways[route_id].append([center,properties])
+        
+        desc_code = properties['description_code']
+
+        p2_idx = len( airways[route_id] ) - 1
+        p1_idx = p2_idx - 1
+        
+        p1_prop = airways[route_id][p1_idx][1]
+        p2_prop = airways[route_id][p2_idx][1]
+        
+        airways[route_id][p1_idx] = LineString(
+            [(airways[route_id][p1_idx][0],
+              airways[route_id][p2_idx][0])],
+            properties={'line_color':'black',
+                        'line_width':2,
+                        'fill_color':'black',
+                        'alpha':255,
+                        'name':route_id,
+                        }
+        )
     else:
         airways[route_id]=[[center,properties]]
 
+    return airways
+
+'''
     p2_idx = len( airways[route_id] )
-    # GRRRRRRRRRRRRRRRRRRRRRRR
+
     if p2_idx % 2 == 0:
-        # Now I know I have a pair of points that need some shaving based
-        # on the type of point
         for i in range( p2_idx - 2, p2_idx): # last two positions in the list
             pp = airways[route_id][i] # Get the last 2 points
             center = pp[0]
@@ -144,5 +155,5 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
             print(i,center)
             pp[i] = center
 
-        
-    return airways
+'''        
+

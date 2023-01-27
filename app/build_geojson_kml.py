@@ -88,7 +88,7 @@ if __name__ == '__main__':
     wps = cursor.fetchall()
 
     airways = {}
-    
+
     for wp in wps:
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
@@ -98,12 +98,13 @@ if __name__ == '__main__':
                center=center,
                properties={
                    'name':wp[feature_values['name']],
+                   'description_code': wp[feature_values['description_code']]
                    'SECTION_SUBSECTION': wp[feature_values['fix_section_code']]+\
                    wp[feature_values['fix_subsection_code']],
-                   'outbound_course': feature_values['fix_section_code'],
                    'WAYPOINT_RADIUS': WAYPOINT_RADIUS,
                    'VOR_RADIUS': VOR_RADIUS,
-                   'NDB_RADIUS': NDB_RADIUS
+                   'NDB_RADIUS': NDB_RADIUS,
+                   'outbound_course': feature_values['fix_section_code']
                })
     
     collection.append( AIRWAY( airways, None, None, None))
