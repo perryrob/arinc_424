@@ -88,6 +88,24 @@ if __name__ == '__main__':
     wps = cursor.fetchall()
 
     airways = {}
+    
+    for wp in wps:
+        center = (wp[feature_values['longitude']],
+                  wp[feature_values['latitude']])
+        
+        AIRWAY_ORIG(airways,
+               route_id = wp[feature_values['name']],
+               center=center,
+               properties={
+                   'name':wp[feature_values['name']],
+               })
+    
+    collection.append( AIRWAY( airways, None, None, None))
+                        
+    conn.commit()
+    conn.close()
+    '''
+    airways = {}
 
     for wp in wps:
         center = (wp[feature_values['longitude']],
@@ -114,7 +132,7 @@ if __name__ == '__main__':
                         
     conn.commit()
     conn.close()
-    
+    '''
     f_collection = FeatureCollection(collection)
 
     kml = kml_conversion( f_collection )
