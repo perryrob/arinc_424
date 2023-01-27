@@ -88,35 +88,25 @@ if __name__ == '__main__':
     wps = cursor.fetchall()
 
     airways = {}
-    
-    for wp in wps:
-        center = (wp[feature_values['longitude']],
-                  wp[feature_values['latitude']])
-        
-        AIRWAY_ORIG(airways,
-               route_id = wp[feature_values['name']],
-               center=center,
-               properties={
-                   'name':wp[feature_values['name']],
-               })
-    
-    collection.append( AIRWAY( airways, None, None, None))
-                        
-    conn.commit()
-    conn.close()
-    '''
-    airways = {}
 
     for wp in wps:
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
 
+
+        fix_section_subsection = None
+        # VORs are return with a subsection = NULL
+        if wp[feature_values['fix_subsection_code']] is None:
+            fix_section_subsection = wp[feature_values['fix_section_code']]+' '
+        else:
+            fix_section_subsection = wp[feature_values['fix_section_code']]+\
+                wp[feature_values['fix_subsection_code']]
+    
         properties = {
             'name':wp[feature_values['name']],
             'description_code': wp[feature_values['description_code']],
-            'SECTION_SUBSECTION': wp[feature_values['fix_section_code']]+\
-            wp[feature_values['fix_subsection_code']],
-                   'WAYPOINT_RADIUS': WAYPOINT_RADIUS,
+            'SECTION_SUBSECTION': fix_section_subsection,
+            'WAYPOINT_RADIUS': WAYPOINT_RADIUS,
             'VOR_RADIUS': VOR_RADIUS,
             'NDB_RADIUS': NDB_RADIUS,
             'outbound_course': feature_values['fix_section_code']
@@ -132,7 +122,7 @@ if __name__ == '__main__':
                         
     conn.commit()
     conn.close()
-    '''
+    
     f_collection = FeatureCollection(collection)
 
     kml = kml_conversion( f_collection )
