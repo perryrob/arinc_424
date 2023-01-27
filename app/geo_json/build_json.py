@@ -92,17 +92,17 @@ def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
 def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
 
     if route_id is None: # None is passed in as a termination of the route
-        geometry_collection=[]
         for route_id in airways.keys():
             points = None
+            route_waypoint_collection=[]
             for point_props in airways[route_id]:
                 points = [ p[0] for p in airways[route_id]]
                 props = [ p[1] for p in airways[route_id]]
 
                 # Now just modify the points based on properties
-
+                print(points)
                 
-                geometry_collection.append(LineString(
+                route_waypoint_collection.append(LineString(
                     points,
                     properties={'line_color':'black',
                                 'line_width':2,
@@ -112,9 +112,11 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
                                 }
                 ))
             
-        gc = GeometryCollection( geometry_collection ,
-                                 properties=properties)
-        return Feature(geometry=gc)
+                
+        
+        return Feature(geometry=GeometryCollection(
+            route_waypoint_collection ,
+            properties=properties))
 
 
 
