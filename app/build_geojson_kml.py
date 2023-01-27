@@ -1,5 +1,5 @@
 
-from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY
+from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY, AIRWAY_ORIG
 
 from os import path
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
             'outbound_course': feature_values['fix_section_code']
         }
         
-        AIRWAY(airways,
+        AIRWAY_ORIG(airways,
                route_id = wp[feature_values['name']],
                center=center,
                properties=properties

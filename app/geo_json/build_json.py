@@ -131,50 +131,36 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
 
     return airways
 
-'''
-    p2_idx = len( airways[route_id] )
+def AIRWAY_ORIG( airways={}, route_id='', center=(0,0), properties={} ):
 
-    if p2_idx % 2 == 0:
-        for i in range( p2_idx - 2, p2_idx): # last two positions in the list
-            pp = airways[route_id][i] # Get the last 2 points
-            center = pp[0]
-            ss = pp[1]['SECTION_SUBSECTION']
-            # Figure out if the center point passed in is associated with a
-            # WAYPOINT, VOR or NDB
-            if ss == 'D ':
-                print('VOR')        
-            elif ss == 'DB':
-                print('NDB')
-            elif ss == 'EA':
-                print('WAYPOINT')
-            else:
-                print(ss,'UNK')
-            print(i,center)
-            pp[i] = center
+    if route_id is None:
+        geometry_collection=[]
+        for route_id in airways.keys():
+            if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
+                continue # ignore
+            try:                
+                geometry_collection.append(
+                    LineString(
+                        airways[route_id],
+                        properties={'line_color':'black',
+                                    'line_width':2,
+                                    'fill_color':'black',
+                                    'alpha':255,
+                                    'name':route_id,
+                                    }
+                    )
+                )
+            except Exception as e:
+                print( e )
+                print('err',route_id, airways[route_id])
+                
+        gc = GeometryCollection( geometry_collection ,
+                                 properties=properties)
+        return Feature(geometry=gc)
+    
+    if route_id in airways.keys():
+        points = airways[route_id].append(center)
+    else:
+        airways[route_id]=[center]
 
-
-        
-        desc_code = properties['description_code']
-
-        p2_idx = len( airways[route_id] ) - 1
-        p1_idx = p2_idx - 1
-        
-        p1_prop = airways[route_id][p1_idx][1]
-        p2_prop = airways[route_id][p2_idx][1]
-        
-        airways[route_id][p1_idx] = 
-        )
-
-
-LineString(
-            [(airways[route_id][p1_idx][0],
-              airways[route_id][p2_idx][0])],
-            properties={'line_color':'black',
-                        'line_width':2,
-                        'fill_color':'black',
-                        'alpha':255,
-                        'name':route_id,
-                        }
-
-'''        
-
+    return airways
