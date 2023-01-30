@@ -90,11 +90,15 @@ if __name__ == '__main__':
     airways = {}
 
     for wp in wps:
+        name = wp[feature_values['name']]
+        if name[0] in ['A','B','J', 'M', 'Q','R','Y']:
+            continue
+        
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
 
         properties = {
-            'name':wp[feature_values['name']],
+            'name':name,
             'description_code': wp[feature_values['description_code']],
             'SECTION_SUBSECTION': wp[feature_values['fix_section_code']]+\
             wp[feature_values['fix_subsection_code']],
@@ -105,7 +109,7 @@ if __name__ == '__main__':
         }
         
         AIRWAY(airways,
-               route_id = wp[feature_values['name']],
+               route_id = name,
                center=center,
                properties=properties
                )

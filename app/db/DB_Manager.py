@@ -90,30 +90,23 @@ class DB_ARINC_data:
 
     def _assemble_field(self, field_val):
         # This value is the translated value after parsing
-        translated_val = field_val[TRANSLATED_VAL_POS]
-        ret_val = None
-        if isinstance( translated_val, str ):
-            ret_val =  translated_val.strip()
-            if ret_val == '' :
-                ret_val = 'NULL'
-            else:
-                ret_val = ret_val
-                ret_val = ret_val.replace("'","")
-                ret_val = "'" + ret_val + "'"
+        ret_val = field_val[TRANSLATED_VAL_POS]                
+        if ret_val is None:
+            ret_val = 'NULL'
+        elif isinstance( ret_val, str ):
+            ret_val = ret_val
+            ret_val = ret_val.replace("'","")
+            ret_val = "'" + ret_val + "'"
         # To do, need to insert the text from a list by concatinating it
         # then putting in quotes
-        elif isinstance( translated_val, type([]) ):
+        elif isinstance( ret_val, type([]) ):
             ret_val = str(field_val[RAW_VAL_POS])
             ret_val = ret_val.replace("'","")
             ret_val = "'" + ret_val + "'"
         else:
             # Assume here that everything is a number (float or int)
-            ret_val = str(translated_val)
+            ret_val = str(ret_val)
             return ret_val
-        
-        if ret_val.isspace():
-            ret_val = 'NULL'
-            
         return ret_val
 
     

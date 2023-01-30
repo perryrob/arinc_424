@@ -96,29 +96,28 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
         for route_id in airways.keys():
             points = None
             for point_props in airways[route_id]:
-                points = [ p[0] for p in airways[route_id]]
-                props = [ p[1] for p in airways[route_id]]
+                points = [p[0] for p in airways[route_id]]
+                props =  [p[1] for p in airways[route_id]]
 
                 # Now just modify the points based on properties
-
-                
-                geometry_collection.append(LineString(
-                    points,
-                    properties={'line_color':'black',
-                                'line_width':2,
-                                'fill_color':'black',
-                                'alpha':255,
-                                'name':route_id,
-                                }
-                ))
+                if (None,None) in points:                    
+                    print(route_id, str(points))
+                else:
+                    geometry_collection.append(LineString(
+                        points,
+                        properties={'line_color':'black',
+                                    'line_width':2,
+                                    'fill_color':'black',
+                                    'alpha':255,
+                                    'name':route_id,
+                                    }
+                    ))
             
         gc = GeometryCollection( geometry_collection ,
                                  properties=properties)
         return Feature(geometry=gc)
 
 
-
-    if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
         return airways
     if route_id in airways.keys():
         # I ave at least 2 - n points on the route so I'm going to greate a
