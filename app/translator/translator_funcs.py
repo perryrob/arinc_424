@@ -168,8 +168,7 @@ def func524(arg):
         tenths = float(arg[3:4]) / 10
         return base + tenths
     except:
-        return -1.0
-    return 0
+        return None
 
 def func525(arg):
     return func524(arg)
@@ -193,7 +192,7 @@ def func531(arg):
     try:
         return int(arg)
     except:
-        return arg
+        return None
 
 def func533(arg):
     return arg.strip()
@@ -259,7 +258,7 @@ def func536( arg ):
         secs = float(secs+'.'+dsecs) / 3600.0
         return ns * (degs + mins + secs)
     except:
-        return arg
+        return None
 
 def func537( arg ):
     try:
@@ -276,7 +275,7 @@ def func537( arg ):
         secs = float(secs+'.'+dsecs) / 3600.0
         return ew * (degs + mins + secs)
     except:
-        return arg
+        return None
 
 
 def func539(arg):
@@ -293,7 +292,7 @@ def func539(arg):
         tenths = float(arg[4:5]) / 10
         return ew * (degs + tenths)
     except:
-        return -1.0
+        return None
 
     
 def func538(arg):
@@ -303,7 +302,7 @@ def func540( arg ):
     try:
         return float(arg)
     except:
-        return arg
+        return None
 
 def func541(arg):
     return arg.strip()    
@@ -353,7 +352,7 @@ def func545(arg):
         ret_val = float(arg[0:3]) + float(arg[3:4]) / 10.0
         return ret_val
     except:
-        return -1.0
+        return None
 
 def func546(arg):
     return arg.strip()
@@ -376,7 +375,7 @@ def func551(arg):
         huns = float(arg[1:3])
         return  deg+huns
     except:
-        return -1.0
+        return None
 
 def func552(arg):
     return func551(arg)
@@ -385,7 +384,7 @@ def func553(arg):
     try:
         return int(arg)
     except:
-        return -1
+        return None
     
 def func554(arg):
     return func553(arg)
@@ -429,7 +428,7 @@ def func566( arg ):
         tens = float(arg[4:5]) / 10.0
         return ewt * ( deg + tens )
     except:
-        return arg
+        return None
 
 def func5170(arg):
     return arg.strip()

@@ -110,7 +110,7 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
                                 'name':route_id,
                                 }
                 ))
-            
+
                 
         
         return Feature(geometry=GeometryCollection(
@@ -118,8 +118,6 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
             properties=properties))
 
 
-
-    if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
         return airways
     if route_id in airways.keys():
         # I ave at least 2 - n points on the route so I'm going to greate a
