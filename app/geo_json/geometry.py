@@ -10,8 +10,6 @@ def deg_to_rad( deg ):
 
 def rad_to_deg( rad ):
     ret_val = rad * 180.0 / pi
-    if ret_val < 0:
-        ret_val = 360.0 + ret_val
     return ret_val
 
 def dis_to_radians( nm ):
@@ -23,42 +21,51 @@ def lat_from_center_dis( lat_rad, tc_rad, d_rad ):
 def lon_from_center_dis( lon_rad, lat_rad, projected_lat_rad, tc_rad, d_rad ):
     dlon=atan2(sin(tc_rad)*sin(d_rad)*cos(lat_rad),
                cos(d_rad)-sin(lat_rad)*sin(projected_lat_rad))
-    return fmod( lon_rad-dlon +pi,2*pi )-pi   
+    return fmod( lon_rad-dlon +pi,2*pi ) - pi   
 
+def point_project( center_deg=(0,0), angle_deg=0, radius_nm=1):
+
+    tc = deg_to_rad(angle_deg)
+    lon1 = deg_to_rad(center_deg[0])
+    lat1 = deg_to_rad(center_deg[1])
+    d = dis_to_radians(radius_nm)
+
+    lat = lat_from_center_dis( lat1, tc, d )
+    lon = lon_from_center_dis( lon1, lat1, lat, tc, d )
+
+    return ( rad_to_deg(lon), rad_to_deg( lat) )
 
 def  circle_center_polygon( radius_nm=1, segments=36, center_deg=(0,0),
                      variation_deg=0 ):
 
-    tc = deg_to_rad(variation_deg)
-    increment_rad = deg_to_rad(360) / segments
+    tc = variation_deg
+    increment_deg = 360 / segments
+    lat1 = center_deg[1]
+    lon1 = center_deg[0]
+    d = radius_nm
+
     ret_val=[]
-    lat1 = deg_to_rad(center_deg[1])
-    lon1 = deg_to_rad(center_deg[0])
-    d = dis_to_radians(radius_nm)
     for seg in range(0,segments+1):
-        end_rad = tc + increment_rad    
-
-        lat = lat_from_center_dis( lat1, tc, d )
-        lon = lon_from_center_dis( lon1, lat1, lat, tc, d )
-
-        ret_val.append((rad_to_deg(lon),rad_to_deg( lat) ))
-        tc = end_rad
+        end_deg = tc + increment_deg    
+        ret_val.append( point_project( (lon1,lat1), tc, d ) )
+        tc = end_deg
+        
     return [ret_val]
 
-def line_center_angle( radius_nm=1, center_deg=(0,0), variation_deg=0 ):
 
-    angle =  deg_to_rad(variation_deg)
-    lat1 = deg_to_rad(center_deg[1])
-    lon1 = deg_to_rad(center_deg[0])
-    d = dis_to_radians(radius_nm)
-    
-    lat = lat_from_center_dis( lat1, angle, d )
-    lon = lon_from_center_dis( lon1, lat1, lat, angle, d )
+def line_center_angle( radius_nm=1, center_deg=(0,0), angle_deg=0 ):
 
-    return [(rad_to_deg(lon1),rad_to_deg(lat1)),
-            (rad_to_deg(lon),rad_to_deg(lat))]
+    angle = angle_deg
+    lon1 = center_deg[0]
+    lat1 = center_deg[1]
+    d = radius_nm
 
-def true_course_rad(p1_deg=(0,0),p2_deg=(1,1)):
+    lon_lat = point_project( (lon1,lat1), angle, d )
+
+    return [(lon1,lat1),
+            (lon_lat[0],lon_lat[1])]
+
+def true_course_deg(p1_deg=(0,0),p2_deg=(1,1)):
 
     lon1 = deg_to_rad(p1_deg[0]) * -1.0
     lat1 = deg_to_rad(p1_deg[1])
@@ -66,9 +73,9 @@ def true_course_rad(p1_deg=(0,0),p2_deg=(1,1)):
     lon2 = deg_to_rad(p2_deg[0]) * -1.0
     lat2 = deg_to_rad(p2_deg[1])
 
-    return fmod(atan2(sin(lon1-lon2)*cos(lat2),
+    return rad_to_deg(fmod(atan2(sin(lon1-lon2)*cos(lat2),
            cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)),
-                2.0*pi)
+                2.0*pi))
 
 
 
@@ -76,8 +83,8 @@ if __name__ == '__main__':
     # TUS to SSO should be 71 degrees
     # SSO to TUS should be 250 degrees
     tc = true_course_rad((-110.9148,32.0952),(-109.2631,32.2692) )
-    print('rad ', tc)
-    print( rad_to_deg( tc ) -12 )
+    print('rad ', deg_to_rad(tc))
+    print( tc  -12 )
     tc = true_course_rad((-109.2631,32.2692),(-110.9148,32.0952) )
-    print('rad ', tc)
-    print( rad_to_deg( tc ) -13 ) 
+    print('rad ', deg_to_rad(tc))
+    print( tc  -13 ) 

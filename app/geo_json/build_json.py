@@ -3,11 +3,13 @@ from geojson import Polygon, Point, LineString,MultiLineString
 from geojson import GeometryCollection, Feature
 
 
-from .geometry import circle_center_polygon, line_center_angle, true_course_rad
-from .geometry import rad_to_deg
+from .geometry import circle_center_polygon, line_center_angle, true_course_deg
+from .geometry import rad_to_deg, point_project
 
 def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
 
+    name = properties['name']
+    
     geometry_collection = [
         Polygon(
             circle_center_polygon(radius, segments, center, variation ),
@@ -15,7 +17,7 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
                         'line_width':5,
                         'fill_color':'blue',
                         'alpha':100,
-                        'name':properties['name'],
+                        'name':name,
                         'description':properties['frequency']
                         }
         ),
@@ -25,7 +27,7 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
                         'line_width':1,
                         'fill_color':'black',
                         'alpha':100,
-                        'name':properties['name'],
+                        'name':name,
                         'description':properties['frequency']
                         }
         ),
@@ -42,6 +44,12 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
                            }
               )
     ]
+    if name == 'TUS':
+        print('Polygon',
+              circle_center_polygon(radius, segments, center, variation ))
+        print('Line',
+              line_center_angle( radius, center, variation))
+
     gc = GeometryCollection( geometry_collection , properties=properties)
     return Feature(geometry=gc)
 
@@ -107,8 +115,8 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
                         p1 = raw_points[i-1]
                         p2 = raw_points[i]
 
-                        crs_p1 = rad_to_deg(true_course_rad(p1,p2))
-                        crs_p2 = rad_to_deg(true_course_rad(p2,p1))
+                        crs_p1 = true_course_deg(p1,p2)
+                        crs_p2 = true_course_deg(p2,p1)
                         
                         prop_1 = props[i-1]
                         prop_2 = props[i]
@@ -120,19 +128,20 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
                             # (D ), (DB), (EA)
                             if prop['SECTION_SUBSECTION'] == 'D ':
                                 new_point.append(
-                                    line_center_angle( prop['VOR_RADIUS'],
-                                                       p , crs )[1] )
+                                    point_project( p,
+                                                   crs,
+                                                   prop['VOR_RADIUS']))
                             elif prop['SECTION_SUBSECTION'] == 'DB':
                                 new_point.append(
-                                    line_center_angle( prop['NDB_RADIUS'],
-                                                       p , crs )[1])
-                                
+                                    point_project( p,
+                                                   crs,
+                                                   prop['NDB_RADIUS']))
                             elif prop['SECTION_SUBSECTION'] == 'EA':
-                                    new_point.append(
-                                        line_center_angle(
-                                            prop['WAYPOINT_RADIUS'],
-                                            p , crs )[1])
-
+                                new_point.append(
+                                    point_project( p,
+                                                   crs,
+                                                   prop['WAYPOINT_RADIUS']))
+                            print( crs, p , new_point )
                     except Exception as e:
                         print(route_id)
                         raise(e)
