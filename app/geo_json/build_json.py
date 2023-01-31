@@ -1,10 +1,10 @@
 
-from geojson import Polygon, Point, LineString
+from geojson import Polygon, Point, LineString,MultiLineString
 from geojson import GeometryCollection, Feature
 
 
-from .geometry import circle_center_polygon, line_center_angle
-
+from .geometry import circle_center_polygon, line_center_angle, true_course_rad
+from .geometry import rad_to_deg
 
 def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
 
@@ -92,73 +92,67 @@ def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
 def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
 
     if route_id is None: # None is passed in as a termination of the route
+        geometry_collection=[]
         for route_id in airways.keys():
+            if route_id != 'V393': ######### force testing
+                continue
             points = None
-            route_waypoint_collection=[]
+            airway_lines = []
             for point_props in airways[route_id]:
-                points = [ [p[0]] for p in airways[route_id]]
-                props = [ p[1] for p in airways[route_id]]
+                raw_points = [p[0] for p in airways[route_id]]
+                props =  [p[1] for p in airways[route_id]]
 
-                # Now just modify the points based on properties
-                
-                route_waypoint_collection.append(LineString(
-                    points,
+                for i in range(1,len(raw_points)):
+                    try:
+                        p1 = raw_points[i-1]
+                        p2 = raw_points[i]
+
+                        crs_p1 = rad_to_deg(true_course_rad(p1,p2))
+                        crs_p2 = rad_to_deg(true_course_rad(p2,p1))
+                        
+                        prop_1 = props[i-1]
+                        prop_2 = props[i]
+
+                        pcp = [[p1,crs_p1,prop_1],[p2,crs_p2,prop_2]]
+
+                        new_point = []
+                        for p,crs,prop in pcp:
+                            # (D ), (DB), (EA)
+                            if prop['SECTION_SUBSECTION'] == 'D ':
+                                new_point.append(
+                                    line_center_angle( prop['VOR_RADIUS'],
+                                                       p , crs )[1] )
+                            elif prop['SECTION_SUBSECTION'] == 'DB':
+                                new_point.append(
+                                    line_center_angle( prop['NDB_RADIUS'],
+                                                       p , crs )[1])
+                                
+                            elif prop['SECTION_SUBSECTION'] == 'EA':
+                                    new_point.append(
+                                        line_center_angle(
+                                            prop['WAYPOINT_RADIUS'],
+                                            p , crs )[1])
+
+                    except Exception as e:
+                        print(route_id)
+                        raise(e)
+                airway_lines.append((new_point[0],new_point[1]))
+                geometry_collection.append(MultiLineString(
+                    airway_lines,
                     properties={'line_color':'black',
                                 'line_width':2,
                                 'fill_color':'black',
                                 'alpha':255,
                                 'name':route_id,
                                 }
-                ))
+                ))                    
+        # All routes
+        gc =  GeometryCollection( geometry_collection )
+        return Feature(geometry=gc)
 
-                
-        
-        return Feature(geometry=GeometryCollection(
-            route_waypoint_collection ,
-            properties=properties))
-
-
-        return airways
     if route_id in airways.keys():
-        # I ave at least 2 - n points on the route so I'm going to greate a
-        # LineString with the last two points and replace the firt point with
-        # the object
         airways[route_id].append([center,properties])
     else:
         airways[route_id]=[[center,properties]]
-
-    return airways
-
-def AIRWAY_ORIG( airways={}, route_id='', center=(0,0), properties={} ):
-
-    if route_id is None:
-        geometry_collection=[]
-        for route_id in airways.keys():
-            if route_id[0] in ['A','B','J', 'M', 'Q','R','Y']:
-                continue # ignore
-            try:                
-                geometry_collection.append(
-                    LineString(
-                        airways[route_id],
-                        properties={'line_color':'black',
-                                    'line_width':2,
-                                    'fill_color':'black',
-                                    'alpha':255,
-                                    'name':route_id,
-                                    }
-                    )
-                )
-            except Exception as e:
-                print( e )
-                print('err',route_id, airways[route_id])
-                
-        gc = GeometryCollection( geometry_collection ,
-                                 properties=properties)
-        return Feature(geometry=gc)
-    
-    if route_id in airways.keys():
-        points = airways[route_id].append(center)
-    else:
-        airways[route_id]=[center]
 
     return airways

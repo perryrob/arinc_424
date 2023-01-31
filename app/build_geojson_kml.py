@@ -1,5 +1,5 @@
 
-from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY, AIRWAY_ORIG
+from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY
 
 from os import path
 
@@ -91,20 +91,15 @@ if __name__ == '__main__':
 
     for wp in wps:
         name = wp[feature_values['name']]
-        if name[0] in ['A','B','J', 'M', 'Q','R','Y']:
+        if name[0] in ['A','B','J', 'M', 'Q','R','Y','G','H']:
             continue
         
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
 
 
-        fix_section_subsection = None
-        # VORs are return with a subsection = NULL
-        if wp[feature_values['fix_subsection_code']] is None:
-            fix_section_subsection = wp[feature_values['fix_section_code']]+' '
-        else:
-            fix_section_subsection = wp[feature_values['fix_section_code']]+\
-                wp[feature_values['fix_subsection_code']]
+        fix_section_subsection = wp[feature_values['fix_section_code']]+\
+            wp[feature_values['fix_subsection_code']]
     
         properties = {
             'name':name,

@@ -9,8 +9,10 @@ def deg_to_rad( deg ):
     return deg * pi / 180.0
 
 def rad_to_deg( rad ):
-    return rad * 180.0 / pi
-
+    ret_val = rad * 180.0 / pi
+    if ret_val < 0:
+        ret_val = 360.0 + ret_val
+    return ret_val
 
 def dis_to_radians( nm ):
     return (pi/(180*60))*nm
@@ -58,13 +60,24 @@ def line_center_angle( radius_nm=1, center_deg=(0,0), variation_deg=0 ):
 
 def true_course_rad(p1_deg=(0,0),p2_deg=(1,1)):
 
+    lon1 = deg_to_rad(p1_deg[0]) * -1.0
     lat1 = deg_to_rad(p1_deg[1])
-    lon1 = deg_to_rad(p1_deg[0])
-    
+
+    lon2 = deg_to_rad(p2_deg[0]) * -1.0
     lat2 = deg_to_rad(p2_deg[1])
-    lon2 = deg_to_rad(p2_deg[0])
 
-    
-    return fmod(mod(atan2(sin(lon1-lon2)*cos(lat2),
-           cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)), 2*pi))
+    return fmod(atan2(sin(lon1-lon2)*cos(lat2),
+           cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)),
+                2.0*pi)
 
+
+
+if __name__ == '__main__':
+    # TUS to SSO should be 71 degrees
+    # SSO to TUS should be 250 degrees
+    tc = true_course_rad((-110.9148,32.0952),(-109.2631,32.2692) )
+    print('rad ', tc)
+    print( rad_to_deg( tc ) -12 )
+    tc = true_course_rad((-109.2631,32.2692),(-110.9148,32.0952) )
+    print('rad ', tc)
+    print( rad_to_deg( tc ) -13 ) 

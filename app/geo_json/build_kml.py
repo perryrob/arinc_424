@@ -58,6 +58,26 @@ def geojson_to_kml_primitives( geom, kml ):
                            description=properties.get('description','UNK'),
                            coords=[geom['coordinates']])
 
+    elif geom_type == 'MultiLineString':
+        multi_line = kml.newmultigeometry(
+            name=properties.get('name','UNK'),
+            description=properties.get('description','UNK')
+        )
+        for p1,p2 in geom['coordinates']:
+            multi_line.newlinestring(
+                name=properties.get('name','UNK'),
+                description=properties.get('description','UNK'),
+                coords=[p1,p2] )
+        multi_line.linestyle.color = get_color(
+            properties.get('line_color','blue')
+        )
+        multi_line.linestyle.width = properties.get('line_width',5)
+    elif geom_type == 'GeometryCollection':
+        for geom in geom['geometries']:
+            geojson_to_kml_primitives( geom, kml )
+    else:
+        print("ERROR: unknown type:", geom_type)
+        
 def kml_conversion( json_data, kml = None ):
 
     if kml is None:
@@ -66,11 +86,9 @@ def kml_conversion( json_data, kml = None ):
     for feature in json_data['features']:
         geom = feature['geometry']
         geom_type = geom['type']
-        if geom_type in ['Polygon', 'LineString', 'Point']: 
+        if geom_type in ['Polygon', 'LineString',
+                         'Point', 'GeometryCollection']: 
             geojson_to_kml_primitives( geom, kml )
-        elif geom_type == 'GeometryCollection':
-            for geom in geom['geometries']:
-                geojson_to_kml_primitives( geom, kml )
         else:
             print("ERROR: unknown type:", geom_type)
 
