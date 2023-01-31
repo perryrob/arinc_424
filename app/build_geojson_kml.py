@@ -1,5 +1,6 @@
 
 from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY
+from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS 
 
 from os import path
 
@@ -8,10 +9,6 @@ from geo_json.build_kml import kml_conversion
 
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
-
-VOR_RADIUS=2.5
-NDB_RADIUS=1.0
-WAYPOINT_RADIUS=0.25
 
 if __name__ == '__main__':
 
@@ -88,7 +85,8 @@ if __name__ == '__main__':
     wps = cursor.fetchall()
 
     airways = {}
-
+    waypoint_types={}
+    
     for wp in wps:
         name = wp[feature_values['name']]
         if name[0] in ['A','B','J', 'M', 'Q','R','Y','G','H']:
@@ -104,20 +102,17 @@ if __name__ == '__main__':
         properties = {
             'name':name,
             'description_code': wp[feature_values['description_code']],
-            'SECTION_SUBSECTION': fix_section_subsection,
-            'WAYPOINT_RADIUS': WAYPOINT_RADIUS,
-            'VOR_RADIUS': VOR_RADIUS,
-            'NDB_RADIUS': NDB_RADIUS,
-            'outbound_course': feature_values['fix_section_code']
+            'SECTION_SUBSECTION': fix_section_subsection
         }
         
         AIRWAY(airways,
+               waypoint_types,
                route_id = name,
                center=center,
                properties=properties
                )
     
-    collection.append( AIRWAY( airways, None, None, None))
+    collection.append( AIRWAY( airways, waypoint_types, None, None, None) )
                         
     conn.commit()
     conn.close()

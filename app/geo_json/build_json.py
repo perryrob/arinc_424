@@ -6,6 +6,10 @@ from geojson import GeometryCollection, Feature
 from .geometry import circle_center_polygon, line_center_angle, true_course_deg
 from .geometry import rad_to_deg, point_project
 
+VOR_RADIUS=2.5
+NDB_RADIUS=1.0
+WAYPOINT_RADIUS=0.25
+
 def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
 
     name = properties['name']
@@ -44,12 +48,6 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
                            }
               )
     ]
-    if name == 'TUS':
-        print('Polygon',
-              circle_center_polygon(radius, segments, center, variation ))
-        print('Line',
-              line_center_angle( radius, center, variation))
-
     gc = GeometryCollection( geometry_collection , properties=properties)
     return Feature(geometry=gc)
 
@@ -97,23 +95,20 @@ def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
     )
     return Feature(geometry=p)
 
-def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
+def AIRWAY_NEW( airways={}, route_id='', center=(0,0), properties={} ):
 
     if route_id is None: # None is passed in as a termination of the route
         geometry_collection=[]
         for route_id in airways.keys():
-            if route_id != 'V393': ######### force testing
-                continue
             points = None
             airway_lines = []
             for point_props in airways[route_id]:
-                raw_points = [p[0] for p in airways[route_id]]
-                props =  [p[1] for p in airways[route_id]]
-
-                for i in range(1,len(raw_points)):
+                raw_point = [p[0] for p in airways[route_id]]
+                props =     [p[1] for p in airways[route_id]]
+                for i in range(1,len(raw_point)):
                     try:
-                        p1 = raw_points[i-1]
-                        p2 = raw_points[i]
+                        p1 = raw_point[i-1]
+                        p2 = raw_point[i]
 
                         crs_p1 = true_course_deg(p1,p2)
                         crs_p2 = true_course_deg(p2,p1)
@@ -124,28 +119,13 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
                         pcp = [[p1,crs_p1,prop_1],[p2,crs_p2,prop_2]]
 
                         new_point = []
-                        for p,crs,prop in pcp:
-                            # (D ), (DB), (EA)
-                            if prop['SECTION_SUBSECTION'] == 'D ':
-                                new_point.append(
-                                    point_project( p,
-                                                   crs,
-                                                   prop['VOR_RADIUS']))
-                            elif prop['SECTION_SUBSECTION'] == 'DB':
-                                new_point.append(
-                                    point_project( p,
-                                                   crs,
-                                                   prop['NDB_RADIUS']))
-                            elif prop['SECTION_SUBSECTION'] == 'EA':
-                                new_point.append(
-                                    point_project( p,
-                                                   crs,
-                                                   prop['WAYPOINT_RADIUS']))
-                            print( crs, p , new_point )
                     except Exception as e:
                         print(route_id)
                         raise(e)
-                airway_lines.append((new_point[0],new_point[1]))
+
+                # airway_lines.append((new_point[0],new_point[1]))
+                airway_lines.append((p1,p2))
+                    
                 geometry_collection.append(MultiLineString(
                     airway_lines,
                     properties={'line_color':'black',
@@ -164,4 +144,66 @@ def AIRWAY( airways={}, route_id='', center=(0,0), properties={} ):
     else:
         airways[route_id]=[[center,properties]]
 
+    return airways
+
+def AIRWAY( airways={}, waypoint_types={}, route_id='',
+            center=(0,0), properties={} ):
+
+    if route_id is None:
+        geometry_collection=[]
+        for route_id in airways.keys():
+            points = airways[route_id]
+            section_subsections = waypoint_types[route_id]
+                
+            for i in range(1,len(points)):
+
+                pp = [points[i-1],points[i]]
+                pp_crs = [true_course_deg(pp[0],pp[1]),
+                          true_course_deg(pp[1],pp[0])]
+                types = waypoint_types[route_id][i-1:i+1]
+
+                modified_pp =[]
+                for ii  in range(0,2):
+                    section_subsection = types[ii]
+                    p   = pp[ii]
+                    crs = pp_crs[ii]
+                       
+                    if section_subsection == 'D ':
+                        modified_pp.append(point_project( p,
+                                                          crs,
+                                                          VOR_RADIUS ))
+                    elif section_subsection == 'DB':
+                        modified_pp.append(point_project( p,
+                                                          crs,
+                                                          NDB_RADIUS))
+                    elif section_subsection == 'EA':
+                        modified_pp.append(point_project( p,
+                                                          crs,
+                                                          WAYPOINT_RADIUS))
+                try:
+                    geometry_collection.append(
+                        LineString(
+                            modified_pp,
+                            properties={'line_color':'black',
+                                        'line_width':2,
+                                        'fill_color':'black',
+                                        'alpha':255,
+                                        'name':route_id,
+                                        }
+                        )
+                    )
+                except Exception as e:
+                    print( e )
+                    print('err',route_id, airways[route_id])
+                    
+        gc = GeometryCollection( geometry_collection ,
+                                 properties=properties)
+        return Feature(geometry=gc)
+    
+    if route_id in airways.keys():
+        airways[route_id].append(center)
+        waypoint_types[route_id].append(properties['SECTION_SUBSECTION'])
+    else:
+        airways[route_id]=[center]
+        waypoint_types[route_id] = [properties['SECTION_SUBSECTION']]
     return airways
