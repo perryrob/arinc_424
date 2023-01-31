@@ -172,9 +172,11 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                         modified_pp.append(point_project( p,
                                                           crs,
                                                           VOR_RADIUS ))
-                        f_point = Point(
-                            modified_pp[-1:],
-                            properties={'name':route_id}
+                        geometry_collection.append(
+                            Point(
+                                modified_pp[-1:][0],
+                                properties={'name':route_id}
+                            )
                         )
 
                     elif section_subsection == 'DB':
@@ -197,11 +199,6 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                                         }
                         )
                     )
-                    
-                    # if f_point is not None:
-                     #   geometry_collection.append(f_point)
-                      #   f_point = None
-                    
                 except Exception as e:
                     print( e )
                     print('err',route_id, airways[route_id])
