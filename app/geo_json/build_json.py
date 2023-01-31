@@ -158,8 +158,8 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
             for i in range(1,len(points)):
 
                 pp = [points[i-1],points[i]]
-                pp_crs = [true_course_deg(pp[0],pp[1]),
-                          true_course_deg(pp[1],pp[0])]
+                pp_crs = [true_course_deg(pp[0],pp[1],True),
+                          true_course_deg(pp[1],pp[0],True)]
                 types = waypoint_types[route_id][i-1:i+1]
 
                 modified_pp =[]
@@ -167,11 +167,16 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                     section_subsection = types[ii]
                     p   = pp[ii]
                     crs = pp_crs[ii]
-                       
+                    f_point = None
                     if section_subsection == 'D ':
                         modified_pp.append(point_project( p,
                                                           crs,
                                                           VOR_RADIUS ))
+                        f_point = Point(
+                            modified_pp[-1:],
+                            properties={'name':route_id}
+                        )
+
                     elif section_subsection == 'DB':
                         modified_pp.append(point_project( p,
                                                           crs,
@@ -192,6 +197,11 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                                         }
                         )
                     )
+                    
+                    # if f_point is not None:
+                     #   geometry_collection.append(f_point)
+                      #   f_point = None
+                    
                 except Exception as e:
                     print( e )
                     print('err',route_id, airways[route_id])

@@ -19,7 +19,7 @@ def lat_from_center_dis( lat_rad, tc_rad, d_rad ):
     return asin(sin(lat_rad)*cos(d_rad)+cos(lat_rad)*sin(d_rad)*cos(tc_rad))
 
 def lon_from_center_dis( lon_rad, lat_rad, projected_lat_rad, tc_rad, d_rad ):
-    dlon=atan2(sin(tc_rad)*sin(d_rad)*cos(lat_rad),
+    dlon=-atan2(sin(tc_rad)*sin(d_rad)*cos(lat_rad),
                cos(d_rad)-sin(lat_rad)*sin(projected_lat_rad))
     return fmod( lon_rad-dlon +pi,2*pi ) - pi   
 
@@ -33,7 +33,7 @@ def point_project( center_deg=(0,0), angle_deg=0, radius_nm=1):
     lat = lat_from_center_dis( lat1, tc, d )
     lon = lon_from_center_dis( lon1, lat1, lat, tc, d )
 
-    return ( rad_to_deg(lon), rad_to_deg( lat) )
+    return ( rad_to_deg(lon), rad_to_deg(lat) )
 
 def  circle_center_polygon( radius_nm=1, segments=36, center_deg=(0,0),
                      variation_deg=0 ):
@@ -65,7 +65,7 @@ def line_center_angle( radius_nm=1, center_deg=(0,0), angle_deg=0 ):
     return [(lon1,lat1),
             (lon_lat[0],lon_lat[1])]
 
-def true_course_deg(p1_deg=(0,0),p2_deg=(1,1)):
+def true_course_deg(p1_deg=(0,0),p2_deg=(1,1), make_360=False):
 
     lon1 = deg_to_rad(p1_deg[0]) * -1.0
     lat1 = deg_to_rad(p1_deg[1])
@@ -73,18 +73,35 @@ def true_course_deg(p1_deg=(0,0),p2_deg=(1,1)):
     lon2 = deg_to_rad(p2_deg[0]) * -1.0
     lat2 = deg_to_rad(p2_deg[1])
 
-    return rad_to_deg(fmod(atan2(sin(lon1-lon2)*cos(lat2),
-           cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)),
-                2.0*pi))
+    tc =  rad_to_deg(
+        fmod(atan2(sin(lon1-lon2)*cos(lat2),
+                   cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon1-lon2)),
+             2.0*pi))
 
+    if make_360 and tc < 0:
+        return 360 + tc
 
+    return tc
 
 if __name__ == '__main__':
     # TUS to SSO should be 71 degrees
     # SSO to TUS should be 250 degrees
-    tc = true_course_rad((-110.9148,32.0952),(-109.2631,32.2692) )
+    tc = true_course_deg((-110.9148,32.0952),(-109.2631,32.2692) ,True)
     print('rad ', deg_to_rad(tc))
     print( tc  -12 )
-    tc = true_course_rad((-109.2631,32.2692),(-110.9148,32.0952) )
+    tc = true_course_deg((-109.2631,32.2692),(-110.9148,32.0952) ,True)
     print('rad ', deg_to_rad(tc))
-    print( tc  -13 ) 
+    print( tc  -13 )
+    print('================================')
+    p1 = (0,0)
+    for i in range(0,9):
+        p2 = (sin(deg_to_rad( i*45 )),cos(deg_to_rad( i*45 )))        
+
+        tc_1 =  true_course_deg(p1, p2 ,True)
+        tc_2 =  true_course_deg(p2, p1 ,True)
+
+        pp2 = point_project( p1, tc_1, 60) # Gotta have 60 for unity
+
+        print('i   tc1  tc2    p2                 pp2' )
+        print('==================================================')
+        print(i,tc_1,tc_2,p2,pp2)

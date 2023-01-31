@@ -30,7 +30,7 @@ if __name__ == '__main__':
         collection.append(VOR(radius=VOR_RADIUS,
                               segments=36,
                               center=center,
-                              variation=vor[feature_values['declination']],
+                              variation=-vor[feature_values['declination']],
                               properties={
                                   'name':vor[feature_values['name']],
                                   'frequency':vor[feature_values['frequency']]
