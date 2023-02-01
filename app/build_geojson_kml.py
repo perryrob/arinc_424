@@ -102,7 +102,8 @@ if __name__ == '__main__':
         properties = {
             'name':name,
             'description_code': wp[feature_values['description_code']],
-            'SECTION_SUBSECTION': fix_section_subsection
+            'SECTION_SUBSECTION': fix_section_subsection,
+            'min_altitude': wp[feature_values['min_altitude']]
         }
         
         AIRWAY(airways,

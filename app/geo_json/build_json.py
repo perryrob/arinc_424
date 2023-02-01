@@ -156,15 +156,19 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
             section_subsections = waypoint_types[route_id]
                 
             for i in range(1,len(points)):
+                p1 = i-1
+                p2 = i
+                pp = [points[p1],points[p2]]
+                pp_crs = [true_course_deg(pp[0],pp[1],True), # OBD crs
+                          true_course_deg(pp[1],pp[0],True)] # IBD crs
+                props = waypoint_types[route_id][p1:p2+1]
 
-                pp = [points[i-1],points[i]]
-                pp_crs = [true_course_deg(pp[0],pp[1],True),
-                          true_course_deg(pp[1],pp[0],True)]
-                types = waypoint_types[route_id][i-1:i+1]
-
+                # Outboud properties
+                description='MEA: ' + props[0].get('min_altitude','UNK')
+                
                 modified_pp =[]
                 for ii  in range(0,2):
-                    section_subsection = types[ii]
+                    section_subsection = props[ii]['SECTION_SUBSECTION']
                     p   = pp[ii]
                     crs = pp_crs[ii]
                     f_point = None
@@ -175,7 +179,8 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                         geometry_collection.append(
                             Point(
                                 modified_pp[-1:][0],
-                                properties={'name':route_id}
+                                properties={'name':route_id,
+                                            'description': description}
                             )
                         )
 
@@ -196,6 +201,7 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                                         'fill_color':'black',
                                         'alpha':255,
                                         'name':route_id,
+                                        'desription':description
                                         }
                         )
                     )
@@ -209,8 +215,8 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
     
     if route_id in airways.keys():
         airways[route_id].append(center)
-        waypoint_types[route_id].append(properties['SECTION_SUBSECTION'])
+        waypoint_types[route_id].append(properties)
     else:
         airways[route_id]=[center]
-        waypoint_types[route_id] = [properties['SECTION_SUBSECTION']]
+        waypoint_types[route_id] = [properties]
     return airways
