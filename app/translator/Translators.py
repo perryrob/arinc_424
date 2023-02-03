@@ -38,7 +38,7 @@ FIELD_REFERENCES={
     '5.27'  : (func527,'varchar'),
     '5.28'  : (func528,'varchar'),
     '5.29'  : (func529,'varchar'),
-    '5.30'  : (func530,'varchar'),
+    '5.30'  : (func530,'integer'),
     '5.31'  : (func531,'integer not null'),
     '5.32'  : (func532,'date not null'),
     '5.33'  : (func533,'varchar'),

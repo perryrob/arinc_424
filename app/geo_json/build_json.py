@@ -164,7 +164,9 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                 props = waypoint_types[route_id][p1:p2+1]
 
                 # Outboud properties
-                description='MEA: ' + props[0].get('min_altitude','UNK')
+                description='MEA: ' + \
+                    str(props[0].get('min_altitude','UNK')) + ' ' +\
+                    'Outbound Crs: ' + str(props[0].get('outbound_course','UNK'))
                 
                 modified_pp =[]
                 for ii  in range(0,2):
@@ -220,3 +222,30 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
         airways[route_id]=[center]
         waypoint_types[route_id] = [properties]
     return airways
+
+def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
+
+    if airport_id is None:
+        geometry_collection=[]
+        for airport_id in runways.keys():
+            runway = runways[airport_id]
+            geometry_collection.append(
+                Point( runway['center'],
+                       properties={'name':airport_id,
+                                   'description':airport_id
+                                   }
+                      )
+            )
+        gc = GeometryCollection( geometry_collection ,
+                                 properties={})
+        return Feature(geometry=gc)
+    
+    else:
+        if airport_id in runways.keys():
+            pass
+        else:
+            # New airport
+            runways[airport_id]={'center': (rwy[feature_values['a_longitude']],
+                                            rwy[feature_values['a_latitude']])}
+        
+    return runways

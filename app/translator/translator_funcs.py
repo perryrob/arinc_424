@@ -186,7 +186,10 @@ def func529(arg):
     return arg.strip()
 
 def func530(arg):
-    return arg.strip()
+    try:
+        return int(arg)
+    except:
+        return None
 
 def func531(arg):
     try:

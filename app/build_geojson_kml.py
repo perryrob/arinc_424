@@ -1,5 +1,5 @@
 
-from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY
+from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY, RUNWAY
 from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS 
 
 from os import path
@@ -10,12 +10,23 @@ from geo_json.build_kml import kml_conversion
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
 
+INCLUDE_AIRWAYS=['V','T','J']
+INCLUDE_WAYPOINT_TYPES=['W  ','C  ','R  ','W  ']
+
+
+def save_kmz(collection=[], file_name='UNK'):
+    f_collection = FeatureCollection(collection)
+    kml = kml_conversion( f_collection )
+    print(file_name)
+    kml.savekmz( file_name, format=False )
+
 if __name__ == '__main__':
 
     db_connect = DB_connect()
     conn = db_connect.get_connection()
     cursor = conn.cursor()
-    
+
+    print('Creta VOR json/kml')
     cursor.execute(FEATURE_SQL_QUERIES['VORS'][FEATURE_SQL])
     feature_values = FEATURE_SQL_QUERIES['VORS'][FEATURE_VALUES]
 
@@ -38,6 +49,10 @@ if __name__ == '__main__':
 
     cursor.close()
 
+    save_kmz(collection, 'ARINC_VOR.kmz')
+    collection=[]
+    
+    print('Creta NDB json/kml')
     cursor = conn.cursor()
     cursor.execute(FEATURE_SQL_QUERIES['NDBS'][FEATURE_SQL])
     feature_values = FEATURE_SQL_QUERIES['NDBS'][FEATURE_VALUES]
@@ -57,7 +72,11 @@ if __name__ == '__main__':
                               }))
 
     cursor.close()
-    
+
+    save_kmz(collection, 'ARINC_NDB.kmz')
+    collection=[]
+
+    print('Creta WAYPOINT json/kml')
     cursor = conn.cursor()
     cursor.execute(FEATURE_SQL_QUERIES['WAYPOINTS'][FEATURE_SQL])
     feature_values = FEATURE_SQL_QUERIES['WAYPOINTS'][FEATURE_VALUES]
@@ -65,6 +84,9 @@ if __name__ == '__main__':
     wps = cursor.fetchall()
 
     for wp in wps:
+        # Filter Waypoints
+        if wp[feature_values['type']] not in INCLUDE_WAYPOINT_TYPES:
+              continue
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
 
@@ -77,7 +99,10 @@ if __name__ == '__main__':
 
 
     cursor.close()
+    save_kmz(collection, 'ARINC_WAYPOINT.kmz')
+    collection=[]
     
+    print('Creta AIRWAY json/kml')
     cursor = conn.cursor()
     cursor.execute(FEATURE_SQL_QUERIES['AIRWAYS'][FEATURE_SQL])
     feature_values = FEATURE_SQL_QUERIES['AIRWAYS'][FEATURE_VALUES]
@@ -89,7 +114,7 @@ if __name__ == '__main__':
     
     for wp in wps:
         name = wp[feature_values['name']]
-        if name[0] in ['A','B','J', 'M', 'Q','R','Y','G','H']:
+        if name[0] not in INCLUDE_AIRWAYS:
             continue
         
         center = (wp[feature_values['longitude']],
@@ -103,7 +128,8 @@ if __name__ == '__main__':
             'name':name,
             'description_code': wp[feature_values['description_code']],
             'SECTION_SUBSECTION': fix_section_subsection,
-            'min_altitude': wp[feature_values['min_altitude']]
+            'min_altitude': wp[feature_values['min_altitude']],
+            'outbound_course': wp[feature_values['outbound_course']]
         }
         
         AIRWAY(airways,
@@ -114,15 +140,34 @@ if __name__ == '__main__':
                )
     
     collection.append( AIRWAY( airways, waypoint_types, None, None, None) )
-                        
+
+    save_kmz(collection, 'ARINC_AIRWAY.kmz')
+    collection=[]
+
+    cursor.close()
+    
+    print('Creta RUNWAY json/kml')
+    cursor = conn.cursor()
+    cursor.execute(FEATURE_SQL_QUERIES['RUNWAYS'][FEATURE_SQL])
+    feature_values = FEATURE_SQL_QUERIES['RUNWAYS'][FEATURE_VALUES]
+                      
+    rwys = cursor.fetchall()
+
+    runways={}
+    for rwy in rwys:
+        airport_id = rwy[feature_values['airport_id']]
+        center = (rwy[feature_values['a_longitude']],
+                  rwy[feature_values['a_latitude']])
+        
+        runways = RUNWAY(runways , airport_id, rwy, feature_values )
+
+    collection.append( RUNWAY(runways , None, None, feature_values=None ))
+    save_kmz(collection, 'ARINC_RUNWAY.kmz')
+
+    collection=[]
     conn.commit()
     conn.close()
-    
-    f_collection = FeatureCollection(collection)
 
-    kml = kml_conversion( f_collection )
-
-    kml.save( 'ARINC_DATA_FILE.kml' )
-    
-    with open('ARINC_DATA_FILE.geojson','w') as f:
-        dump(f_collection, f)
+    # print('geojson')
+    # with open('/tmp/ARINC_DATA_FILE.geojson','w') as f:
+    #    dump(f_collection, f)
