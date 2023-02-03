@@ -5,7 +5,7 @@ from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS
 from os import path
 
 from geojson import FeatureCollection, dump
-from geo_json.build_kml import kml_conversion
+from geo_json.build_kml import kml_conversion, fly_to_camera
 
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
@@ -20,6 +20,12 @@ def save_kmz(collection=[], file_name='UNK'):
     print(file_name)
     kml.savekmz( file_name, format=False )
 
+
+def fly_to( center=(0,0,0),roll=0,tilt=0,filename='fly_to.kmz'):
+    kml = fly_to_camera( center=center,roll=roll,tilt=tilt )
+    print(filename)
+    kml.savekmz( filename, format=False )
+    
 if __name__ == '__main__':
 
     db_connect = DB_connect()
@@ -162,12 +168,18 @@ if __name__ == '__main__':
         runways = RUNWAY(runways , airport_id, rwy, feature_values )
 
     collection.append( RUNWAY(runways , None, None, feature_values=None ))
+
     save_kmz(collection, 'ARINC_RUNWAY.kmz')
 
+    
+    
     collection=[]
     conn.commit()
     conn.close()
 
+    fly_to( center=(-110.9,32.1,36000),roll=0,tilt=0,filename='VIEW.kmz')
+
+    
     # print('geojson')
     # with open('/tmp/ARINC_DATA_FILE.geojson','w') as f:
     #    dump(f_collection, f)

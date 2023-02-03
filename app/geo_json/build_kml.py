@@ -25,6 +25,7 @@ def geojson_to_kml_primitives( geom, kml ):
 
     geom_type = geom['type']
     properties = geom.get('properties',{} )
+
     if geom_type == 'Polygon':
         shp = kml.newpolygon(name=properties.get('name','UNK'),
                              description=properties.get('description','UNK'),
@@ -57,6 +58,10 @@ def geojson_to_kml_primitives( geom, kml ):
         shp = kml.newpoint(name=properties.get('name','UNK'),
                            description=properties.get('description','UNK'),
                            coords=[geom['coordinates']])
+        shp.style.iconstyle.icon.href = properties.get(
+            'icon',
+            'http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png'
+            )
 
     elif geom_type == 'MultiLineString':
         multi_line = kml.newmultigeometry(
@@ -94,3 +99,20 @@ def kml_conversion( json_data, kml = None ):
 
     return kml
 
+def fly_to_camera( center=(0,0,0),roll=0,tilt=0, kml=None):
+
+    if kml is None:
+        kml = skml.Kml()
+        pnt = kml.newpoint()
+        camera = skml.Camera(
+            latitude=center[1],
+            longitude=center[0],
+            altitude=center[2],
+            roll=roll,
+            tilt=tilt,
+            altitudemode=skml.AltitudeMode.relativetoground)
+
+        pnt.camera = camera        
+
+    return kml
+    

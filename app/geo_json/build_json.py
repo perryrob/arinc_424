@@ -10,6 +10,8 @@ VOR_RADIUS=2.5
 NDB_RADIUS=1.0
 WAYPOINT_RADIUS=0.25
 
+ICON_PATH='http://maps.google.com/mapfiles/kml/'
+
 def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
 
     name = properties['name']
@@ -44,7 +46,7 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
         Point( center,
                properties={'name':properties['name'],
                            'description':properties['frequency'],
-                           'FOO':'BAR'
+                           'icon':ICON_PATH+'shapes/polygon.png'
                            }
               )
     ]
@@ -76,7 +78,8 @@ def NDB( radius=1, segments=36, center=(0,0), properties={} ):
         ),
          Point( center,
                 properties={'name':properties['name'],
-                            'description':properties['frequency']
+                            'description':properties['frequency'],
+                            'icon':ICON_PATH+'shapes/donut.png'
                            }
               )
     ]
@@ -94,57 +97,6 @@ def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
                     }
     )
     return Feature(geometry=p)
-
-def AIRWAY_NEW( airways={}, route_id='', center=(0,0), properties={} ):
-
-    if route_id is None: # None is passed in as a termination of the route
-        geometry_collection=[]
-        for route_id in airways.keys():
-            points = None
-            airway_lines = []
-            for point_props in airways[route_id]:
-                raw_point = [p[0] for p in airways[route_id]]
-                props =     [p[1] for p in airways[route_id]]
-                for i in range(1,len(raw_point)):
-                    try:
-                        p1 = raw_point[i-1]
-                        p2 = raw_point[i]
-
-                        crs_p1 = true_course_deg(p1,p2)
-                        crs_p2 = true_course_deg(p2,p1)
-                        
-                        prop_1 = props[i-1]
-                        prop_2 = props[i]
-
-                        pcp = [[p1,crs_p1,prop_1],[p2,crs_p2,prop_2]]
-
-                        new_point = []
-                    except Exception as e:
-                        print(route_id)
-                        raise(e)
-
-                # airway_lines.append((new_point[0],new_point[1]))
-                airway_lines.append((p1,p2))
-                    
-                geometry_collection.append(MultiLineString(
-                    airway_lines,
-                    properties={'line_color':'black',
-                                'line_width':2,
-                                'fill_color':'black',
-                                'alpha':255,
-                                'name':route_id,
-                                }
-                ))                    
-        # All routes
-        gc =  GeometryCollection( geometry_collection )
-        return Feature(geometry=gc)
-
-    if route_id in airways.keys():
-        airways[route_id].append([center,properties])
-    else:
-        airways[route_id]=[[center,properties]]
-
-    return airways
 
 def AIRWAY( airways={}, waypoint_types={}, route_id='',
             center=(0,0), properties={} ):
@@ -181,8 +133,11 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                         geometry_collection.append(
                             Point(
                                 modified_pp[-1:][0],
-                                properties={'name':route_id,
-                                            'description': description}
+                                properties={
+                                    'name':route_id,
+                                    'description': description,
+                                    'icon':ICON_PATH+'paddle/wht-diamond.png'
+                                }
                             )
                         )
 
@@ -229,11 +184,17 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
         geometry_collection=[]
         for airport_id in runways.keys():
             runway = runways[airport_id]
+            ap_icon=ICON_PATH+'paddle/grn-stars.png'
+            if runway['airport']['ifr'] =='Y':
+                ap_icon=ICON_PATH+'paddle/blu-stars.png'
+            
             geometry_collection.append(
                 Point( runway['center'],
-                       properties={'name':airport_id,
-                                   'description':airport_id
-                                   }
+                       properties={
+                           'name':airport_id,
+                           'description':airport_id,
+                           'icon':ap_icon
+                       }
                       )
             )
         gc = GeometryCollection( geometry_collection ,
@@ -242,10 +203,30 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
     
     else:
         if airport_id in runways.keys():
-            pass
+            runways[airport_id]['runways'].append(
+                {
+                    'id':rwy[feature_values['r_id']],
+                    'length':rwy[feature_values['r_length']],
+                    'magnetic_bearing':rwy[feature_values['r_magnetic_bearing']],
+                    'latitude':rwy[feature_values['r_latitude']],
+                    'longitude':rwy[feature_values['r_longitude']],
+                    'gradiant':rwy[feature_values['r_gradiant']],
+                    'elevation':rwy[feature_values['r_elevation']],
+                    'displaced_distance':rwy[feature_values['r_displaced_distance']],
+                    'width':rwy[feature_values['r_width']],
+                    'description':rwy[feature_values['r_description']]
+                }
+            )
         else:
             # New airport
-            runways[airport_id]={'center': (rwy[feature_values['a_longitude']],
-                                            rwy[feature_values['a_latitude']])}
-        
+            runways[airport_id]={
+                'center': (rwy[feature_values['a_longitude']],
+                           rwy[feature_values['a_latitude']]),
+                'airport':{
+                    'ifr':rwy[feature_values['a_ifr']],
+                    'mag_variation':rwy[feature_values['a_mag_variation']],
+                    'elevation':rwy[feature_values['a_elevation']],
+                },
+                'runways':[]
+            }
     return runways
