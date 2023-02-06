@@ -9,7 +9,7 @@ available data files from the [Government FAA Website](https://www.faa.gov/air_t
 
 ## Useage
 
-There are currently 2 programs in app. arinc_424_18_parser.py and build_geojson_kml.py. The first parses the CIFP data and the second one, build_geojson_kml.py creates a geojson and kml file that display NDBs, VORs, waypoints and airways. The files created are ARINC_DATA_FILE.[geojson,kml]
+There is one program in app. arinc_map.py. It can take several arguments to produce KMZ files that are loaded into Google Earth pro.
 
 ![TUS_Image](img/TUS_nav.png?raw=true)
 
@@ -55,10 +55,27 @@ update_cifp.sh
 
 * Run
 ```
-python app/arinc_parse.py
-python app/build_geojson_kml.py
+python app/arinc_map.py -h
 
 ```
+```
+usage: arinc_map.py [-h] [-c CIFP] [--vor] [--ndb] [--waypoint] [--airway] [--airport] [--clean_db] [--recreate_db] [--fly_to lon lat alt]
+
+Write KMZ or json files generated from a parsed CIFP file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CIFP, --cifp CIFP  Input CIFP file.
+  --vor                 create vor KMZ and/or json file
+  --ndb                 create ndb KMZ and/or json file
+  --waypoint            create waypoint KMZ and/or json file
+  --airway              create airway KMZ and/or json file
+  --airport             create airport KMZ and/or json file
+  --clean_db            Purge all data and tabless. then recreate db with blank schema.
+  --recreate_db         Purge all data and tabless. then recreate db with blank schema.parse CIFP file and load new data.
+  --fly_to lon lat alt  Enter lon(deg) lat(deg) alt(m) for VIEW.kmz
+```
+
 
 ## DB Tables Created
 
