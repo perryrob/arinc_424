@@ -47,6 +47,7 @@ def geojson_to_kml_primitives( geom, kml ):
         shp = kml.newlinestring(name=properties.get('name','UNK'),
                                 description=properties.get('description','UNK'),
                                 coords=geom['coordinates'])
+        shp.altitudemode=skml.AltitudeMode.clamptoground,
         shp.style.linestyle.color = get_color(
             properties.get('line_color','blue')
         )

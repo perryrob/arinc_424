@@ -158,7 +158,7 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                                         'fill_color':'black',
                                         'alpha':255,
                                         'name':route_id,
-                                        'desription':description
+                                        'description':description
                                         }
                         )
                     )
