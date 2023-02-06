@@ -1,7 +1,4 @@
 from parser.Parser import RecordParser
-from translator import Translators
-
-from translator.Translators import FIELD_REFERENCES
 
 import sys
 
@@ -13,31 +10,6 @@ from db.post_create_sql import POST_CREATE_SQL
 
 from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
 
-last_vhf = None
-STATS={}
-
-SUPPORTED=[
-    ('A','S'), # MORA
-    ('D',' '), # VOR
-    ('D','B'), # NDB
-    ('E','A'), # Waypoints
-    ('E','R'), # Airways
-    ('H','A'), # Helipads
-    ('H','C'), # Terminal Waypoints
-    ('H','F'), # Approaches
-    ('H','S'), # MSA
-    ('P','A'), # Airports
-    ('P','G'), # Runways
-    ('P','I'), # Localizer
-    ('P','N'), # airport Navaid
-    ('P','P'), # airport waypoint
-    ('P','D'), # SID
-    ('P','E'), # STAR
-    ('P','F'), # Approaches
-    ('P','S'), # MSA
-    ('U','C'), # CLASS B,C and D Airsapce
-    ('U','R'), # Special Use Airspace    
-]
 
 def cleanup_db(db_connect,db_tables):
     
@@ -90,35 +62,4 @@ def post_create_db( db_connect ):
         print('\t' + msg)
         db_connect.exec( sql )
 
-def close_db( db_connect ):
-    print('Committing changes.') 
-    db_connect.commit()
-    db_connect.close()
-    print('Database closed, success.')
-
-
-if __name__ == '__main__':
-
-    supported = SUPPORTED
-
-    print('Building create  statements...')
-    db_tables = DB_ARINC_Tables( supported, ARINC_424_PARSE_DEF,
-                                 FIELD_REFERENCES)
-
-    print('Connecting to the database')
-    db_connect = DB_connect()
-
-    cleanup_db(db_connect,db_tables)
-    
-    setup_db(db_connect,db_tables)
-    
-    parsed_record_dict = parse(ARINC424_INPUT_FILE, supported,
-                               {}, Translators)
-    
-    
-    load_db( db_connect, ARINC_424_PARSE_DEF, supported, parsed_record_dict)
-
-    post_create_db( db_connect )
-
-    close_db( db_connect )
 
