@@ -204,5 +204,3 @@ def AIRPORT_geom( conn, save_json=False ):
 
 def fly_center( center = (-110.9,32.1,36000) ):
     fly_to( center=center,roll=0,tilt=0,filename='VIEW.kmz')
-
-     
