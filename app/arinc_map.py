@@ -70,7 +70,19 @@ if __name__ == '__main__':
                         help='Enter lon(deg) lat(deg) alt(m) for VIEW.kmz',
                         default=None
                         )
-        
+
+    parser.add_argument('--airway_types', nargs='+', type=str,
+                        help='Enter airway type: V,T,J',
+                        default=['V','T','J']
+                        )
+
+    parser.add_argument('--waypoint_types', nargs='+', action='append', type=str,
+                        help='Enter airway type: W  ,C ,R ,W',
+                        default=['W  ','C  ','R  ','W  ']
+                        )
+    
+    
+    
     args=parser.parse_args()
 
     conn = None
@@ -110,10 +122,10 @@ if __name__ == '__main__':
         NDB_geom(conn)
 
     if args.waypoint:
-        WAYPOINT_geom(conn)
+        WAYPOINT_geom(conn,waypoint_types=args.waypoint_types)
         
     if args.airway:
-        AIRWAY_geom(conn)
+        AIRWAY_geom(conn,airway_types=args.airway_types)
         
     if args.airport:
         AIRPORT_geom(conn)

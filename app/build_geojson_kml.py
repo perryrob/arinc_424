@@ -92,7 +92,7 @@ def NDB_geom( conn, save_json=False ):
     if save_json :
         save_json( 'ARINC_NDB.json' )
 
-def WAYPOINT_geom( conn, save_json=False ):
+def WAYPOINT_geom( conn, waypoint_types=[],save_json=False ):
 
     print('Creta WAYPOINT json/kml')
 
@@ -106,7 +106,7 @@ def WAYPOINT_geom( conn, save_json=False ):
 
     for wp in wps:
         # Filter Waypoints
-        if wp[feature_values['type']] not in INCLUDE_WAYPOINT_TYPES:
+        if wp[feature_values['type']] not in waypoint_types:
               continue
         center = (wp[feature_values['longitude']],
                   wp[feature_values['latitude']])
@@ -124,7 +124,7 @@ def WAYPOINT_geom( conn, save_json=False ):
     if save_json :
         save_json( 'ARINC_WAYPOINR.json' )
 
-def AIRWAY_geom( conn, save_json=False ):
+def AIRWAY_geom( conn, airway_types=[], save_json=False ):
 
     print('Creta AIRWAY json/kml')
     collection=[]
@@ -140,7 +140,7 @@ def AIRWAY_geom( conn, save_json=False ):
     
     for wp in wps:
         name = wp[feature_values['name']]
-        if name[0] not in INCLUDE_AIRWAYS:
+        if name[0] not in airway_types:
             continue
         
         center = (wp[feature_values['longitude']],
@@ -155,7 +155,8 @@ def AIRWAY_geom( conn, save_json=False ):
             'description_code': wp[feature_values['description_code']],
             'SECTION_SUBSECTION': fix_section_subsection,
             'min_altitude': wp[feature_values['min_altitude']],
-            'outbound_course': wp[feature_values['outbound_course']]
+            'outbound_course': wp[feature_values['outbound_course']],
+            'inbound_course': wp[feature_values['inbound_course']]
         }
         
         AIRWAY(airways,

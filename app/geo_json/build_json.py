@@ -126,6 +126,14 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                     p   = pp[ii]
                     crs = pp_crs[ii]
                     f_point = None
+
+                    if ii == 1:
+                        description='MEA: ' + \
+                            str(props[0].get('min_altitude','UNK')) + ' ' +\
+                            'Outbound Crs: ' + \
+                            str(props[0].get('inbound_course','UNK'))
+
+                    
                     if section_subsection == 'D ':
                         modified_pp.append(point_project( p,
                                                           crs,
