@@ -89,14 +89,14 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     return fix_airways( conn, closest[0],
                         dep_loc, des_loc , AIRWAY_TYPES, graph_list )
 
-def fix_airways( conn, fix, dep_pt, dest_pt, AIRWAY_TYPES, graph_list ):
+def fix_airways( conn, FIX, dep_pt, dest_pt, AIRWAY_TYPES, graph_list ):
     
     # Closest VOR 
     # print(closest) ('TUS', 1.8265092953374382, 267.3)
     # Now find the closest outbound traversal
     sql = FEATURE_SQL_QUERIES['FIX_AIRWAYS'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_AIRWAYS'][FEATURE_VALUES]
-    sql = sql%fix
+    sql = sql%FIX
     
     cursor = conn.cursor()
     cursor.execute( sql )
@@ -143,5 +143,23 @@ def fix_airways( conn, fix, dep_pt, dest_pt, AIRWAY_TYPES, graph_list ):
             else:
                 graph_list[airway_name] = [ [id,airway_name,fix,sequence,dis] ]
 
+    # Now determine the correct direction of the airway
+    for airway in graph_list.keys():
+        last_dis = None
+        for fix in graph_list[airway]:
+            if last_dis is None:
+                last_dis = fix[4]
+            if fix[4] > last_dis:
+                graph_list[airway].reverse()
+                break
 
+    for airway in graph_list.keys():
+        new_fixes = []
+        accum=False
+        for fix_pt in graph_list[airway]:
+            if fix_pt[2] == FIX:
+                accum=True
+            if accum:
+                new_fixes.append(fix_pt)
+        graph_list[airway] = new_fixes
     return graph_list 
