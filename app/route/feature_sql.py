@@ -8,7 +8,8 @@ FEATURE_SQL_QUERIES={
         'latitude':1,
         'name':2,
         'frequency':3,
-        'declination':4
+        'declination':4,
+        'elevation':5
         }),
     'NDBS':('''select longitude,latitude,ndb_id,frequency from ndb where longitude is not NULL''',{
         'longitude':0,
@@ -35,7 +36,7 @@ FEATURE_SQL_QUERIES={
         'min_altitude':9
         
     }),
-    'AIRPORTS':('''select R.runway_id,R.runway_length,R.runway_magnetic_bearing,R.latitude,R.longitude,R.runway_gradient,R.landing_threshold_elevation,R.displaced_threshold_distance,R.runway_width,R.runway_description,A.airport_id,A.airport_reference_pt_latitude,A.airport_reference_pt_longitude,A.ifr_capability,A.magnetic_variation,A.airport_elevation from runway R join airport A on R.airport_fid=A.id where A.airport_id = '%s' by A.airport_id''',{
+    'AIRPORTS':('''select R.runway_id,R.runway_length,R.runway_magnetic_bearing,R.latitude,R.longitude,R.runway_gradient,R.landing_threshold_elevation,R.displaced_threshold_distance,R.runway_width,R.runway_description,A.airport_id,A.airport_reference_pt_latitude,A.airport_reference_pt_longitude,A.ifr_capability,A.magnetic_variation,A.airport_elevation from runway R join airport A on R.airport_fid=A.id where A.airport_id = '%s' ''',{
         'r_id':0,
         'r_length':1,
         'r_magnetic_bearing':2,
@@ -46,12 +47,12 @@ FEATURE_SQL_QUERIES={
         'r_displaced_distance':7,
         'r_width':8,
         'r_description':9,
-        'airport_id':10,
-        'a_latitude':11,
-        'a_longitude':12,
+        'name':10,
+        'latitude':11,
+        'longitude':12,
         'a_ifr':13,
         'a_mag_variation':14,
-        'a_elevation':15,
+        'elevation':15,
     })
         
 }

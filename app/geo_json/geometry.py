@@ -15,6 +15,20 @@ def rad_to_deg( rad ):
 def dis_to_radians( nm ):
     return (pi/(180*60))*nm
 
+def distance_from_rad(rad):
+    return ((180*60)/pi)*rad 
+
+def distance_deg( p1,p2 ):
+    lon1 = deg_to_rad(p1[0])
+    lat1 = deg_to_rad(p1[1])
+    
+    lon2 = deg_to_rad(p2[0])
+    lat2 = deg_to_rad(p2[1])
+
+    d=acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon1-lon2))
+
+    return distance_from_rad(d)
+
 def lat_from_center_dis( lat_rad, tc_rad, d_rad ):
     return asin(sin(lat_rad)*cos(d_rad)+cos(lat_rad)*sin(d_rad)*cos(tc_rad))
 

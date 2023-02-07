@@ -15,6 +15,7 @@ from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
+from route.find_route import distance_crs
 
 import argparse
 
@@ -81,6 +82,11 @@ if __name__ == '__main__':
                         default=['W  ','C  ','R  ','W  ']
                         )
     
+    parser.add_argument('--route', nargs='+', action='append', type=str,
+                        help='Enter a route airports waypoints vors',
+                        default=None
+                        )
+    
     
     
     args=parser.parse_args()
@@ -132,6 +138,20 @@ if __name__ == '__main__':
 
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])
-        
+
+
+    if args.route is not None:
+        points = distance_crs( conn, args.route )
+        print('FIX  CRS   DIS(nm)')
+        print('===================')
+        dis=0
+        for p in points:
+            print(p[0],' ',p[2],' ',p[3])
+            try:
+                dis = dis + float(p[3])
+            except Exception as e:
+                pass
+        print('---------------')
+        print('total:   ','{:4.1f}'.format(dis))
     conn.commit()
     conn.close()
