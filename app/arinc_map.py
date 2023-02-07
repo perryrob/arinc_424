@@ -15,7 +15,7 @@ from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs
+from route.find_route import distance_crs,proposed_route
 
 import argparse
 
@@ -86,6 +86,10 @@ if __name__ == '__main__':
                         help='Enter a route airports waypoints vors',
                         default=None
                         )
+    parser.add_argument('--proposed_route', nargs=2, action='append', type=str,
+                        help='Enter a route airports waypoints vors',
+                        default=None
+                        )
     
     
     
@@ -142,16 +146,27 @@ if __name__ == '__main__':
 
     if args.route is not None:
         points = distance_crs( conn, args.route )
-        print('FIX  CRS   DIS(nm)')
-        print('===================')
+        print('FIX\tCRS(t)\t   DIS(nm)')
+        print('===========================')
         dis=0
         for p in points:
-            print(p[0],' ',p[2],' ',p[3])
+            print(p[0],'\t',p[2],'\t',p[3])
             try:
                 dis = dis + float(p[3])
             except Exception as e:
                 pass
-        print('---------------')
-        print('total:   ','{:4.1f}'.format(dis))
+        print('---------------------------')
+        print('total:   \t','{:4.1f}'.format(dis))
+
+    if args.proposed_route is not None:
+        graph_list = proposed_route( conn, args.proposed_route[0][0],
+                                     args.proposed_route[0][1],
+                                     args.airway_types)
+        for k in graph_list.keys():
+            print(k)
+            fixes = graph_list[k]
+            for f in fixes:
+                print(f)
+        
     conn.commit()
     conn.close()
