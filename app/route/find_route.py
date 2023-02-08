@@ -66,100 +66,74 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     cursor.execute( sql )
 
     vors = cursor.fetchall()
-
-    dep_loc = (dep_pt[1][0],dep_pt[1][1])
-    des_loc = (dest_pt[1][0],dest_pt[1][1])
+    cursor.close()
     
+    # ( departure, destination )
+    points = [ (dep_pt[1][0],dep_pt[1][1]),               
+               (dest_pt[1][0],dest_pt[1][1])]
+    closest_vors = [None,None]
     # Loop through all the VORs and find the closest one to the departure
     # point
-    closest = None
     for vor in vors:
-        p2 = ( vor[values['longitude']],vor[values['latitude']])
-        name = vor[values['name']]
-        dis = distance_deg(dep_loc,p2)
-        declination = vor[values['declination']]
-        if closest is None and len(name) ==3:
-            closest = (name , dis, float(dest_pt[2]) + declination)
-        else:
-            if closest[1] > dis and len(name) ==3:
-                closest = (name, dis, float(dest_pt[2]) + declination)
-
-    cursor.close()
+            p2 = ( vor[values['longitude']],vor[values['latitude']])
+            name = vor[values['name']]            
+            declination = vor[values['declination']]
+            if len(name) != 3: continue            
+            for i in range(0,2):                
+                dis = distance_deg(points[i],p2)
+                # Gotta be a plain old VOR if there are 3 chars
+                if closest_vors[i] is None :
+                    closest_vors[i] = (
+                        name , dis, float(dest_pt[2]) + declination
+                    )
+                else:
+                    if closest_vors[i][1] > dis:
+                        closest_vors[i] = (
+                            name, dis, float(dest_pt[2]) + declination
+                        )
+                
     graph_list = {}
-    return fix_airways( conn, closest[0],
-                        dep_loc, des_loc , AIRWAY_TYPES, graph_list )
+    print( closest_vors )
+    return fix_airways( conn, closest_vors[0][0],closest_vors[1][0], 
+                        AIRWAY_TYPES, graph_list , None )
 
-def fix_airways( conn, FIX, dep_pt, dest_pt, AIRWAY_TYPES, graph_list ):
-    
-    # Closest VOR 
-    # print(closest) ('TUS', 1.8265092953374382, 267.3)
-    # Now find the closest outbound traversal
-    sql = FEATURE_SQL_QUERIES['FIX_AIRWAYS'][FEATURE_SQL]
-    values = FEATURE_SQL_QUERIES['FIX_AIRWAYS'][FEATURE_VALUES]
-    sql = sql%FIX
-    
+def fix_airways( conn, FIX, DEST_FIX, AIRWAY_TYPES, graph_list,
+                 ROUTE_ID ):
+
+    sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
+    values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
+
+    if ROUTE_ID is None:
+        sql = sql%(FIX,'XXXX')
+    else:
+        sql = sql%(FIX,ROUTE_ID)
+
     cursor = conn.cursor()
     cursor.execute( sql )
 
     airways = cursor.fetchall()
     cursor.close()
 
-    airway_list=[ a[values['name']] for a in airways ]
+    fix_sequences=[ (a[values['sequence']],a[values['route_id']])
+                    for a in airways ]
+
+               
+    for fix_sequence,route_id in fix_sequences:
+        for direction in [('<=','BCK'), ('>=','FWD')]:
+
+            sql = FEATURE_SQL_QUERIES['AIRWAY_SEQ'][FEATURE_SQL]
+            values = FEATURE_SQL_QUERIES['AIRWAY_SEQ'][FEATURE_VALUES]
+            sql = sql%(FIX,direction[0],fix_sequence)
     
-    # Start from the closest VOR and traverse all airways
-    for airway_name in airway_list:
+            cursor = conn.cursor()
+            cursor.execute( sql )
 
-        # Airway filter like ignore J routes etc.
-        if airway_name[0] not in  AIRWAY_TYPES:
-            continue
-        
-        sql= FEATURE_SQL_QUERIES['ROUTE_AIRWAYS'][FEATURE_SQL]
-        values = FEATURE_SQL_QUERIES['ROUTE_AIRWAYS'][FEATURE_VALUES]
-        sql= sql%(airway_name)
-        
-        cursor = conn.cursor()
-        cursor.execute( sql )
+            fixes = cursor.fetchall()
+            cursor.close()
 
-        airway = cursor.fetchall()
-
-        fix_list=[ (a[values['id']],
-                    a[values['fix_id']],a[values['sequence']],(
-                        a[values['longitude']],
-                        a[values['latitude']]
-                    )
-                    )
-                   for a in airway ]
-         
-        p2 = (dest_pt[0],dest_pt[1])
-
-        cursor.close()
-
-        for id,fix,sequence,p1 in fix_list:
-            dis = distance_deg(p1,p2)
-            if airway_name in graph_list.keys():
-                graph_list[airway_name].append(
-                    [id,airway_name,fix,sequence,dis]
-                )
-            else:
-                graph_list[airway_name] = [ [id,airway_name,fix,sequence,dis] ]
-
-    # Now determine the correct direction of the airway
-    for airway in graph_list.keys():
-        last_dis = None
-        for fix in graph_list[airway]:
-            if last_dis is None:
-                last_dis = fix[4]
-            if fix[4] > last_dis:
-                graph_list[airway].reverse()
-                break
-
-    for airway in graph_list.keys():
-        new_fixes = []
-        accum=False
-        for fix_pt in graph_list[airway]:
-            if fix_pt[2] == FIX:
-                accum=True
-            if accum:
-                new_fixes.append(fix_pt)
-        graph_list[airway] = new_fixes
-    return graph_list 
+            for fix in fixes:
+               fix_airways( conn, fix[values['fix_id']],
+                            DEST_FIX,
+                            AIRWAY_TYPES, graph_list,
+                            route_id )
+               print(direction,fix)

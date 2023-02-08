@@ -78,6 +78,25 @@ FEATURE_SQL_QUERIES={
         'fix_id':10,
         'id':11
     }),
+    
+    'FIX_SEQUENCE':('''select id,route_id,sequence from airway where fix_id = '%s' and route_id != '%s' ''',{
+        'id':0,
+        'route_id':1,
+        'sequence':2
+    }),
+    'AIRWAY_SEQ':('''select A.route_id, A.sequence, A.longitude, A.latitude,A.fix_section_code,A.fix_subsection_code,A.outbound_mag_course,A.inbound_mag_course,A.description_code,A.minimum_altitude,A.fix_id,A.id from airway A where A.route_id in (select route_id from airway where fix_id = '%s') and sequence %s %d order by route_id,sequence''',{
+        'route_id':0,
+        'sequence':1,
+        'longitude':2,
+        'latitude':3,
+        'fix_section_code':4,
+        'fix_subsection_code':5,
+        'outbound_course':6,
+        'inbound_course':7,
+        'description_code':8,
+        'min_altitude':9,
+        'fix_id':10,
+        'id':11
+    }),
 
-        
 }
