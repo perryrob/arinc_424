@@ -15,7 +15,7 @@ from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs,proposed_route
+from route.find_route import distance_crs,proposed_route,find_airways
 
 import argparse
 
@@ -159,14 +159,12 @@ if __name__ == '__main__':
         print('total:   \t','{:4.1f}'.format(dis))
 
     if args.proposed_route is not None:
-        graph_list = proposed_route( conn, args.proposed_route[0][0],
-                                     args.proposed_route[0][1],
-                                     args.airway_types)
-        for k in graph_list.keys():
-            print(k)
-            fixes = graph_list[k]
-            for f in fixes:
-                print(f)
+        dep_vor,des_vor = proposed_route( conn, args.proposed_route[0][0],
+                                  args.proposed_route[0][1],
+                                  args.airway_types)
+        print(dep_vor,des_vor)
+
+        ret_val = find_airways(conn,dep_vor,des_vor,args.airway_types)
         
     conn.commit()
     conn.close()

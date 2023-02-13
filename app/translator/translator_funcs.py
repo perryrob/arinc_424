@@ -177,7 +177,12 @@ def func526(arg):
     return func524(arg)
 
 def func527(arg):
-    return arg.strip()
+    try:
+        base = float(arg[0:3])
+        tenths = float(arg[3:4]) / 10
+        return base + tenths
+    except:
+        return None
 
 def func528(arg):
     return arg.strip()

@@ -35,7 +35,7 @@ FIELD_REFERENCES={
     '5.24'  : (func524,'float'),
     '5.25'  : (func525,'float'),
     '5.26'  : (func526,'float'),
-    '5.27'  : (func527,'varchar'),
+    '5.27'  : (func527,'float'),
     '5.28'  : (func528,'varchar'),
     '5.29'  : (func529,'varchar'),
     '5.30'  : (func530,'integer'),

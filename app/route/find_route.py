@@ -1,12 +1,82 @@
 # find_route
 
 from .feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
-
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
-
 from geo_json.geometry import true_course_deg, distance_deg
-
 from math import fabs
+import collections
+import heapq
+
+
+Fix = collections.namedtuple('Fix','id route_id fix_id distance')
+Route   = collections.namedtuple('Route'  , 'distance path')
+
+class Heap(object):
+    """A min-heap."""
+
+    def __init__(self):
+        self._values = []
+
+    def push(self, value):
+        """Push the value item onto the heap."""
+        heapq.heappush(self._values, value)
+
+    def pop(self):
+        """ Pop and return the smallest item from the heap."""
+        return heapq.heappop(self._values)
+
+    def __len__(self):
+        return len(self._values)
+
+class Graph(object):
+    """ A hash-table implementation of an undirected graph."""
+    def __init__(self):
+        # Map each node to a set of nodes connected to it
+        self._neighbors = collections.defaultdict(set)
+
+    def connect(self, node1, node2):
+        self._neighbors[node1].add(node2)
+        self._neighbors[node2].add(node1)
+
+    def neighbors(self, node):
+        yield from self._neighbors[node]
+
+    def dijkstra(self, origins, destinations):
+        """Use Dijkstra's algorithm to find the cheapest path."""
+
+        routes = Heap()
+        for origin in origins:
+            for neighbor in self.neighbors(origin):
+                distance = neighbor.distance
+                routes.push(Route(distance=distance, path=[origin, neighbor]))
+            visited = set()
+            visited.add(origin)
+
+        while routes:
+
+            # Find the nearest yet-to-visit airport
+            distance, path = routes.pop()
+            fix = path[-1]
+            if fix in visited:
+                continue
+
+            # We have arrived! Wo-hoo!
+            if fix in  destinations:
+                return distance, path
+
+            # Tentative distances to all the unvisited neighbors
+            for neighbor in self.neighbors(fix):
+                if neighbor not in visited:
+                    # Total spent so far plus the price of getting there
+                    new_distance = distance + neighbor.distance
+                    new_path  = path  + [neighbor]
+                    routes.push(Route(new_distance, new_path))
+
+            visited.add(fix)
+
+        return float('infinity')
+
+
 
 def distance_crs( conn, fixes ):
 
@@ -71,17 +141,19 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     # ( departure, destination )
     points = [ (dep_pt[1][0],dep_pt[1][1]),               
                (dest_pt[1][0],dest_pt[1][1])]
+    
     closest_vors = [None,None]
     # Loop through all the VORs and find the closest one to the departure
     # point
     for vor in vors:
-            p2 = ( vor[values['longitude']],vor[values['latitude']])
+            p_vor = ( vor[values['longitude']],vor[values['latitude']])
             name = vor[values['name']]            
             declination = vor[values['declination']]
+            # filter to take only 3 letter VORs
             if len(name) != 3: continue            
             for i in range(0,2):                
-                dis = distance_deg(points[i],p2)
-                # Gotta be a plain old VOR if there are 3 chars
+                dis = distance_deg(points[i],p_vor)
+
                 if closest_vors[i] is None :
                     closest_vors[i] = (
                         name , dis, float(dest_pt[2]) + declination
@@ -93,20 +165,13 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
                         )
                 
     graph_list = {}
-    print( closest_vors )
-    return fix_airways( conn, closest_vors[0][0],closest_vors[1][0], 
-                        AIRWAY_TYPES, graph_list , None )
 
-def fix_airways( conn, FIX, DEST_FIX, AIRWAY_TYPES, graph_list,
-                 ROUTE_ID ):
+    return (closest_vors[0][0],closest_vors[1][0])
+
+def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
 
     sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
-
-    if ROUTE_ID is None:
-        sql = sql%(FIX,'XXXX')
-    else:
-        sql = sql%(FIX,ROUTE_ID)
 
     cursor = conn.cursor()
     cursor.execute( sql )
@@ -114,26 +179,62 @@ def fix_airways( conn, FIX, DEST_FIX, AIRWAY_TYPES, graph_list,
     airways = cursor.fetchall()
     cursor.close()
 
-    fix_sequences=[ (a[values['sequence']],a[values['route_id']])
-                    for a in airways ]
+    neighbors = collections.defaultdict(set)
 
-               
-    for fix_sequence,route_id in fix_sequences:
-        for direction in [('<=','BCK'), ('>=','FWD')]:
+    origin_fix=None
+    destination_fix = None
 
-            sql = FEATURE_SQL_QUERIES['AIRWAY_SEQ'][FEATURE_SQL]
-            values = FEATURE_SQL_QUERIES['AIRWAY_SEQ'][FEATURE_VALUES]
-            sql = sql%(FIX,direction[0],fix_sequence)
+    graph = Graph()
+
+    departure_fixes = []
+    destination_fixes = []
     
-            cursor = conn.cursor()
-            cursor.execute( sql )
+    for fix in airways:
+        
+        if fix[values['route_id']][0] not in AIRWAY_TYPES:
+            continue
 
-            fixes = cursor.fetchall()
-            cursor.close()
+        airway_fix = Fix( fix[values['id']],
+                          fix[values['route_id']],
+                          fix[values['fix_id']],
+                          fix[values['distance']])
+        DEBUG=False
+        if airway_fix.route_id == 'V66':
+            DEBUG=True
 
-            for fix in fixes:
-               fix_airways( conn, fix[values['fix_id']],
-                            DEST_FIX,
-                            AIRWAY_TYPES, graph_list,
-                            route_id )
-               print(direction,fix)
+        if DEBUG:
+            print( airway_fix.fix_id)
+        
+        if fix[values['fix_id']] == DEP_VOR:
+            departure_fixes.append(airway_fix)
+
+        if fix[values['fix_id']] == DEST_VOR:
+            destination_fixes.append(airway_fix)
+
+        if fix[values['distance']] is None:
+            # This is the end of the airway
+            graph.connect(origin_fix,
+                          Fix( fix[values['id']],
+                               fix[values['route_id']],
+                               fix[values['fix_id']],
+                               0)
+                          )
+            destination_fix = None
+            origin_fix = None
+            continue
+        
+        if origin_fix is None:
+            origin_fix = airway_fix
+            continue
+        
+        if destination_fix is None:
+            destination_fix = airway_fix
+            graph.connect(origin_fix,destination_fix)
+            origin_fix = destination_fix
+            destination_fix = None
+
+
+    distance,path =  graph.dijkstra( departure_fixes, destination_fixes )
+    print('==================================================================')
+    for fix in path:
+        print(fix)
