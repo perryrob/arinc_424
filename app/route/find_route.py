@@ -11,6 +11,43 @@ import heapq
 Fix = collections.namedtuple('Fix','id route_id fix_id distance')
 Route   = collections.namedtuple('Route'  , 'distance path')
 
+
+
+class BiEdge:
+    def __init__(self,name,node1,node2,distance):
+
+        self.name = name
+
+        node1.connect(node2)
+        
+        self.next_edge = None
+        self.distance = distance
+
+        
+    def get_id_left(self):        
+        return self.id_left
+
+    def get_id_right(self):        
+        return self.id_right
+
+    def connect(self,edge):
+        self.next_edge = edge
+        edge.next_edge = self
+    
+class NodeFix:
+
+    def __init__(self,name):
+        self.name = name
+        self.sibling = None
+        
+    def connect(self,node):
+        self.sibling = node
+        node.sibling = self
+        
+    def cost(self):
+        return self.distance
+
+        
 class Heap(object):
     """A min-heap."""
 
@@ -179,62 +216,20 @@ def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
     airways = cursor.fetchall()
     cursor.close()
 
-    neighbors = collections.defaultdict(set)
-
-    origin_fix=None
-    destination_fix = None
-
-    graph = Graph()
-
-    departure_fixes = []
-    destination_fixes = []
+    fix_routes={}
     
     for fix in airways:
         
         if fix[values['route_id']][0] not in AIRWAY_TYPES:
             continue
 
-        airway_fix = Fix( fix[values['id']],
-                          fix[values['route_id']],
-                          fix[values['fix_id']],
-                          fix[values['distance']])
-        DEBUG=False
-        if airway_fix.route_id == 'V66':
-            DEBUG=True
-
-        if DEBUG:
-            print( airway_fix.fix_id)
+        if fix[values['fix_id']] in fix_routes.keys():
+            fix_routes[fix[values['fix_id']]].append(fix[values['route_id']])
+        else:
+            fix_routes[fix[values['fix_id']]] = [ fix[values['route_id']] ]
         
-        if fix[values['fix_id']] == DEP_VOR:
-            departure_fixes.append(airway_fix)
-
-        if fix[values['fix_id']] == DEST_VOR:
-            destination_fixes.append(airway_fix)
-
-        if fix[values['distance']] is None:
-            # This is the end of the airway
-            graph.connect(origin_fix,
-                          Fix( fix[values['id']],
-                               fix[values['route_id']],
-                               fix[values['fix_id']],
-                               0)
-                          )
-            destination_fix = None
-            origin_fix = None
-            continue
-        
-        if origin_fix is None:
-            origin_fix = airway_fix
-            continue
-        
-        if destination_fix is None:
-            destination_fix = airway_fix
-            graph.connect(origin_fix,destination_fix)
-            origin_fix = destination_fix
-            destination_fix = None
-
-
-    distance,path =  graph.dijkstra( departure_fixes, destination_fixes )
+    for fix in fix_routes.keys():
+        print(fix,fix_routes[fix])
+            
     print('==================================================================')
-    for fix in path:
-        print(fix)
+
