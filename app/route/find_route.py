@@ -8,11 +8,26 @@ import collections
 import heapq
 
 
-Fix = collections.namedtuple('Fix','id route_id fix_id sequence distance')
-Edge = collections.namedtuple('Fix','id neigbor_id')
-Route   = collections.namedtuple('Route'  , 'distance path')
+from route.graph import RouteGraph
 
 
+class Fix:
+    def __init__(self, id, route_id, fix_id, sequence, distance,
+                 longitude,latitude):
+        self.id = id
+        self.route_id = route_id
+        self.fix_id = fix_id
+        self.sequence = sequence
+        self.distance = distance
+        self.point = (longitude, latitude)
+        self.neighbors = []
+        self.routes = []
+        
+    def add_fix(self, fix):
+        self.neighbors.append(fix)
+        
+    def add_route(self, route):
+        self.routes.append(route)
 
 class BiEdge:
     def __init__(self,name,node1,node2,distance):
@@ -218,7 +233,7 @@ def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
     cursor.close()
 
     fix_routes={}
-    
+    route_fixes={}
     for fix in airways:
 
         id = fix[values['id']]
@@ -226,19 +241,37 @@ def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
         fix_id = fix[values['fix_id']]
         sequence = fix[values['sequence']]
         distance = fix[values['distance']]
-
+        longitude = fix[values['longitude']]
+        latitude = fix[values['latitude']]
         
         if route_id[0] not in AIRWAY_TYPES:
             continue
 
-        fix_tup = Fix(id, route_id, fix_id, sequence, distance )
+        fix_tup = Fix(
+            id, route_id, fix_id, sequence, distance, longitude, latitude )
         
         if fix_id in fix_routes.keys():
             fix_routes[fix_id].append(fix_tup)
         else:
             fix_routes[fix_id] = [ fix_tup ]
 
+        if route_id in route_fixes.keys():
+            route_fixes[route_id].append(fix_tup)
+        else:
+            route_fixes[route_id] = [ fix_tup ]
+        
+
+    route_graph = RouteGraph( fix_routes,route_fixes )
+    route_graph.propose_route(DEP_VOR,DEST_VOR)
+    '''            
+    for route in fix_routes[DEP_VOR]:
+        print( route )
+    
     for fix in fix_routes.keys():
-        print(fix_routes[fix])
+        print(fix,fix_routes[fix])
+
+    for route in route_fixes.keys():
+        print(route,route_fixes[route])
+    '''
     print('==================================================================')
 
