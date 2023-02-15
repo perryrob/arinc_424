@@ -8,7 +8,8 @@ import collections
 import heapq
 
 
-Fix = collections.namedtuple('Fix','id route_id fix_id distance')
+Fix = collections.namedtuple('Fix','id route_id fix_id sequence distance')
+Edge = collections.namedtuple('Fix','id neigbor_id')
 Route   = collections.namedtuple('Route'  , 'distance path')
 
 
@@ -219,17 +220,25 @@ def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
     fix_routes={}
     
     for fix in airways:
+
+        id = fix[values['id']]
+        route_id = fix[values['route_id']]
+        fix_id = fix[values['fix_id']]
+        sequence = fix[values['sequence']]
+        distance = fix[values['distance']]
+
         
-        if fix[values['route_id']][0] not in AIRWAY_TYPES:
+        if route_id[0] not in AIRWAY_TYPES:
             continue
 
-        if fix[values['fix_id']] in fix_routes.keys():
-            fix_routes[fix[values['fix_id']]].append(fix[values['route_id']])
-        else:
-            fix_routes[fix[values['fix_id']]] = [ fix[values['route_id']] ]
+        fix_tup = Fix(id, route_id, fix_id, sequence, distance )
         
+        if fix_id in fix_routes.keys():
+            fix_routes[fix_id].append(fix_tup)
+        else:
+            fix_routes[fix_id] = [ fix_tup ]
+
     for fix in fix_routes.keys():
-        print(fix,fix_routes[fix])
-            
+        print(fix_routes[fix])
     print('==================================================================')
 
