@@ -15,7 +15,7 @@ from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs,proposed_route,find_airways
+from route.find_route import distance_crs,closest_vors,find_route
 
 import argparse
 
@@ -159,11 +159,24 @@ if __name__ == '__main__':
         print('total:   \t','{:4.1f}'.format(dis))
 
     if args.proposed_route is not None:
-        dep_vor,des_vor = proposed_route( conn, args.proposed_route[0][0],
-                                  args.proposed_route[0][1],
-                                  args.airway_types)
+        dep_vor,des_vor = closest_vors( conn, args.proposed_route[0][0],
+                                        args.proposed_route[0][1],
+                                        args.airway_types)
 
-        ret_val = find_airways(conn,dep_vor,des_vor,args.airway_types)
-        
+        fixes,total_distance = find_route(conn,dep_vor,des_vor,args.airway_types)
+        print( fixes[0] )
+        for i in range(1,len(fixes),2):
+            fix1= fixes[i-1]
+            fix2=fixes[i]
+            route_str=''
+            distance=-1
+            for edge in fix1.get_edges():
+                if fix1 in edge and fix2 in edge:
+                    route_str = route_str + edge.name + '-'
+                    distance = edge.get_distance()
+            print('\t'+route_str[:-1]+'|'+str(distance)+'|')
+            print(fix2)
+        print('-----------------------------')
+        print('Total Distance:', total_distance)
     conn.commit()
     conn.close()

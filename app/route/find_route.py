@@ -58,7 +58,7 @@ def distance_crs( conn, fixes ):
             
     return points
 
-def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
+def closest_vors( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
     dep_pt,dest_pt = distance_crs( conn, [[dep,dest]] )
 
@@ -102,7 +102,7 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
     return (closest_vors[0][0],closest_vors[1][0])
 
-def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
+def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
 
     sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
@@ -168,6 +168,13 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
 
     path_info = find_path(graph,dep_fix.id,des_fix.id)
 
+    ret_val = []
+    for node_idx in path_info.nodes:
+        ret_val.append( id_name_map[node_idx] )
+
+    return (ret_val,path_info.total_cost)
+
+    '''
     for node_idx in range(1,len(path_info.nodes)):
         f1 = path_info.nodes[node_idx -1]
         f2 = path_info.nodes[node_idx]
@@ -182,6 +189,5 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
                 distance = edge.get_distance()
         print(route_str[:-1]+'|'+str(distance)+'|',end='')
         print(fix_2.fix_id)
-        
-    print('==================================================================')
+    '''
 
