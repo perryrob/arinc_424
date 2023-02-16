@@ -116,6 +116,8 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
     fix_map = {}
     id_name_map = {}
 
+    edge_map={}
+    
     # We need to make sure that we don't make duplicate fixes.
     # That makes assembling the graph harder
 
@@ -164,23 +166,22 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
     dep_fix = fix_map[DEP_fix]
     des_fix = fix_map[DES_fix]
 
-    # fix_map['PXR'].print_edges()
-    
     path_info = find_path(graph,dep_fix.id,des_fix.id)
 
-    for node_id in path_info.nodes:
-        print(id_name_map[node_id])
-    print(path_info)
+    for node_idx in range(1,len(path_info.nodes)):
+        f1 = path_info.nodes[node_idx -1]
+        f2 = path_info.nodes[node_idx]
+        fix_1 = id_name_map[f1]
+        fix_2 = id_name_map[f2]
+        print(fix_1.fix_id,end='|')
+        distance=-1
+        route_str=''
+        for edge in fix_1.get_edges():
+            if fix_1 in edge and fix_2 in edge:
+                route_str = route_str + edge.name + '-'
+                distance = edge.get_distance()
+        print(route_str[:-1]+'|'+str(distance)+'|',end='')
+        print(fix_2.fix_id)
         
-    '''            
-    for route in fix_routes[DEP_VOR]:
-        print( route )
-    
-    for fix in fix_routes.keys():
-        print(fix,fix_routes[fix])
-
-    for route in route_fixes.keys():
-        print(route,route_fixes[route])
-    '''
     print('==================================================================')
 

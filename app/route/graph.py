@@ -40,7 +40,9 @@ class Edge:
                                       fix2.point )
         self.fix1.add_edge(self)
         self.fix2.add_edge(self)
-        
+
+        self.fixes = [fix1,fix2]
+
     def get_distance(self):
         return self.distance
 
@@ -48,6 +50,9 @@ class Edge:
         if fix is self.fix2:
             return self.fix1
         return self.fix2
+
+    def __iter__(self):
+        yield from self.fixes
     
     def __str__(self):
         return str(self.fix1) + ' | ' + self.name + \
