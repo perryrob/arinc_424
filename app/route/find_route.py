@@ -170,8 +170,8 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
 
     for node_id in path_info.nodes:
         print(id_name_map[node_id])
-    
-
+    print(path_info)
+        
     '''            
     for route in fix_routes[DEP_VOR]:
         print( route )
