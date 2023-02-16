@@ -7,128 +7,9 @@ from math import fabs
 import collections
 import heapq
 
+from route.graph import Fix, Edge
 
-from route.graph import RouteGraph
-
-
-class Fix:
-    def __init__(self, id, route_id, fix_id, sequence, distance,
-                 longitude,latitude):
-        self.id = id
-        self.route_id = route_id
-        self.fix_id = fix_id
-        self.sequence = sequence
-        self.distance = distance
-        self.point = (longitude, latitude)
-        self.neighbors = []
-        self.routes = []
-        
-    def add_fix(self, fix):
-        self.neighbors.append(fix)
-        
-    def add_route(self, route):
-        self.routes.append(route)
-
-class BiEdge:
-    def __init__(self,name,node1,node2,distance):
-
-        self.name = name
-
-        node1.connect(node2)
-        
-        self.next_edge = None
-        self.distance = distance
-
-        
-    def get_id_left(self):        
-        return self.id_left
-
-    def get_id_right(self):        
-        return self.id_right
-
-    def connect(self,edge):
-        self.next_edge = edge
-        edge.next_edge = self
-    
-class NodeFix:
-
-    def __init__(self,name):
-        self.name = name
-        self.sibling = None
-        
-    def connect(self,node):
-        self.sibling = node
-        node.sibling = self
-        
-    def cost(self):
-        return self.distance
-
-        
-class Heap(object):
-    """A min-heap."""
-
-    def __init__(self):
-        self._values = []
-
-    def push(self, value):
-        """Push the value item onto the heap."""
-        heapq.heappush(self._values, value)
-
-    def pop(self):
-        """ Pop and return the smallest item from the heap."""
-        return heapq.heappop(self._values)
-
-    def __len__(self):
-        return len(self._values)
-
-class Graph(object):
-    """ A hash-table implementation of an undirected graph."""
-    def __init__(self):
-        # Map each node to a set of nodes connected to it
-        self._neighbors = collections.defaultdict(set)
-
-    def connect(self, node1, node2):
-        self._neighbors[node1].add(node2)
-        self._neighbors[node2].add(node1)
-
-    def neighbors(self, node):
-        yield from self._neighbors[node]
-
-    def dijkstra(self, origins, destinations):
-        """Use Dijkstra's algorithm to find the cheapest path."""
-
-        routes = Heap()
-        for origin in origins:
-            for neighbor in self.neighbors(origin):
-                distance = neighbor.distance
-                routes.push(Route(distance=distance, path=[origin, neighbor]))
-            visited = set()
-            visited.add(origin)
-
-        while routes:
-
-            # Find the nearest yet-to-visit airport
-            distance, path = routes.pop()
-            fix = path[-1]
-            if fix in visited:
-                continue
-
-            # We have arrived! Wo-hoo!
-            if fix in  destinations:
-                return distance, path
-
-            # Tentative distances to all the unvisited neighbors
-            for neighbor in self.neighbors(fix):
-                if neighbor not in visited:
-                    # Total spent so far plus the price of getting there
-                    new_distance = distance + neighbor.distance
-                    new_path  = path  + [neighbor]
-                    routes.push(Route(new_distance, new_path))
-
-            visited.add(fix)
-
-        return float('infinity')
-
+from dijkstar import Graph, find_path
 
 
 def distance_crs( conn, fixes ):
@@ -221,7 +102,7 @@ def proposed_route( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
     return (closest_vors[0][0],closest_vors[1][0])
 
-def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
+def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
 
     sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
@@ -232,37 +113,65 @@ def find_airways( conn, DEP_VOR, DEST_VOR, AIRWAY_TYPES ):
     airways = cursor.fetchall()
     cursor.close()
 
-    fix_routes={}
-    route_fixes={}
+    fix_map = {}
+    name_id_map = {}
+
+    # We need to make sure that we don't make duplicate fixes.
+    # That makes assembling the graph harder
+
+    airway_fixes = []
+
+    graph = Graph(undirected=True)
+    
     for fix in airways:
 
         id = fix[values['id']]
         route_id = fix[values['route_id']]
         fix_id = fix[values['fix_id']]
         sequence = fix[values['sequence']]
-        distance = fix[values['distance']]
         longitude = fix[values['longitude']]
-        latitude = fix[values['latitude']]
+        latitude  = fix[values['latitude']]
+        description_code = fix[values['description_code']].strip()
+
+        # Description codes of EE,NE,VE indicate end of routes
         
         if route_id[0] not in AIRWAY_TYPES:
             continue
 
-        fix_tup = Fix(
-            id, route_id, fix_id, sequence, distance, longitude, latitude )
+        fix_node = None
         
-        if fix_id in fix_routes.keys():
-            fix_routes[fix_id].append(fix_tup)
+        if id in fix_map.keys():
+            fix_node = fix_map[id]
         else:
-            fix_routes[fix_id] = [ fix_tup ]
+            name_id_map[fix_id] = id
+            fix_node = Fix(
+                id, fix_id, longitude, latitude
+            )
+            fix_map[id] = fix_node
 
-        if route_id in route_fixes.keys():
-            route_fixes[route_id].append(fix_tup)
-        else:
-            route_fixes[route_id] = [ fix_tup ]
+        airway_fixes.append(fix_node)
         
+        if len(airway_fixes) >= 2:
+            fix_1 = airway_fixes[-2]
+            fix_2 = airway_fixes[-1]
+            edge = Edge(fix_1,fix_2,route_id)
+            graph.add_edge( fix_1.id, fix_2.id, edge.get_distance())
+        # Clear the prevoius route and start a new one.
+        if description_code in ['EE','NE','VE']:
+            airway_fixes.clear()
+        
+    # Now I have the entire CIFP graph assembled.
+    dep_fix = name_id_map[DEP_fix]
+    des_fix = name_id_map[DES_fix]
 
-    route_graph = RouteGraph( fix_routes,route_fixes )
-    route_graph.propose_route(DEP_VOR,DEST_VOR)
+    print( DEP_fix,'->',DES_fix)
+    
+    path_info = find_path(graph,dep_fix,des_fix)
+
+    for node_id in path_info.nodes:
+        print(fix_map[node_id])
+    
+
     '''            
     for route in fix_routes[DEP_VOR]:
         print( route )

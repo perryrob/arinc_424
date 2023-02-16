@@ -162,7 +162,6 @@ if __name__ == '__main__':
         dep_vor,des_vor = proposed_route( conn, args.proposed_route[0][0],
                                   args.proposed_route[0][1],
                                   args.airway_types)
-        print(dep_vor,des_vor)
 
         ret_val = find_airways(conn,dep_vor,des_vor,args.airway_types)
         

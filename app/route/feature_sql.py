@@ -43,13 +43,14 @@ FEATURE_SQL_QUERIES={
         'declination':4,
         'elevation':5
         }),
-    'FIX_SEQUENCE':('''select id,route_id,fix_id,sequence,route_distance_from,longitude,latitude from airway  order by route_id,sequence''',{
+    'FIX_SEQUENCE':('''select id,route_id,fix_id,sequence,route_distance_from,longitude,latitude,description_code from airway  order by route_id,sequence''',{
         'id':0,
         'route_id':1,
         'fix_id':2,
         'sequence':3,
         'distance':4,
         'longitude':5,
-        'latitude':6
+        'latitude':6,
+        'description_code':7
     }),
 }
