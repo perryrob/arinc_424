@@ -114,7 +114,7 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
     cursor.close()
 
     fix_map = {}
-    name_id_map = {}
+    id_name_map = {}
 
     # We need to make sure that we don't make duplicate fixes.
     # That makes assembling the graph harder
@@ -140,15 +140,15 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
 
         fix_node = None
         
-        if id in fix_map.keys():
-            fix_node = fix_map[id]
+        if fix_id in fix_map.keys():
+            fix_node = fix_map[fix_id]
         else:
-            name_id_map[fix_id] = id
             fix_node = Fix(
                 id, fix_id, longitude, latitude
             )
-            fix_map[id] = fix_node
-
+            fix_map[fix_id] = fix_node
+            id_name_map[id] = fix_node
+                        
         airway_fixes.append(fix_node)
         
         if len(airway_fixes) >= 2:
@@ -161,15 +161,15 @@ def find_airways( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
             airway_fixes.clear()
         
     # Now I have the entire CIFP graph assembled.
-    dep_fix = name_id_map[DEP_fix]
-    des_fix = name_id_map[DES_fix]
+    dep_fix = fix_map[DEP_fix]
+    des_fix = fix_map[DES_fix]
 
-    print( DEP_fix,'->',DES_fix)
+    # fix_map['PXR'].print_edges()
     
-    path_info = find_path(graph,dep_fix,des_fix)
+    path_info = find_path(graph,dep_fix.id,des_fix.id)
 
     for node_id in path_info.nodes:
-        print(fix_map[node_id])
+        print(id_name_map[node_id])
     
 
     '''            
