@@ -1,6 +1,6 @@
 
 from build_geojson_kml import VOR_geom, NDB_geom, WAYPOINT_geom
-from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center
+from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center, PROPOSED_ROUTE_geom
 
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
@@ -15,7 +15,7 @@ from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs,closest_vors,find_route
+from route.find_route import distance_crs,closest_wpts,find_route
 
 import argparse
 
@@ -159,24 +159,26 @@ if __name__ == '__main__':
         print('total:   \t','{:4.1f}'.format(dis))
 
     if args.proposed_route is not None:
-        dep_vor,des_vor = closest_vors( conn, args.proposed_route[0][0],
+        
+        dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
                                         args.proposed_route[0][1],
                                         args.airway_types)
+        
+        edges,total_distance = find_route(conn,
+                                          dep_edge,
+                                          des_edge,
+                                          args.airway_types)
 
-        fixes,total_distance = find_route(conn,dep_vor,des_vor,args.airway_types)
-        print( fixes[0] )
-        for i in range(1,len(fixes),2):
-            fix1= fixes[i-1]
-            fix2=fixes[i]
-            route_str=''
-            distance=-1
-            for edge in fix1.get_edges():
-                if fix1 in edge and fix2 in edge:
-                    route_str = route_str + edge.name + '-'
-                    distance = edge.get_distance()
-            print('\t'+route_str[:-1]+'|'+str(distance)+'|')
-            print(fix2)
+        
+        for i in range(0,len(edges)):
+            edge = edges[i]
+            if i == 0:
+                print(edge.fix1)
+            print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
+            print(edge.fix2)
+
         print('-----------------------------')
         print('Total Distance:', total_distance)
+        
     conn.commit()
     conn.close()

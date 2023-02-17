@@ -1,7 +1,7 @@
 
 import heapq
 
-from geo_json.geometry import distance_deg
+from geo_json.geometry import distance_deg,true_course_deg
 
 class Fix:
     def __init__(self, id, fix_id,
@@ -16,6 +16,9 @@ class Fix:
         
     def add_edge(self, edge):
         self.edges.append(edge)
+
+    def clear_edges(self):
+        self.edges.clear()
 
     def print_edges(self):
         for e in self.edges:
@@ -38,6 +41,8 @@ class Edge:
         self.name = name
         self.distance = distance_deg( fix1.point,
                                       fix2.point )
+        self.crs = true_course_deg(fix1.point,
+                                   fix2.point )
         self.fix1.add_edge(self)
         self.fix2.add_edge(self)
 

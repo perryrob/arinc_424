@@ -17,9 +17,9 @@ def distance_crs( conn, fixes ):
     '''
     Assume VORs are 3 letters airports 4 letters and waypoints 5 leters
     '''
+    fix_points = []
 
-    points = []
-    
+    idx=0
     for fix in fixes[0]:
         sql = None
         values = None
@@ -40,73 +40,63 @@ def distance_crs( conn, fixes ):
             else:
                 break
             cursor.close()
-
-        if wp is None:
-             print( fix, ' does not exist..')
-             return []
-        points.append( [wp[values['name']],
-                       (wp[values['longitude']],
-                        wp[values['latitude']])]
-                      )
-        points[0].append(' ---')
-        points[0].append('  ---')
-        for ii in range(1,len(points)):
-            crs = true_course_deg(points[ii-1][1],points[ii][1], True )
-            dis = distance_deg( points[ii-1][1], points[ii][1] )
-            points[ii].append('{:3.1f}'.format(crs))
-            points[ii].append('{:4.2f}'.format(dis))
             
-    return points
+        if wp is None:
+            print( fix, ' does not exist..')
+            return []
+        
+        # small values of idx should not conflict with unique DB ids
+        fix_points.append( Fix(idx, wp[values['name']],
+                               wp[values['longitude']],
+                               wp[values['latitude']]
+                               )
+                          )
+        idx=idx+1
+        for ii in range(1,len(fix_points)):
+            edge = Edge( fix_points[ii-1], fix_points[ii], 'direct' )
 
-def closest_vors( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
+    return fix_points
 
-    dep_pt,dest_pt = distance_crs( conn, [[dep,dest]] )
+def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
+    dep_fix,dest_fix = distance_crs( conn, [[dep,dest]] )
+
+    # print(dep_fix,dest_fix) # Fix objects
+    
     # Find the closest VOR
-    sql = FEATURE_SQL_QUERIES['ALL_VORS'][FEATURE_SQL]
-    values = FEATURE_SQL_QUERIES['ALL_VORS'][FEATURE_VALUES]
+    sql = FEATURE_SQL_QUERIES['ALL_WAYPOINTS'][FEATURE_SQL]
+    values = FEATURE_SQL_QUERIES['ALL_WAYPOINTS'][FEATURE_VALUES]
 
     cursor = conn.cursor()
     cursor.execute( sql )
 
-    vors = cursor.fetchall()
+    wpts = cursor.fetchall()
     cursor.close()
-    
-    # ( departure, destination )
-    points = [ (dep_pt[1][0],dep_pt[1][1]),               
-               (dest_pt[1][0],dest_pt[1][1])]
-    
-    closest_vors = [None,None]
-    # Loop through all the VORs and find the closest one to the departure
+
+    end_points = [dep_fix,dest_fix]
+    closest_edges = [None,None]
+
+    # Loop through all the waypoints and find the closest one to the departure
     # point
-    for vor in vors:
-            p_vor = ( vor[values['longitude']],vor[values['latitude']])
-            name = vor[values['name']]            
-            declination = vor[values['declination']]
-            # filter to take only 3 letter VORs
-            if len(name) != 3: continue            
-            for i in range(0,2):                
-                dis = distance_deg(points[i],p_vor)
+    for wpt in wpts:
+        p_fix = Fix(wpt[values['id']],
+                    wpt[values['name']],
+                    wpt[values['longitude']],wpt[values['latitude']])
 
-                if closest_vors[i] is None :
-                    closest_vors[i] = (
-                        name , dis, float(dest_pt[2]) + declination
-                    )
-                else:
-                    if closest_vors[i][1] > dis:
-                        closest_vors[i] = (
-                            name, dis, float(dest_pt[2]) + declination
-                        )
-                
-    graph_list = {}
+        for i in range(0,2):              
+            edge = Edge( end_points[i], p_fix, 'direct')
+            if closest_edges[i] is None :
+                closest_edges[i] = edge
+            else:
+                if closest_edges[i].get_distance() > edge.get_distance():
+                    closest_edges[i] = edge
+    return closest_edges
 
-    return (closest_vors[0][0],closest_vors[1][0])
-
-def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
+def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
 
     sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
-
+    
     cursor = conn.cursor()
     cursor.execute( sql )
 
@@ -116,10 +106,11 @@ def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
     fix_map = {}
     id_name_map = {}
 
-    edge_map={}
-    
-    # We need to make sure that we don't make duplicate fixes.
-    # That makes assembling the graph harder
+    # Initialize the "direct" portion of the lookup table
+    id_name_map[DEP_edge.fix1.id] = DEP_edge.fix1
+    id_name_map[DES_edge.fix1.id] = DES_edge.fix1
+    fix_map[DEP_edge.fix1.fix_id] = DEP_edge.fix1
+    fix_map[DES_edge.fix1.fix_id] = DES_edge.fix1
 
     airway_fixes = []
 
@@ -133,9 +124,8 @@ def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
         sequence = fix[values['sequence']]
         longitude = fix[values['longitude']]
         latitude  = fix[values['latitude']]
-        description_code = fix[values['description_code']].strip()
-
         # Description codes of EE,NE,VE indicate end of routes
+        description_code = fix[values['description_code']].strip()
         
         if route_id[0] not in AIRWAY_TYPES:
             continue
@@ -150,7 +140,7 @@ def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
             )
             fix_map[fix_id] = fix_node
             id_name_map[id] = fix_node
-                        
+            
         airway_fixes.append(fix_node)
         
         if len(airway_fixes) >= 2:
@@ -161,33 +151,49 @@ def find_route( conn, DEP_fix, DES_fix, AIRWAY_TYPES ):
         # Clear the prevoius route and start a new one.
         if description_code in ['EE','NE','VE']:
             airway_fixes.clear()
-        
-    # Now I have the entire CIFP graph assembled.
-    dep_fix = fix_map[DEP_fix]
-    des_fix = fix_map[DES_fix]
 
-    path_info = find_path(graph,dep_fix.id,des_fix.id)
 
+    # Add the small direct portion of the airports to the first
+    # fix to the graph
+    '''
+    print('------->',fix_map[DEP_edge.fix1.fix_id].id,fix_map[DEP_edge.fix1.fix_id].fix_id)
+    print('------->',fix_map[DES_edge.fix1.fix_id].id,fix_map[DES_edge.fix1.fix_id].fix_id)
+    print('------->',fix_map[DEP_edge.fix2.fix_id].id,fix_map[DEP_edge.fix2.fix_id].fix_id)
+    print('------->',fix_map[DES_edge.fix2.fix_id].id,fix_map[DES_edge.fix2.fix_id].fix_id)
+    print('------->',DEP_edge.get_distance())
+    print('------->',DES_edge.get_distance())
+    '''
+    
+    graph.add_edge( fix_map[DEP_edge.fix1.fix_id].id,
+                    fix_map[DEP_edge.fix2.fix_id].id,
+                    DEP_edge.get_distance())
+
+    graph.add_edge( fix_map[DES_edge.fix1.fix_id].id,
+                    fix_map[DES_edge.fix2.fix_id].id,
+                    DES_edge.get_distance())
+
+    path_info = find_path(graph,
+                          DEP_edge.fix1.id,
+                          DES_edge.fix1.id)
     ret_val = []
-    for node_idx in path_info.nodes:
-        ret_val.append( id_name_map[node_idx] )
+
+
+    for idx in range(1,len(path_info.nodes)):
+        fix1 = id_name_map[path_info.nodes[idx-1]]
+        fix2 = id_name_map[path_info.nodes[idx]]
+        route_str=''
+        distance = path_info.costs[idx-1]
+        for edge in fix2.get_edges():
+            if fix1 in edge and fix2 in edge:
+                route_str = route_str + edge.name + '-'
+            elif idx == 1: # This may be a hack, investigate later.
+                route_str='direct-'
+                
+        fix1.clear_edges()
+        fix2.clear_edges()
+        edge = Edge(fix1,fix2,route_str)
+        ret_val.append(  edge )
 
     return (ret_val,path_info.total_cost)
 
-    '''
-    for node_idx in range(1,len(path_info.nodes)):
-        f1 = path_info.nodes[node_idx -1]
-        f2 = path_info.nodes[node_idx]
-        fix_1 = id_name_map[f1]
-        fix_2 = id_name_map[f2]
-        print(fix_1.fix_id,end='|')
-        distance=-1
-        route_str=''
-        for edge in fix_1.get_edges():
-            if fix_1 in edge and fix_2 in edge:
-                route_str = route_str + edge.name + '-'
-                distance = edge.get_distance()
-        print(route_str[:-1]+'|'+str(distance)+'|',end='')
-        print(fix_2.fix_id)
-    '''
 
