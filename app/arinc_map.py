@@ -145,16 +145,16 @@ if __name__ == '__main__':
 
 
     if args.route is not None:
-        points = distance_crs( conn, args.route )
+        fixes = distance_crs( conn, args.route )
         print('FIX\tCRS(t)\t   DIS(nm)')
         print('===========================')
         dis=0
-        for p in points:
-            print(p[0],'\t',p[2],'\t',p[3])
-            try:
-                dis = dis + float(p[3])
-            except Exception as e:
-                pass
+        for f in fixes:
+            dis = dis + f.get_edges()[0].get_distance()
+            print(f.get_edges()[0].fix1,'\t',
+                  f.get_edges()[0].fix2,'\t',
+                  f.get_edges()[0].get_distance())
+
         print('---------------------------')
         print('total:   \t','{:4.1f}'.format(dis))
 

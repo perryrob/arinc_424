@@ -155,14 +155,6 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
 
     # Add the small direct portion of the airports to the first
     # fix to the graph
-    '''
-    print('------->',fix_map[DEP_edge.fix1.fix_id].id,fix_map[DEP_edge.fix1.fix_id].fix_id)
-    print('------->',fix_map[DES_edge.fix1.fix_id].id,fix_map[DES_edge.fix1.fix_id].fix_id)
-    print('------->',fix_map[DEP_edge.fix2.fix_id].id,fix_map[DEP_edge.fix2.fix_id].fix_id)
-    print('------->',fix_map[DES_edge.fix2.fix_id].id,fix_map[DES_edge.fix2.fix_id].fix_id)
-    print('------->',DEP_edge.get_distance())
-    print('------->',DES_edge.get_distance())
-    '''
     
     graph.add_edge( fix_map[DEP_edge.fix1.fix_id].id,
                     fix_map[DEP_edge.fix2.fix_id].id,
