@@ -52,8 +52,9 @@ def distance_crs( conn, fixes ):
                                )
                           )
         idx=idx+1
-        for ii in range(1,len(fix_points)):
-            edge = Edge( fix_points[ii-1], fix_points[ii], 'direct' )
+        
+    for i in range(1,len(fix_points)):
+        edge = Edge( fix_points[i-1], fix_points[i], 'direct' )
 
     return fix_points
 

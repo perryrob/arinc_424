@@ -149,7 +149,7 @@ if __name__ == '__main__':
         print('FIX\tCRS(t)\t   DIS(nm)')
         print('===========================')
         dis=0
-        for f in fixes:
+        for f in fixes[1:]: # Gotta figure out why the 0th one dups
             dis = dis + f.get_edges()[0].get_distance()
             print(f.get_edges()[0].fix1,'\t',
                   f.get_edges()[0].fix2,'\t',
