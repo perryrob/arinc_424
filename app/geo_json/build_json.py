@@ -195,12 +195,11 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
             ap_icon=ICON_PATH+'paddle/grn-stars.png'
             if runway['airport']['ifr'] =='Y':
                 ap_icon=ICON_PATH+'paddle/blu-stars.png'
-            
             geometry_collection.append(
                 Point( runway['center'],
                        properties={
                            'name':airport_id,
-                           'description':airport_id,
+                           'description':runway['airport']['description'],
                            'icon':ap_icon
                        }
                       )

@@ -67,6 +67,11 @@ if __name__ == '__main__':
                         'parse CIFP file and load new data.',action='store_true'
                         )
 
+    parser.add_argument('--route_format',help='Output the data in route format. '+\
+                        'Can be fed into --route',
+                        action='store_true'
+                        )
+    
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
                         metavar=('lon', 'lat', 'alt'),
                         help='Enter lon(deg) lat(deg) alt(m) for VIEW.kmz',
@@ -180,16 +185,23 @@ if __name__ == '__main__':
 
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
-        
-        for i in range(0,len(edges)):
-            edge = edges[i]
-            if i == 0:
-                print(edge.fix1)
-            print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
-            print(edge.fix2)
+        if args.route_format:
+             for i in range(0,len(edges)):
+                edge = edges[i]
+                if i == 0:
+                    print(edge.fix1,end=' ')
+                print(edge.fix2,end=' ')
+            print('')
+        else:
+            for i in range(0,len(edges)):
+                edge = edges[i]
+                if i == 0:
+                    print(edge.fix1)
+                print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
+                print(edge.fix2)
 
-        print('-----------------------------')
-        print('Total Distance:', total_distance)
+            print('-----------------------------')
+            print('Total Distance:', '{:4.1f}'.format(total_distance))
         
     conn.commit()
     conn.close()
