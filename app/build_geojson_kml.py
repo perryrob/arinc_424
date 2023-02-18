@@ -203,25 +203,25 @@ def AIRPORT_geom( conn, save_json=False ):
     collection=[]
     cursor.close()
 
-def ROUTE_geom( points=[] ,save_json=False):
+def ROUTE_geom( points=[] ,file_name='ROUTE', save_json=False):
 
     collection=[]
     collection.append( ROUTE_FIX(points) )
     
-    save_kmz(collection, file_name = 'ROUTE.kmz')
+    save_kmz(collection, file_name = file_name+'.kmz')
 
     if save_json :
-        save_json( 'ROUTE.json' )
+        save_json( file_name+'.json' )
         
-def PROPOSED_ROUTE_geom( edges=[] ,save_json=False):
+def PROPOSED_ROUTE_geom( edges=[] , file_name='ROUTE.kmz', save_json=False):
 
     collection=[]
     collection.append( ROUTE(edges) )
     
-    save_kmz(collection, file_name = 'ROUTE.kmz')
+    save_kmz(collection, file_name = file_name+'.kmz')
 
     if save_json :
-        save_json( 'ROUTE.json' )
+        save_json( file_name+'.json' )
     
 def fly_center( center = (-110.9,32.1,36000) ):
     fly_to( center=center,roll=0,tilt=0,filename='VIEW.kmz')

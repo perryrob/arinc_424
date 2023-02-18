@@ -91,7 +91,11 @@ if __name__ == '__main__':
                         help='Enter a route airports waypoints vors',
                         default=None
                         )
-    
+    parser.add_argument('--route_file', type=str,
+                        help='Optional file BASE name of the route KMZ/JSON file. Levae off'+\
+                        ' the .kmz or .json suffix',
+                        default='ROUTE'
+                        )
     
     
     args=parser.parse_args()
@@ -149,7 +153,7 @@ if __name__ == '__main__':
 
         fixes = distance_crs( conn, args.route )
 
-        ROUTE_geom( fixes )
+        ROUTE_geom( fixes,file_name=args.route_file )
 
         print('FIX\tCRS(t)\t   DIS(nm)')
         print('===========================')
@@ -174,7 +178,7 @@ if __name__ == '__main__':
                                           des_edge,
                                           args.airway_types)
 
-        PROPOSED_ROUTE_geom( edges )
+        PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
         
         for i in range(0,len(edges)):
