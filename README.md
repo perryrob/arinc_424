@@ -58,6 +58,7 @@ update_cifp.sh
 python app/arinc_map.py -h
 
 ```
+```
 usage: arinc_map.py [-h] [-c CIFP] [--vor] [--ndb] [--waypoint] [--airway] [--airport] [--clean_db] [--recreate_db] [--fly_to lon lat alt]
                     [--airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]] [--waypoint_types WAYPOINT_TYPES [WAYPOINT_TYPES ...]]
                     [--route ROUTE [ROUTE ...]] [--proposed_route PROPOSED_ROUTE PROPOSED_ROUTE] [--route_file ROUTE_FILE]
