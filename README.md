@@ -167,7 +167,8 @@ I've tested the KML file on Google Earth Pro and it works correctly.
 ```
 
 ## TODO
-
+* respect MEAs
+* Add wind to cost calculation
 * Webify
 * Handle continuations
 * Add more formatters
