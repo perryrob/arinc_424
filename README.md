@@ -36,7 +36,7 @@ $ sudo apt install postgresql postgresql-contrib libpq-dev
 $ mkdir [target_dir]
 $ python3 -m venv env
 $ source ./env/bin/activate
-$ pip install psycopg2
+$ pip install -r requirements.txt
 
 ```
 ## Setting up postgres
@@ -58,8 +58,9 @@ update_cifp.sh
 python app/arinc_map.py -h
 
 ```
-```
 usage: arinc_map.py [-h] [-c CIFP] [--vor] [--ndb] [--waypoint] [--airway] [--airport] [--clean_db] [--recreate_db] [--fly_to lon lat alt]
+                    [--airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]] [--waypoint_types WAYPOINT_TYPES [WAYPOINT_TYPES ...]]
+                    [--route ROUTE [ROUTE ...]] [--proposed_route PROPOSED_ROUTE PROPOSED_ROUTE] [--route_file ROUTE_FILE]
 
 Write KMZ or json files generated from a parsed CIFP file.
 
@@ -74,6 +75,16 @@ optional arguments:
   --clean_db            Purge all data and tabless. then recreate db with blank schema.
   --recreate_db         Purge all data and tabless. then recreate db with blank schema.parse CIFP file and load new data.
   --fly_to lon lat alt  Enter lon(deg) lat(deg) alt(m) for VIEW.kmz
+  --airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]
+                        Enter airway type: V,T,J
+  --waypoint_types WAYPOINT_TYPES [WAYPOINT_TYPES ...]
+                        Enter airway type: W ,C ,R ,W
+  --route ROUTE [ROUTE ...]
+                        Enter a route airports waypoints vors
+  --proposed_route PROPOSED_ROUTE PROPOSED_ROUTE
+                        Enter a route airports waypoints vors
+  --route_file ROUTE_FILE
+                        Optional file BASE name of the route KMZ/JSON file. Levae off the .kmz or .json suffix
 ```
 
 
@@ -104,6 +115,50 @@ optional arguments:
  public | waypoint            
 ```
 
+## Examples of operation
+
+### Create a direct route from Tucson (KTUS) to Benson AZ (E95)
+
+The following command line will create a direct route from KTUS to E95 and create a file DIRECT.kmz
+```
+$ python app/arinc_map.py --route  KTUS E95 --route_file DIRECT
+DIRECT.kmz
+FIX	CRS(t)	   DIS(nm)
+===========================
+KTUS 	 E95 	 30.46198543543584
+---------------------------
+total:   	 30.5
+```
+The next command line will create a direct route from KTUS TRICO E95 and create a file TRICO.kmz
+```
+$ python app/arinc_map.py --route  KTUS TRICO E95 --route_file TRICO 
+TRICO.kmz
+FIX	CRS(t)	   DIS(nm)
+===========================
+KTUS 	 TRICO 	 17.593860683342044
+TRICO 	 E95 	 13.118881455810186
+---------------------------
+total:   	 30.7
+```
+Finally the last example command will create a proposed route using a Dijkstra least distance algorithm that uses airways and fixes to create the route. At short distances like a 30 mile trip between Tucson and Benson, its not ideal.
+```
+$ python app/arinc_map.py --airway_types V T --proposed_route  KTUS E95 --route_file PROPOSED
+PROPOSED.kmz
+KTUS
+	direct-|1.8|
+TUS
+	T310-|20.0|
+SULLI
+	T310-V66-|5.0|
+MESCA
+	direct-|9.1|
+E95
+-----------------------------
+Total Distance: 35.851068083265446
+```
+### All 3 routes are shown below
+
+![TUS_Routes](img/routes.png?raw=true)
 
 ## Notes
 
@@ -113,5 +168,6 @@ I've tested the KML file on Google Earth Pro and it works correctly.
 
 ## TODO
 
+* Webify
 * Handle continuations
 * Add more formatters
