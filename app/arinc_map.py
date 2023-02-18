@@ -167,7 +167,7 @@ if __name__ == '__main__':
             dis = dis + f.get_edges()[0].get_distance()
             print(f.get_edges()[0].fix1,'\t',
                   f.get_edges()[0].fix2,'\t',
-                  f.get_edges()[0].get_distance())
+                  '{:3.1f}'.format(f.get_edges()[0].get_distance()))
 
         print('---------------------------')
         print('total:   \t','{:4.1f}'.format(dis))
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
         if args.route_format:
-             for i in range(0,len(edges)):
+            for i in range(0,len(edges)):
                 edge = edges[i]
                 if i == 0:
                     print(edge.fix1,end=' ')
