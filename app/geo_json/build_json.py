@@ -280,3 +280,43 @@ def ROUTE( edges = [] ):
                              properties={} )
 
     return Feature(geometry=gc)
+
+def ROUTE_FIX( points = [] ):
+
+    geometry_collection=[]
+    
+    for i in range(1,len(points)):
+        f1 = points[i-1]
+        f2 = points[i]
+        
+        geometry_collection.append(
+            Point( f1.point,
+                   properties={
+                       'name':f1.fix_id,
+                       'description':f1.fix_id,
+                       'icon':ICON_PATH+'paddle/pink-diamond.png'
+                   }
+                  )
+        )
+        geometry_collection.append(
+            Point( f2.point,
+                   properties={
+                       'name':f2.fix_id,
+                       'description':f1.fix_id,
+                       'icon':ICON_PATH+'paddle/pink-diamond.png'
+                   }
+                  )
+        )
+        geometry_collection.append(LineString(
+            [f1.point,f2.point],
+            properties={'line_color':'magenta',
+                        'line_width':5,
+
+                        }
+            )
+
+        )
+    gc = GeometryCollection( geometry_collection ,
+                             properties={} )
+
+    return Feature(geometry=gc)

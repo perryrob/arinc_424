@@ -1,6 +1,7 @@
 
 from build_geojson_kml import VOR_geom, NDB_geom, WAYPOINT_geom
 from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center, PROPOSED_ROUTE_geom
+from build_geojson_kml import ROUTE_geom
 
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
@@ -145,7 +146,11 @@ if __name__ == '__main__':
 
 
     if args.route is not None:
+
         fixes = distance_crs( conn, args.route )
+
+        ROUTE_geom( fixes )
+
         print('FIX\tCRS(t)\t   DIS(nm)')
         print('===========================')
         dis=0
