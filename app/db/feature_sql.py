@@ -35,7 +35,7 @@ FEATURE_SQL_QUERIES={
         'min_altitude':9
         
     }),
-    'RUNWAYS':('''select R.runway_id,R.runway_length,R.runway_magnetic_bearing,R.latitude,R.longitude,R.runway_gradient,R.landing_threshold_elevation,R.displaced_threshold_distance,R.runway_width,R.runway_description,A.airport_id,A.airport_reference_pt_latitude,A.airport_reference_pt_longitude,A.ifr_capability,A.magnetic_variation,A.airport_elevation from runway R join airport A on R.airport_fid=A.id order by A.airport_id''',{
+    'RUNWAYS':('''select R.runway_id,R.runway_length,R.runway_magnetic_bearing,R.latitude,R.longitude,R.runway_gradient,R.landing_threshold_elevation,R.displaced_threshold_distance,R.runway_width,R.runway_description,A.airport_id,A.airport_reference_pt_latitude,A.airport_reference_pt_longitude,A.ifr_capability,A.magnetic_variation,A.airport_elevation,A.name from runway R join airport A on R.airport_fid=A.id order by A.airport_id''',{
         'r_id':0,
         'r_length':1,
         'r_magnetic_bearing':2,
@@ -52,6 +52,7 @@ FEATURE_SQL_QUERIES={
         'a_ifr':13,
         'a_mag_variation':14,
         'a_elevation':15,
+        'a_name':16
     })
         
 }

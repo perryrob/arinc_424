@@ -1,6 +1,6 @@
 
 from geo_json.build_json import VOR,NDB, WAYPOINT, AIRWAY, RUNWAY
-from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS 
+from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS, ROUTE
 
 from os import path
 
@@ -203,8 +203,15 @@ def AIRPORT_geom( conn, save_json=False ):
     collection=[]
     cursor.close()
 
-def PROPOSED_ROUTE_geom( fixes=[] ):
-    pass
+def PROPOSED_ROUTE_geom( edges=[] ,save_json=False):
+
+    collection=[]
+    collection.append( ROUTE(edges) )
+    
+    save_kmz(collection, file_name = 'ROUTE.kmz')
+
+    if save_json :
+        save_json( 'ROUTE.json' )
     
 def fly_center( center = (-110.9,32.1,36000) ):
     fly_to( center=center,roll=0,tilt=0,filename='VIEW.kmz')

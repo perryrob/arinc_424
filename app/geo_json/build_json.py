@@ -234,7 +234,49 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
                     'ifr':rwy[feature_values['a_ifr']],
                     'mag_variation':rwy[feature_values['a_mag_variation']],
                     'elevation':rwy[feature_values['a_elevation']],
+                    'description':rwy[feature_values['a_name']]
                 },
                 'runways':[]
             }
     return runways
+
+def ROUTE( edges = [] ):
+
+    geometry_collection=[]
+    
+    for i in range(0,len(edges)):
+        edge = edges[i]
+        f1 = edge.fix1
+        f2 = edge.fix2
+        
+        geometry_collection.append(
+            Point( f1.point,
+                   properties={
+                       'name':f1.fix_id,
+                       'description':f1.fix_id,
+                       'icon':ICON_PATH+'paddle/pink-diamond.png'
+                   }
+                  )
+        )
+        geometry_collection.append(
+            Point( f2.point,
+                   properties={
+                       'name':f2.fix_id,
+                       'description':f1.fix_id,
+                       'icon':ICON_PATH+'paddle/pink-diamond.png'
+                   }
+                  )
+        )
+        geometry_collection.append(LineString(
+            [f1.point,f2.point],
+            properties={'line_color':'magenta',
+                        'line_width':5,
+
+                        }
+            )
+
+        )
+    gc = GeometryCollection( geometry_collection ,
+                             properties={} )
+
+    return Feature(geometry=gc)

@@ -1,6 +1,6 @@
 #/bin/zsh
 
-FILE=CIFP_230126.zip
+FILE=CIFP_230223.zip
 
 cp -Rf ./app/cifp /tmp
 rm -rf ./app/cifp/*

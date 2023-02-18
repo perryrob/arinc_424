@@ -18,6 +18,7 @@ def get_color( color ):
         'red': skml.Color.red,
         'burlywood': skml.Color.burlywood,
         'cadetblue': skml.Color.cadetblue,
+        'magenta': skml.Color.magenta,
     }
     return switch.get(color, skml.Color.black)
                       

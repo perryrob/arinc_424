@@ -169,6 +169,8 @@ if __name__ == '__main__':
                                           des_edge,
                                           args.airway_types)
 
+        PROPOSED_ROUTE_geom( edges )
+
         
         for i in range(0,len(edges)):
             edge = edges[i]
