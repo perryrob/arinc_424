@@ -72,6 +72,11 @@ if __name__ == '__main__':
                         action='store_true'
                         )
     
+    parser.add_argument('--format_430',help='Output the data in easy to enter '+\
+                        '430 format',
+                        action='store_true'
+                        )
+
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
                         metavar=('lon', 'lat', 'alt'),
                         help='Enter lon(deg) lat(deg) alt(m) for VIEW.kmz',
@@ -160,18 +165,46 @@ if __name__ == '__main__':
 
         ROUTE_geom( fixes,file_name=args.route_file )
 
-        print('FIX\tCRS(t)\t   DIS(nm)')
-        print('===========================')
-        dis=0
-        for f in fixes[1:]: # Gotta figure out why the 0th one dups
-            dis = dis + f.get_edges()[0].get_distance()
-            print(f.get_edges()[0].fix1,'\t',
-                  f.get_edges()[0].fix2,'\t',
-                  '{:3.1f}'.format(f.get_edges()[0].get_distance()))
+        if args.format_430:
+            print('FIX\tCRS(t)\t   DIS(nm)')
+            print('===========================')
+            fixes = fixes[1:]
+            dis = 0
+            fix_dis = 0
+            for i in range(1,len(fixes)):
+                edge = fixes[i-1].get_edges()[0]
+                next_edge = fixes[i-1].get_edges()[0]
+                # Print out the departure point always
+                if i-1 == 0:
+                    print(edge.fix1,end='')
+                # Still flying straight, accumulate distances
+                if edge.is_colinear(next_edge):
+                    dis = dis + next_edge.get_distance()
+                    fix_dis = next_edge.get_distance()
+                else:
+                    # Got an elbow in the route!
+                    print('\t',edge.fix2,
+                          '{:3.1}'.format(fix_dis))   
+                    print(next_edge.fix1,end='')
+                    fix_dis=0
+                    
+            print('---------------------------')
+            print('total:   \t','{:4.1f}'.format(dis))
+        else:
+            print('FIX\tCRS(t)\t   DIS(nm)')
+            print('===========================')
+            dis=0
+            for f in fixes[1:]: # Gotta figure out why the 0th one dups
+                dis = dis + f.get_edges()[0].get_distance()
+                print(f.get_edges()[0].fix1,'\t',
+                      f.get_edges()[0].fix2,'\t',
+                      '{:3.1f}'.format(f.get_edges()[0].get_distance()))
+                
+            print('---------------------------')
+            print('total:   \t','{:4.1f}'.format(dis))
 
-        print('---------------------------')
-        print('total:   \t','{:4.1f}'.format(dis))
-
+        
+        
     if args.proposed_route is not None:
         
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],

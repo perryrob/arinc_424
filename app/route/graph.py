@@ -1,7 +1,7 @@
 
-import heapq
-
 from geo_json.geometry import distance_deg,true_course_deg
+
+from math import fabs
 
 class Fix:
     def __init__(self, id, fix_id,
@@ -48,9 +48,23 @@ class Edge:
 
         self.fixes = [fix1,fix2]
 
+    def recip(self):
+        if self.crs > 180.0:
+            return self.crs -180
+        return self.crs +180
+    
     def get_distance(self):
         return self.distance
 
+    def is_colinear(self,edge):
+        if fabs(edge.crs - self.crs) <= 2.0:
+            return True
+        elif fabs(edge.crs - self.recip()) <= 2.0:
+            return True
+
+        return False
+            
+    
     def get_neighbor(self,fix):
         if fix is self.fix2:
             return self.fix1
