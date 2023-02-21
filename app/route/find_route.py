@@ -52,11 +52,11 @@ def distance_crs( conn, fixes ):
                                )
                           )
         idx=idx+1
-        
+    edges = []
     for i in range(1,len(fix_points)):
-        edge = Edge( fix_points[i-1], fix_points[i], 'direct' )
+        edges.append(Edge( fix_points[i-1], fix_points[i], 'direct' ))
 
-    return fix_points
+    return edges,fix_points
 
 def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 

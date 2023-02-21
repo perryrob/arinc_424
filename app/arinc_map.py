@@ -161,35 +161,26 @@ if __name__ == '__main__':
 
     if args.route is not None:
 
-        fixes = distance_crs( conn, args.route )
+        edges,fixes = distance_crs( conn, args.route )
 
         ROUTE_geom( fixes,file_name=args.route_file )
 
+        total_distance = 0.0
         if args.format_430:
-            print('FIX\tCRS(t)\t   DIS(nm)')
-            print('===========================')
-            fixes = fixes[1:]
-            dis = 0
-            fix_dis = 0
-            for i in range(1,len(fixes)):
-                edge = fixes[i-1].get_edges()[0]
-                next_edge = fixes[i-1].get_edges()[0]
-                # Print out the departure point always
+            for i in range(1,len(edges)):                
+                edge = edges[i-1]
+                next_edge = edges[i]
                 if i-1 == 0:
-                    print(edge.fix1,end='')
-                # Still flying straight, accumulate distances
-                if edge.is_colinear(next_edge):
-                    dis = dis + next_edge.get_distance()
-                    fix_dis = next_edge.get_distance()
-                else:
-                    # Got an elbow in the route!
-                    print('\t',edge.fix2,
-                          '{:3.1}'.format(fix_dis))   
-                    print(next_edge.fix1,end='')
-                    fix_dis=0
+                    print(edge.fix1)
+                    total_distance = total_distance + edge.distance
                     
-            print('---------------------------')
-            print('total:   \t','{:4.1f}'.format(dis))
+                total_distance = total_distance + edge.distance
+                print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')                    
+                print(next_edge.fix1)
+
+            total_distance = total_distance + next_edge.distance
+            print('-----------------------------')
+            print('Total Distance:', '{:4.1f}'.format(total_distance))
         else:
             print('FIX\tCRS(t)\t   DIS(nm)')
             print('===========================')
