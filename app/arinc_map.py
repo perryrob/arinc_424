@@ -165,19 +165,26 @@ if __name__ == '__main__':
 
         ROUTE_geom( fixes,file_name=args.route_file )
 
-        total_distance = 0.0
         if args.format_430:
+            next_edge = None
+            total_distance = 0.0
+            fix_dis = 0
             for i in range(1,len(edges)):                
                 edge = edges[i-1]
                 next_edge = edges[i]
+
                 if i-1 == 0:
                     print(edge.fix1)
-                    total_distance = total_distance + edge.distance
-                    
                 total_distance = total_distance + edge.distance
-                print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')                    
-                print(next_edge.fix1)
-
+                fix_dis = fix_dis + edge.distance
+                if not edge.is_colinear(next_edge):
+                    print('\t'+edge.name+'|'+'{:3.1f}'.format(fix_dis)+'|')
+                    print(next_edge.fix1)
+                    fix_dis = 0
+                    
+            print('\t'+next_edge.name+'|'+\
+                  '{:3.1f}'.format(next_edge.distance)+'|')
+            print(next_edge.fix2)
             total_distance = total_distance + next_edge.distance
             print('-----------------------------')
             print('Total Distance:', '{:4.1f}'.format(total_distance))
@@ -209,23 +216,50 @@ if __name__ == '__main__':
 
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
-        if args.route_format:
-            for i in range(0,len(edges)):
-                edge = edges[i]
-                if i == 0:
-                    print(edge.fix1,end=' ')
-                print(edge.fix2,end=' ')
-            print('')
-        else:
-            for i in range(0,len(edges)):
-                edge = edges[i]
-                if i == 0:
-                    print(edge.fix1)
-                print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
-                print(edge.fix2)
 
+        if args.format_430:
+            
+            next_edge = None
+            total_distance = 0.0
+            fix_dis = 0
+            for i in range(1,len(edges)):                
+                edge = edges[i-1]
+                next_edge = edges[i]
+
+                if i-1 == 0:
+                    print(edge.fix1)
+                total_distance = total_distance + edge.distance
+                fix_dis = fix_dis + edge.distance
+                if not edge.is_colinear(next_edge):
+                    print('\t'+edge.name+'|'+'{:3.1f}'.format(fix_dis)+'|')
+                    print(next_edge.fix1)
+                    fix_dis = 0
+                    
+            print('\t'+next_edge.name+'|'+\
+                  '{:3.1f}'.format(next_edge.distance)+'|')
+            print(next_edge.fix2)
+            total_distance = total_distance + next_edge.distance
             print('-----------------------------')
             print('Total Distance:', '{:4.1f}'.format(total_distance))
+
+        else:        
+            if args.route_format:
+                for i in range(0,len(edges)):
+                    edge = edges[i]
+                    if i == 0:
+                        print(edge.fix1,end=' ')
+                    print(edge.fix2,end=' ')
+                print('')
+            else:
+                for i in range(0,len(edges)):
+                    edge = edges[i]
+                    if i == 0:
+                        print(edge.fix1)
+                    print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
+                    print(edge.fix2)
+
+                print('-----------------------------')
+                print('Total Distance:', '{:4.1f}'.format(total_distance))
         
     conn.commit()
     conn.close()

@@ -60,7 +60,7 @@ def distance_crs( conn, fixes ):
 
 def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
-    dep_fix,dest_fix = distance_crs( conn, [[dep,dest]] )
+    edges,fix_points = distance_crs( conn, [[dep,dest]] )
 
     # print(dep_fix,dest_fix) # Fix objects
     
@@ -74,7 +74,7 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     wpts = cursor.fetchall()
     cursor.close()
 
-    end_points = [dep_fix,dest_fix]
+    end_points = [fix_points[0],fix_points[1]]
     closest_edges = [None,None]
 
     # Loop through all the waypoints and find the closest one to the departure
@@ -84,7 +84,7 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
                     wpt[values['name']],
                     wpt[values['longitude']],wpt[values['latitude']])
 
-        for i in range(0,2):              
+        for i in range(0,2):
             edge = Edge( end_points[i], p_fix, 'direct')
             if closest_edges[i] is None :
                 closest_edges[i] = edge
