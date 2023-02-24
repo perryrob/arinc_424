@@ -5,7 +5,7 @@ from geo_json.build_json import VOR_RADIUS,NDB_RADIUS, WAYPOINT_RADIUS, ROUTE, R
 from os import path
 
 from geojson import FeatureCollection, dump
-from geo_json.build_kml import kml_conversion, fly_to_camera
+from geo_json.build_kml import kml_conversion, fly_to_camera, playlist_fly_to
 
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
@@ -28,6 +28,7 @@ def save_json(connection=[], file_name='UNK'):
 
 
 def fly_to( center=(0,0,0),roll=0,tilt=0,filename='fly_to.kmz'):
+
     kml = fly_to_camera( center=center,roll=roll,tilt=tilt )
     print(filename)
     kml.savekmz( filename, format=False )
@@ -225,3 +226,22 @@ def PROPOSED_ROUTE_geom( edges=[] , file_name='ROUTE.kmz', save_json=False):
     
 def fly_center( center = (-110.9,32.1,36000) ):
     fly_to( center=center,roll=0,tilt=0,filename='VIEW.kmz')
+
+def fly_edges( edges , roll=0, tilt=0, filename='VIEW.kmz'):
+
+
+    playlist = None
+    kml = None
+    for i in range(0,len(edges)):
+        edge = edges[i]
+        playlist,kml = playlist_fly_to( center=edge.fix1.point,
+                                        roll=roll,tilt=tilt,
+                                        playlist = playlist,
+                                        kml=kml )
+            
+        playlist,kml = playlist_fly_to( center=edge.fix2.point,
+                                        roll=roll,tilt=tilt,
+                                        playlist=playlist,
+                                        kml=kml )
+
+    kml.savekmz( filename, format=False )

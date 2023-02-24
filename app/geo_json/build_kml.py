@@ -105,7 +105,10 @@ def fly_to_camera( center=(0,0,0),roll=0,tilt=0, kml=None):
 
     if kml is None:
         kml = skml.Kml()
-        pnt = kml.newpoint()
+    
+    pnt = kml.newpoint()
+    camera=None
+    if len(center) == 3:
         camera = skml.Camera(
             latitude=center[1],
             longitude=center[0],
@@ -114,7 +117,25 @@ def fly_to_camera( center=(0,0,0),roll=0,tilt=0, kml=None):
             tilt=tilt,
             altitudemode=skml.AltitudeMode.relativetoground)
 
-        pnt.camera = camera        
+    pnt.camera = camera        
 
     return kml
-    
+
+def playlist_fly_to( center=(0,0),roll=0,tilt=0, playlist = None, kml=None):
+
+    if kml is None:
+        kml = skml.Kml(name='VIEW.kmz',open=1)
+        tour = kml.newgxtour(name="Fly Route")
+        playlist = tour.newgxplaylist()
+
+    flyto = playlist.newgxflyto(gxduration=5.0)
+    flyto.camera.longitude = center[0]
+    flyto.camera.latitude = center[1]
+    flyto.camera.altitude = 30000
+    flyto.camera.heading = 0
+    flyto.camera.tilt = tilt
+    flyto.camera.roll = roll
+
+    wait = playlist.newgxwait(gxduration=1.0)
+
+    return playlist,kml

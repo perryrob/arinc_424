@@ -1,6 +1,7 @@
 
 from build_geojson_kml import VOR_geom, NDB_geom, WAYPOINT_geom
-from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center, PROPOSED_ROUTE_geom
+from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center
+from build_geojson_kml import PROPOSED_ROUTE_geom, fly_edges
 from build_geojson_kml import ROUTE_geom
 
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
@@ -69,6 +70,11 @@ if __name__ == '__main__':
 
     parser.add_argument('--route_format',help='Output the data in route format. '+\
                         'Can be fed into --route',
+                        action='store_true'
+                        )
+
+    parser.add_argument('--fly_route',help='load the route into the'+\
+                        '--route_file',
                         action='store_true'
                         )
     
@@ -216,32 +222,42 @@ if __name__ == '__main__':
 
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
+        if args.fly_route:
+            fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')
 
-        if args.format_430:
-            
+        if args.format_430:            
             next_edge = None
             total_distance = 0.0
             fix_dis = 0
+            non_colinear_edges = []
             for i in range(1,len(edges)):                
                 edge = edges[i-1]
                 next_edge = edges[i]
 
                 if i-1 == 0:
                     print(edge.fix1)
+                    non_colinear_edges.append(edge)
+
                 total_distance = total_distance + edge.distance
                 fix_dis = fix_dis + edge.distance
+
                 if not edge.is_colinear(next_edge):
                     print('\t'+edge.name+'|'+'{:3.1f}'.format(fix_dis)+'|')
                     print(next_edge.fix1)
                     fix_dis = 0
+                    non_colinear_edges.append(next_edge)
                     
             print('\t'+next_edge.name+'|'+\
                   '{:3.1f}'.format(next_edge.distance)+'|')
             print(next_edge.fix2)
+
+            non_colinear_edges.append(next_edge)
             total_distance = total_distance + next_edge.distance
+
             print('-----------------------------')
             print('Total Distance:', '{:4.1f}'.format(total_distance))
-
+            if args.fly_route:
+                fly_edges(non_colinear_edges, roll=0, tilt=0,filename='VIEW.kmz')
         else:        
             if args.route_format:
                 for i in range(0,len(edges)):
@@ -251,15 +267,18 @@ if __name__ == '__main__':
                     print(edge.fix2,end=' ')
                 print('')
             else:
+                non_colinear_edges = []
                 for i in range(0,len(edges)):
                     edge = edges[i]
                     if i == 0:
                         print(edge.fix1)
                     print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
                     print(edge.fix2)
-
+                    non_colinear_edges.append(edge)
                 print('-----------------------------')
                 print('Total Distance:', '{:4.1f}'.format(total_distance))
-        
+                if args.fly_route:
+                    fly_edges(non_colinear_edges, roll=0, tilt=0,filename='VIEW.kmz')
+            
     conn.commit()
     conn.close()
