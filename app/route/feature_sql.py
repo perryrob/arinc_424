@@ -35,11 +35,12 @@ FEATURE_SQL_QUERIES={
         'a_mag_variation':14,
         'elevation':15,
     }),
-    'ALL_WAYPOINTS': ('''select id,longitude,latitude,fix_id from airway''',{
+    'ALL_WAYPOINTS': ('''select id,longitude,latitude,fix_id,route_id from airway''',{
         'id':0,
         'longitude':1,
         'latitude':2,
         'name':3,
+        'route_id':4
         }),
     'FIX_SEQUENCE':('''select id,route_id,fix_id,sequence,route_distance_from,longitude,latitude,description_code from airway  order by route_id,sequence''',{
         'id':0,

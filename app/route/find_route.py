@@ -80,6 +80,9 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     # Loop through all the waypoints and find the closest one to the departure
     # point
     for wpt in wpts:
+
+        if wpt[values['route_id']][0] not in AIRWAY_TYPES: continue
+        
         p_fix = Fix(wpt[values['id']],
                     wpt[values['name']],
                     wpt[values['longitude']],wpt[values['latitude']])
@@ -91,6 +94,7 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
             else:
                 if closest_edges[i].get_distance() > edge.get_distance():
                     closest_edges[i] = edge
+                 
     return closest_edges
 
 def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):

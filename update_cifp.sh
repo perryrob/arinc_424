@@ -1,6 +1,6 @@
 #/bin/zsh
-
-FILE=CIFP_230223.zip
+# https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/
+FILE=CIFP_230323.zip
 
 cp -Rf ./app/cifp /tmp
 rm -rf ./app/cifp/*

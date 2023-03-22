@@ -214,7 +214,7 @@ if __name__ == '__main__':
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
                                         args.proposed_route[0][1],
                                         args.airway_types)
-        
+
         edges,total_distance = find_route(conn,
                                           dep_edge,
                                           des_edge,
