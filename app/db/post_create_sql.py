@@ -1,5 +1,4 @@
 
-
 POST_CREATE_SQL=[
     ('Link up the runways',
      'update runway R set airport_fid = (select id from airport A where A.airport_id = R.airport_id);'),

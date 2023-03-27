@@ -62,4 +62,8 @@ def post_create_db( db_connect ):
         print('\t' + msg)
         db_connect.exec( sql )
 
+def post_create_db( db_connect ):
+    print('Running post create scripts to link up the foreign keys...')
+
+
 

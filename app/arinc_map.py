@@ -13,6 +13,7 @@ from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
 from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
 
 from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
+from arinc_parse import  post_create_db_scripts
 
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
@@ -144,6 +145,7 @@ if __name__ == '__main__':
                  SUPPORTED_SECTIONS_SUBSECTIONS, parsed_record_dict)
 
         post_create_db( db_connect )
+        post_create_db_scripts( db_connect )
         conn.commit()
     
     if args.vor:

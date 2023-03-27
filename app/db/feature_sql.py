@@ -22,7 +22,7 @@ FEATURE_SQL_QUERIES={
         'name':2,
         'type':3
     }),
-    'AIRWAYS':('''select A.route_id, A.sequence, A.longitude, A.latitude,A.fix_section_code,A.fix_subsection_code,A.outbound_mag_course,A.inbound_mag_course,A.description_code,A.minimum_altitude from airway A order by A.route_id,A.sequence''',{
+    'AIRWAYS':('''select A.route_id, A.sequence, A.longitude, A.latitude,A.fix_section_code,A.fix_subsection_code,A.outbound_mag_course,A.inbound_mag_course,A.description_code,A.minimum_altitude,A.fix_id,A.route_id from airway A order by A.route_id,A.sequence''',{
         'name':0,
         'sequence':1,
         'longitude':2,
@@ -32,8 +32,9 @@ FEATURE_SQL_QUERIES={
         'outbound_course':6,
         'inbound_course':7,
         'description_code':8,
-        'min_altitude':9
-        
+        'min_altitude':9,
+        'fix_id':10,
+        'route_id':11
     }),
     'RUNWAYS':('''select R.runway_id,R.runway_length,R.runway_magnetic_bearing,R.latitude,R.longitude,R.runway_gradient,R.landing_threshold_elevation,R.displaced_threshold_distance,R.runway_width,R.runway_description,A.airport_id,A.airport_reference_pt_latitude,A.airport_reference_pt_longitude,A.ifr_capability,A.magnetic_variation,A.airport_elevation,A.name from runway R join airport A on R.airport_fid=A.id order by A.airport_id''',{
         'r_id':0,
