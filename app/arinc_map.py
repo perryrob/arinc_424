@@ -3,6 +3,7 @@ from build_geojson_kml import VOR_geom, NDB_geom, WAYPOINT_geom
 from build_geojson_kml import AIRWAY_geom, AIRPORT_geom, fly_center
 from build_geojson_kml import PROPOSED_ROUTE_geom, fly_edges
 from build_geojson_kml import ROUTE_geom
+from build_geojson_kml import MERGE_RNAV_VOR
 
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
@@ -13,7 +14,6 @@ from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
 from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
 
 from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
-from arinc_parse import  post_create_db_scripts
 
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
@@ -113,6 +113,11 @@ if __name__ == '__main__':
                         ' the .kmz or .json suffix',
                         default='ROUTE'
                         )
+    parser.add_argument('--merge_rnav',
+                        help='Optional merge to connect RNAV waypoints with '+\
+                        ' waypoints and routes.',
+                        action='store_true'
+                        )
     
     
     args=parser.parse_args()
@@ -162,6 +167,9 @@ if __name__ == '__main__':
         
     if args.airport:
         AIRPORT_geom(conn)
+
+    if args.merge_rnav:
+        MERGE_RNAV_VOR(conn)
 
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])

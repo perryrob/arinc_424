@@ -10,6 +10,8 @@ from geo_json.build_kml import kml_conversion, fly_to_camera, playlist_fly_to
 from db.DB_Manager import DB_connect
 from db.feature_sql import FEATURE_SQL_QUERIES, FEATURE_SQL, FEATURE_VALUES
 
+import db.etl as etl
+
 INCLUDE_AIRWAYS=['V','T','J']
 INCLUDE_WAYPOINT_TYPES=['W  ','C  ','R  ','W  ']
 
@@ -213,7 +215,13 @@ def ROUTE_geom( points=[] ,file_name='ROUTE', save_json=False):
 
     if save_json :
         save_json( file_name+'.json' )
-        
+
+def MERGE_RNAV_VOR( conn ):
+
+    sql_tupple = etl.ETL_QUERIES['AIRWAYS']
+    sql_tupple[etl.ETL_SCRIPT](conn,sql_tupple)
+
+    
 def PROPOSED_ROUTE_geom( edges=[] , file_name='ROUTE.kmz', save_json=False):
 
     collection=[]
