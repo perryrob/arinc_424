@@ -150,7 +150,6 @@ if __name__ == '__main__':
                  SUPPORTED_SECTIONS_SUBSECTIONS, parsed_record_dict)
 
         post_create_db( db_connect )
-        post_create_db_scripts( db_connect )
         conn.commit()
     
     if args.vor:

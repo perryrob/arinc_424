@@ -69,16 +69,24 @@ def waypoint_extension(conn,sql_tupple):
                  fabs(v[columns.index('latitude')] - \
                       w[columns.index('latitude')]) >  0.000001):
                 intersections.append([v,w])
-
     # Finally, get the uniques routes that have RNAV and VORS coincident.
     unique_intersections=[]
     routes=[]
     for v,w in intersections:
-        if w[columns.index('route_id')] not in routes:
-            routes.append(w[columns.index('route_id')])
+        rnav_point = [w[columns.index('route_id')],
+                      w[columns.index('fix_id')]]
+        if rnav_point not in routes:
+            routes.append(rnav_point)
             unique_intersections.append([v,w])
-
-
+            '''
+            print(w[columns.index('route_id')],
+              w[columns.index('fix_id')],
+              w[columns.index('sequence')],
+              '->',
+              v[columns.index('route_id')],
+              v[columns.index('fix_id')])
+            '''
+            
     table = sql_tupple[TABLE_NAME]
     sql = 'INSERT INTO {table}({columns}) VALUES({values});'
     # Now we update the AIRWAY table. I'll add the VOR into the sequence
@@ -88,16 +96,15 @@ def waypoint_extension(conn,sql_tupple):
         sequence = w[columns.index('sequence')]
         sequence = sequence + 1
         rnav_route_id = w[columns.index('route_id')]
-        print(v)
         v[columns.index('sequence')] = sequence
         v[columns.index('route_id')] = rnav_route_id
-
+        cursor.close()
         cursor = conn.cursor()
-        print( sql.format(table=sql_tupple[TABLE_NAME],
+        cursor.execute( sql.format(table=sql_tupple[TABLE_NAME],
                           columns=column_names[3:], # Remove the id
                           values=create_insert(v[1:]))) # and the id item
         cursor.close()
-
+    conn.commit()
         
 ETL_QUERIES={
     'AIRWAYS':(
