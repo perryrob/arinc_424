@@ -22,7 +22,7 @@ class DB_ARINC_Tables:
         for section, subsection in self.section_subsections:
             arinc_table_def = self.arinc_424_parse_def[section][subsection]
             table_name = arinc_table_def[SQL_DEF][SQL_TABLE]
-            statement = 'CREATE TABLE ' + table_name + '( id integer, '
+            statement = 'CREATE TABLE ' + table_name + '( id SERIAL NOT NULL, '
             for column in arinc_table_def[1:]:
                 column_name = column[ARINC_FIELD_NAME]
 
@@ -66,16 +66,15 @@ class DB_ARINC_data:
             table_name = arinc_table_def[SQL_DEF][SQL_TABLE]
             # Form the table column names for the insert statemetn
             for record in records:
-                # There are currently 3 assumed columns outside of the
+                # There is currently 1 assumed columns outside of the
                 # ARINC spec used to link up the data. It is id.
-                statement = 'INSERT INTO ' + table_name + ' ( id, '
+                statement = 'INSERT INTO ' + table_name + ' ('
                 for field_val in record:
                     statement = statement + field_val[COLUMN_NAME_POS] + ", "
                 # Remove trailing comma and space
                 statement = statement[:-2] + ' )'
                 # Form the values part tof the insert statement
-                statement = statement + ' VALUES ( ' +\
-                    str(self.index) + ','
+                statement = statement + ' VALUES ( '
                 for field_val in record:
                     statement = statement+\
                         self._assemble_field( field_val ) + ", "
