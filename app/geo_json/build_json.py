@@ -87,15 +87,28 @@ def NDB( radius=1, segments=36, center=(0,0), properties={} ):
     return Feature(geometry=gc)
 
 def WAYPOINT( radius=1, segments=36, center=(0,0), properties={} ):
-    p = Polygon(
-        circle_center_polygon(radius, segments, center),
-        properties={'line_color':'black',
-                    'line_width':1,
-                    'fill_color':'red',
-                    'alpha':200,
-                    'name':properties['name'],
-                    }
-    )
+    p = None
+    if 'C' in properties['type']:
+        p = Polygon(
+            circle_center_polygon(radius, segments, center),
+            properties={'line_color':'black',
+                        'line_width':1,
+                        'fill_color':'black',
+                        'alpha':200,
+                        'name':properties['name'],
+                        }
+            
+        )
+    else:
+        p = Polygon(
+            circle_center_polygon(radius, segments, center),
+            properties={'line_color':'blue',
+                        'line_width':1,
+                        'fill_color':'blue',
+                        'alpha':200,
+                        'name':properties['name'],
+                        }
+        )
     return Feature(geometry=p)
 
 def AIRWAY( airways={}, waypoint_types={}, route_id='',
@@ -157,19 +170,34 @@ def AIRWAY( airways={}, waypoint_types={}, route_id='',
                         modified_pp.append(point_project( p,
                                                           crs,
                                                           WAYPOINT_RADIUS))
+                
                 try:
-                    geometry_collection.append(
-                        LineString(
-                            modified_pp,
-                            properties={'line_color':'black',
-                                        'line_width':2,
-                                        'fill_color':'black',
-                                        'alpha':255,
-                                        'name':route_id,
-                                        'description':description
-                                        }
+                    if 'T' in route_id:
+                        geometry_collection.append(
+                            LineString(
+                                modified_pp,
+                                properties={'line_color':'blue',
+                                            'line_width':2,
+                                            'fill_color':'blue',
+                                            'alpha':255,
+                                            'name':route_id,
+                                            'description':description
+                                            }
+                            )
                         )
-                    )
+                    else:
+                        geometry_collection.append(
+                            LineString(
+                                modified_pp,
+                                properties={'line_color':'black',
+                                            'line_width':2,
+                                            'fill_color':'black',
+                                            'alpha':255,
+                                            'name':route_id,
+                                            'description':description
+                                            }
+                            )
+                        )
                 except Exception as e:
                     print( e )
                     print('err',route_id, airways[route_id])

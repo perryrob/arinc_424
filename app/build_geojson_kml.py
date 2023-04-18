@@ -119,6 +119,7 @@ def WAYPOINT_geom( conn, waypoint_types=[],save_json=False ):
                                    center=center,
                                    properties={
                                        'name':wp[feature_values['name']],
+                                       'type':wp[feature_values['type']]
                                    }))
 
 

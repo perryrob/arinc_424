@@ -55,7 +55,7 @@ if __name__ == '__main__':
     parser.add_argument('-c','--cifp',help='Input CIFP file.',
                         default='app/cifp/FAACIFP18')
     
-    for val in ['vor','ndb','waypoint','airway','airport']:
+    for val in ['vor','ndb','waypoint','airway','airport', 'all_pts']:
         parser.add_argument('--'+val, help='create '+val+' KMZ and/or json file',
                         action='store_true')
 
@@ -113,11 +113,6 @@ if __name__ == '__main__':
                         ' the .kmz or .json suffix',
                         default='ROUTE'
                         )
-    parser.add_argument('--merge_rnav',
-                        help='Optional merge to connect RNAV waypoints with '+\
-                        ' waypoints and routes.',
-                        action='store_true'
-                        )
     
     
     args=parser.parse_args()
@@ -150,6 +145,7 @@ if __name__ == '__main__':
                  SUPPORTED_SECTIONS_SUBSECTIONS, parsed_record_dict)
 
         post_create_db( db_connect )
+        MERGE_RNAV_VOR(conn)
         conn.commit()
     
     if args.vor:
@@ -167,9 +163,14 @@ if __name__ == '__main__':
     if args.airport:
         AIRPORT_geom(conn)
 
-    if args.merge_rnav:
-        MERGE_RNAV_VOR(conn)
+    if args.all_pts:
+        VOR_geom(conn)
+        NDB_geom(conn)
+        WAYPOINT_geom(conn,waypoint_types=args.waypoint_types)
+        AIRWAY_geom(conn,airway_types=args.airway_types)
+        AIRPORT_geom(conn)        
 
+        
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])
 
