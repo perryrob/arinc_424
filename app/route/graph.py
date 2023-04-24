@@ -1,7 +1,7 @@
 
 from geo_json.geometry import distance_deg,true_course_deg
 
-from math import fabs
+from math import fabs,pi
 
 class Fix:
     def __init__(self, id, fix_id,
@@ -24,6 +24,10 @@ class Fix:
         for e in self.edges:
             print('-> ' +  str(e))
 
+    def rad_points(self):
+        return (self.point[0] * pi / 180.0,
+                self.point[1] * pi / 180.0)
+            
     def __hash__(self):
         return hash(self.fix_id)
 

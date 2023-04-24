@@ -3,7 +3,7 @@
 from .feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from geo_json.geometry import true_course_deg, distance_deg
-from math import fabs
+from math import fabs, sqrt
 import collections
 import heapq
 
@@ -11,6 +11,44 @@ from route.graph import Fix, Edge
 
 from dijkstar import Graph, find_path
 
+
+def line_distance(f1,f2,f0):
+
+    p1 = f1.rad_points()
+    p2 = f2.rad_points()
+    p0 = f0.rad_points()
+
+    A = p0[0] - p1[0]
+    B = p0[1] - p1[1]
+    C = p2[0] - p1[0]
+    D = p2[1] - p1[1]
+
+    dot = A*C + B*D
+    len_sq = C*C + D*D
+    # param > 0 and param <=1 point is perp to line segement
+    # param < 0 closest point is P! beyond line segment
+    # param > 1 closest point is P2 beyond line segment
+    param = -1
+    on_line = False
+    if len_sq !=0:
+        param = dot / len_sq
+
+    if param < 0:
+        xx = p1[0]
+        yy = p1[1]
+    elif param > 1:
+        xx = p2[0]
+        yy = p2[1]
+    else:
+        on_line=True
+        xx = p1[0] + param * C
+        yy = p1[1] + param * D
+
+    dx = p0[0] - xx
+    dy = p0[1] - yy
+
+        
+    return (sqrt(dx**2 + dy**2), on_line)
 
 def distance_crs( conn, fixes ):
 
@@ -78,7 +116,9 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     closest_edges = [None,None]
 
     # Loop through all the waypoints and find the closest one to the departure
-    # point
+    # point. I need to extend this and take into acount of where the departure
+    # point starts and the destination point ends. I need to find the closest
+    # point from the direction for the departure point.
     for wpt in wpts:
 
         if wpt[values['route_id']][0] not in AIRWAY_TYPES: continue
@@ -86,13 +126,20 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
         p_fix = Fix(wpt[values['id']],
                     wpt[values['name']],
                     wpt[values['longitude']],wpt[values['latitude']])
-
+        
+        
         for i in range(0,2):
+
+            dis,on_line = line_distance( end_points[0], 
+                                        end_points[1],
+                                        p_fix )
+            
             edge = Edge( end_points[i], p_fix, 'direct')
             if closest_edges[i] is None :
                 closest_edges[i] = edge
             else:
-                if closest_edges[i].get_distance() > edge.get_distance():
+                if closest_edges[i].get_distance() > edge.get_distance() and \
+                   on_line:
                     closest_edges[i] = edge
                  
     return closest_edges
