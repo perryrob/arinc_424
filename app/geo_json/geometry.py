@@ -1,4 +1,4 @@
-from math import pi, sin, cos, asin, acos, atan2, fmod
+from math import pi, sin, cos, asin, acos, atan2, fmod, sqrt
 
 EARTH_RADIUS = 6371.0 * 1000.0 # meters
 
@@ -25,8 +25,9 @@ def distance_deg( p1,p2 ):
     lon2 = deg_to_rad(p2[0])
     lat2 = deg_to_rad(p2[1])
 
-    d=acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon1-lon2))
-
+    d=2*asin(sqrt((sin((lat1-lat2)/2.0))**2 + \
+                  cos(lat1)*cos(lat2)*(sin((lon1-lon2)/2.0))**2))
+    
     return distance_from_rad(d)
 
 def lat_from_center_dis( lat_rad, tc_rad, d_rad ):

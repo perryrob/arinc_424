@@ -59,9 +59,11 @@ python app/arinc_map.py -h
 
 ```
 ```
-usage: arinc_map.py [-h] [-c CIFP] [--vor] [--ndb] [--waypoint] [--airway] [--airport] [--clean_db] [--recreate_db] [--fly_to lon lat alt]
-                    [--airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]] [--waypoint_types WAYPOINT_TYPES [WAYPOINT_TYPES ...]]
-                    [--route ROUTE [ROUTE ...]] [--proposed_route PROPOSED_ROUTE PROPOSED_ROUTE] [--route_file ROUTE_FILE]
+usage: arinc_map.py [-h] [-c CIFP] [--vor] [--ndb] [--waypoint] [--airway] [--airport] [--all_pts]
+                    [--clean_db] [--recreate_db] [--route_format] [--fly_route] [--format_430]
+                    [--fly_to lon lat alt] [--airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]]
+                    [--waypoint_types WAYPOINT_TYPES [WAYPOINT_TYPES ...]] [--route ROUTE [ROUTE ...]]
+                    [--proposed_route PROPOSED_ROUTE PROPOSED_ROUTE] [--route_file ROUTE_FILE]
 
 Write KMZ or json files generated from a parsed CIFP file.
 
@@ -73,8 +75,13 @@ optional arguments:
   --waypoint            create waypoint KMZ and/or json file
   --airway              create airway KMZ and/or json file
   --airport             create airport KMZ and/or json file
+  --all_pts             create all_pts KMZ and/or json file
   --clean_db            Purge all data and tabless. then recreate db with blank schema.
-  --recreate_db         Purge all data and tabless. then recreate db with blank schema.parse CIFP file and load new data.
+  --recreate_db         Purge all data and tabless. then recreate db with blank schema.parse CIFP file and
+                        load new data.
+  --route_format        Output the data in route format. Can be fed into --route
+  --fly_route           load the route into the--route_file
+  --format_430          Output the data in easy to enter 430 format
   --fly_to lon lat alt  Enter lon(deg) lat(deg) alt(m) for VIEW.kmz
   --airway_types AIRWAY_TYPES [AIRWAY_TYPES ...]
                         Enter airway type: V,T,J
@@ -85,7 +92,8 @@ optional arguments:
   --proposed_route PROPOSED_ROUTE PROPOSED_ROUTE
                         Enter a route airports waypoints vors
   --route_file ROUTE_FILE
-                        Optional file BASE name of the route KMZ/JSON file. Levae off the .kmz or .json suffix
+                        Optional file BASE name of the route KMZ/JSON file. Levae off the .kmz or .json
+                        suffix
 ```
 
 

@@ -31,12 +31,11 @@ def line_distance(f1,f2,f0):
     param = -1
     on_line = False
     if len_sq !=0:
-        param = dot / len_sq
+        param = fabs(dot / len_sq)
 
-    if param < 0:
-        xx = p1[0]
-        yy = p1[1]
-    elif param > 1:
+    err = 0.001
+        
+    if param > 1 + err:
         xx = p2[0]
         yy = p2[1]
     else:
@@ -231,8 +230,10 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
             if fix1 in edge and fix2 in edge:
                 route_str = route_str + edge.name + '-'
             elif idx == 1: # This may be a hack, investigate later.
-                route_str='direct-'
-                
+                route_str='direct '
+
+        route_str = route_str[:-1]
+
         fix1.clear_edges()
         fix2.clear_edges()
         edge = Edge(fix1,fix2,route_str)

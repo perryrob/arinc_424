@@ -61,11 +61,18 @@ class Edge:
         return self.distance
 
     def is_colinear(self,edge):
-        if fabs(edge.crs - self.crs) <= 2.0:
+        # Make sure the edge has the same name
+        name_is_same=False
+        for route_id in self.name.split('-'):
+            if route_id in edge.name.split('-'):
+                name_is_same = True
+                break
+        
+        if fabs(edge.crs - self.crs) <= 2.0 and name_is_same:
             return True
-        elif fabs(edge.crs - self.recip()) <= 2.0:
+        elif fabs(edge.crs - self.recip()) <= 2.0 and name_is_same:
             return True
-
+        
         return False
             
     
