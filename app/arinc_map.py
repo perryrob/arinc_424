@@ -90,6 +90,12 @@ if __name__ == '__main__':
                         default=None
                         )
 
+    parser.add_argument('--max_alt', type=int,
+                        help='Enter maximum desired altitude for routing',
+                        default=18000
+                        )
+
+    
     parser.add_argument('--airway_types', nargs='+', type=str,
                         help='Enter airway type: V,T,J',
                         default=['V','T','J']
@@ -228,7 +234,8 @@ if __name__ == '__main__':
         edges,total_distance = find_route(conn,
                                           dep_edge,
                                           des_edge,
-                                          args.airway_types)
+                                          args.airway_types,
+                                          args.max_alt)
 
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 

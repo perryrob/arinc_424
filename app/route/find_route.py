@@ -11,7 +11,6 @@ from route.graph import Fix, Edge
 
 from dijkstar import Graph, find_path
 
-
 def line_distance(f1,f2,f0):
 
     p1 = f1.rad_points()
@@ -85,7 +84,8 @@ def distance_crs( conn, fixes ):
         # small values of idx should not conflict with unique DB ids
         fix_points.append( Fix(idx, wp[values['name']],
                                wp[values['longitude']],
-                               wp[values['latitude']]
+                               wp[values['latitude']],
+                               {'mea':0}
                                )
                           )
         idx=idx+1
@@ -124,14 +124,15 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
         
         p_fix = Fix(wpt[values['id']],
                     wpt[values['name']],
-                    wpt[values['longitude']],wpt[values['latitude']])
+                    wpt[values['longitude']],wpt[values['latitude']],
+                    {'mea':0})
         
         
         for i in range(0,2):
 
             dis,on_line = line_distance( end_points[0], 
-                                        end_points[1],
-                                        p_fix )
+                                         end_points[1],
+                                         p_fix )
             
             edge = Edge( end_points[i], p_fix, 'direct')
             if closest_edges[i] is None :
@@ -143,7 +144,7 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
                  
     return closest_edges
 
-def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
+def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES, max_alt=18000 ):
 
     sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
@@ -156,14 +157,13 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
 
     fix_map = {}
     id_name_map = {}
-
+    airway_fixes = []
+    
     # Initialize the "direct" portion of the lookup table
     id_name_map[DEP_edge.fix1.id] = DEP_edge.fix1
     id_name_map[DES_edge.fix1.id] = DES_edge.fix1
     fix_map[DEP_edge.fix1.fix_id] = DEP_edge.fix1
     fix_map[DES_edge.fix1.fix_id] = DES_edge.fix1
-
-    airway_fixes = []
 
     graph = Graph(undirected=True)
     
@@ -175,19 +175,26 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
         sequence = fix[values['sequence']]
         longitude = fix[values['longitude']]
         latitude  = fix[values['latitude']]
+        mea = fix[values['mea']]
+        
         # Description codes of EE,NE,VE indicate end of routes
         description_code = fix[values['description_code']].strip()
         
         if route_id[0] not in AIRWAY_TYPES:
             continue
 
+        # if mea is not None and mea > max_alt:
+        #    continue
+
         fix_node = None
         
         if fix_id in fix_map.keys():
             fix_node = fix_map[fix_id]
+            if fix_node.attrs['mea'] is None and mea is not None:
+                fix_node.attrs['mea'] = mea
         else:
             fix_node = Fix(
-                id, fix_id, longitude, latitude
+                id, fix_id, longitude, latitude, {'mea':mea}
             )
             fix_map[fix_id] = fix_node
             id_name_map[id] = fix_node
@@ -198,7 +205,12 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
             fix_1 = airway_fixes[-2]
             fix_2 = airway_fixes[-1]
             edge = Edge(fix_1,fix_2,route_id)
-            graph.add_edge( fix_1.id, fix_2.id, edge.get_distance())
+
+            if mea is not None and mea > max_alt: continue
+
+            graph.add_edge( fix_1.id, fix_2.id,
+                            edge.get_distance())
+            
         # Clear the prevoius route and start a new one.
         if description_code in ['EE','NE','VE']:
             airway_fixes.clear()
@@ -206,20 +218,20 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
 
     # Add the small direct portion of the airports to the first
     # fix to the graph
-    
+
     graph.add_edge( fix_map[DEP_edge.fix1.fix_id].id,
                     fix_map[DEP_edge.fix2.fix_id].id,
                     DEP_edge.get_distance())
-
+    
     graph.add_edge( fix_map[DES_edge.fix1.fix_id].id,
                     fix_map[DES_edge.fix2.fix_id].id,
                     DES_edge.get_distance())
-
+    
     path_info = find_path(graph,
                           DEP_edge.fix1.id,
                           DES_edge.fix1.id)
-    ret_val = []
 
+    ret_val = []
 
     for idx in range(1,len(path_info.nodes)):
         fix1 = id_name_map[path_info.nodes[idx-1]]
@@ -228,7 +240,8 @@ def find_route( conn, DEP_edge, DES_edge, AIRWAY_TYPES ):
         distance = path_info.costs[idx-1]
         for edge in fix2.get_edges():
             if fix1 in edge and fix2 in edge:
-                route_str = route_str + edge.name + '-'
+                route_str = route_str + edge.name
+                route_str = route_str + '(mea '+ str(fix2.attrs['mea']) +  ')-' 
             elif idx == 1: # This may be a hack, investigate later.
                 route_str='direct '
 

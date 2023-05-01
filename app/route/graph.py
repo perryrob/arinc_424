@@ -5,12 +5,13 @@ from math import fabs,pi
 
 class Fix:
     def __init__(self, id, fix_id,
-                 longitude,latitude):
+                 longitude,latitude,attrs):
         self.id = id
         self.fix_id = fix_id
         self.point = (longitude, latitude)
         self.edges = []
-
+        self.attrs=attrs
+        
     def get_edges(self):
         return self.edges
         
@@ -27,7 +28,10 @@ class Fix:
     def rad_points(self):
         return (self.point[0] * pi / 180.0,
                 self.point[1] * pi / 180.0)
-            
+
+    def get_attrs(self):
+        return self.attrs
+    
     def __hash__(self):
         return hash(self.fix_id)
 
@@ -52,6 +56,7 @@ class Edge:
 
         self.fixes = [fix1,fix2]
 
+        
     def recip(self):
         if self.crs > 180.0:
             return self.crs -180
@@ -74,8 +79,7 @@ class Edge:
             return True
         
         return False
-            
-    
+                    
     def get_neighbor(self,fix):
         if fix is self.fix2:
             return self.fix1

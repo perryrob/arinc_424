@@ -42,7 +42,7 @@ FEATURE_SQL_QUERIES={
         'name':3,
         'route_id':4
         }),
-    'FIX_SEQUENCE':('''select id,route_id,fix_id,sequence,route_distance_from,longitude,latitude,description_code from airway  order by route_id,sequence''',{
+    'FIX_SEQUENCE':('''select id,route_id,fix_id,sequence,route_distance_from,longitude,latitude,description_code,minimum_altitude from airway  order by route_id,sequence''',{
         'id':0,
         'route_id':1,
         'fix_id':2,
@@ -50,6 +50,7 @@ FEATURE_SQL_QUERIES={
         'distance':4,
         'longitude':5,
         'latitude':6,
-        'description_code':7
+        'description_code':7,
+        'mea':8
     }),
 }
