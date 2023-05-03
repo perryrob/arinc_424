@@ -61,6 +61,8 @@ class F:
 class Wind:
     def __init__(self, time=6):
 
+        self.IGNORE=-9999
+        
         self.DATA_STARTS_AFTER = 8
         # 000
         # FBUS31 KWNO 282000
@@ -71,41 +73,104 @@ class Wind:
         #123456789_123456789_1234567890_1234567890_1234567890_1234567890_12345
         #ABR 3315 3320-04 3221-09 3219-10 3225-23 3226-35 354147 354552 353853
         self.TOKENS=[
-            (0,3,'noop'),
-            (4,8,'wind3k'),
-            (9,16,'wind624k'),
-            (17,24,'wind624k'),
-            (25,32,'wind624k'),
-            (33,40,'wind624k'),
-            (41,48,'wind624k'),
-            (49,55,'wind30k'),
-            (56,62,'wind30k'),
-            (56,62,'wind30k')
+            (0,3,'noop',self.IGNORE),
+            (4,8,'wind3k',3000),
+            (9,16,'wind624k',6000),
+            (17,24,'wind624k',9000),
+            (25,32,'wind624k',12000),
+            (33,40,'wind624k',18000),
+            (41,48,'wind624k',24000),
+            (49,55,'wind30k',30000),
+            (56,62,'wind30k',34000),
+            (56,62,'wind30k',39000)
         ]
 
         self.wind_data={}
         
         self.get_wind(
-            level='low',region='all',layout='off',time=str(time))
+            level='low',region='all',layout='off',fcst='06',date='')
+
+
+    def _interp_alt(self, alt):
+
+        if alt > 39000 or alt < 3000:
+            return (alt,None,None,None)
+        
+        alts = [t[3] for t in self.TOKENS[1:]]
+
+        # [3000 - 39000]
+        a1 = None
+        a2 = None
+        for a in alts:
+            if alt == a:
+                a1 = a
+                a2 = alts[alts.index(a)+1]
+                break
+            elif alt < a and a2 is None:
+                a2 = a
+                a1= alts[alts.index(a)-1]
+                break
+
+        return (alt,
+                alts.index(a1),
+                alts.index(a2),
+                (alt-a1)/(a2-a1))
+
+    def get_airdata(self,station,alt):
+        
+        a,idx1,idx2,interp = self._interp_alt(alt)
+
+        if idx1 is None: return (alt,None,None,None)
+        if idx2 is None: return (alt,None,None,None)
+
+        try:
+            airdata = self.wind_data[station]
+            low_data = airdata[idx1][1]
+            high_data = airdata[idx2][1]
+
+            # print(low_data)
+            # print(high_data)
+
+            if low_data is None: return (alt,None,None,None)
+            if high_data is None: return (alt,None,None,None)
+
+            # vec,vel,tmp
+
+            d_vec = high_data[0] - low_data[0]
+            d_vel = high_data[1] - low_data[1]
+            d_tmp = high_data[2] - low_data[2]
+
+            r_vec = low_data[0] + d_vec * interp 
+            if r_vec > 360:
+                r_vec = r_vec - 360
+
+            r_vel = low_data[1] + d_vel * interp
+            r_tmp = low_data[2] + d_tmp * interp
+
+            return (alt,r_vec,r_vel,r_tmp)
+        except:
+            (alt,None,None,None)
         
     def _parse_wind_line(self,data_line):
         station = data_line[ self.TOKENS[0][0]:
                              self.TOKENS[0][1]]
         self.wind_data[station] = []
         for token_idx in self.TOKENS[1:]:
-            # print('|'+data_line[token[0]:token[1]]+'|')
             tok = data_line[token_idx[0]:token_idx[1]]
             func = getattr(F,token_idx[2])
-            self.wind_data[station].append(func(tok))
-
-            
+            self.wind_data[station].append((token_idx[3],func(tok)))
+        
+        # print(self.wind_data['TUS'])
+                      
     def get_wind(self,**kwargs):
         # Build up the args
         args='?'
         for k in kwargs.keys():
             args = args + k + '=' + kwargs[k] + '&'
         args = args[:-1]
-    
+
+        # print(WIND_DATA_URL+args)
+        
         data_page = request.urlopen(WIND_DATA_URL + args).read()
 
         soup = BS(data_page,'html.parser')
@@ -115,12 +180,16 @@ class Wind:
                 counter=counter+1
                 if len(line.strip()) ==0 : continue                           
                 if counter > self.DATA_STARTS_AFTER:
-                     self._parse_wind_line(line)
-                else:
-                    # print(line)
+                    # if 'TUS' in line:
+                        # print('FT  3000   6000   9000   12000    18000   24000  30000  34000  39000')
+                        # print(line)
+                    self._parse_wind_line(line)
+                else:                    
                     pass
-                    
+
 if __name__ == '__main__':
     w = Wind()
-   
-    
+
+    for a in range(0,39000,500):
+        print('TUS',w.get_airdata('TUS',a))
+
