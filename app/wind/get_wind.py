@@ -2,6 +2,8 @@
 from bs4 import BeautifulSoup as BS
 from urllib import request
 
+from .feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
+
 WIND_DATA_URL='https://aviationweather.gov/windtemp/data'
 ################################################################################
 #
@@ -59,7 +61,7 @@ class F:
         return (vec,vel,tmp)
     
 class Wind:
-    def __init__(self, time=6):
+    def __init__(self, time=6, conn = None):
 
         self.IGNORE=-9999
         
@@ -86,9 +88,30 @@ class Wind:
         ]
 
         self.wind_data={}
+        self.station_lon_lat={}
         
         self.get_wind(
             level='low',region='all',layout='off',fcst='06',date='')
+
+        self.get_station_lon_lat(conn)
+
+    def get_station_lon_lat(self,conn):
+        if conn is None: return
+
+        values = FEATURE_SQL_QUERIES['VORS'][FEATURE_VALUES]
+
+        for station in self.wind_data.keys():
+            sql = FEATURE_SQL_QUERIES['VORS'][FEATURE_SQL] % station
+            cursor = conn.cursor()
+            cursor.execute( sql )
+            vor = cursor.fetchall()
+            cursor.close()
+            try:
+                point = [vor[values['longitude']],
+                         vor[values['longitude']]]
+                print(point)
+            except:
+                print(sql)
 
 
     def _interp_alt(self, alt):

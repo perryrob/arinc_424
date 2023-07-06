@@ -20,6 +20,8 @@ from translator.Translators import FIELD_REFERENCES
 
 from route.find_route import distance_crs,closest_wpts,find_route
 
+from wind.get_wind import Wind
+
 import argparse
 
 SUPPORTED_SECTIONS_SUBSECTIONS=[
@@ -120,7 +122,11 @@ if __name__ == '__main__':
                         default='ROUTE'
                         )
     
-    
+
+    parser.add_argument('--wind',help='For now, just run the wind code. '+\
+                        'this will be used later for course',action='store_true'
+                        )
+
     args=parser.parse_args()
 
     conn = None
@@ -296,6 +302,12 @@ if __name__ == '__main__':
                 print('Total Distance:', '{:4.1f}'.format(total_distance))
                 if args.fly_route:
                     fly_edges(non_colinear_edges, roll=0, tilt=0,filename='VIEW.kmz')
+
+    
+    if args.wind:
+        w = Wind( time=6, conn=conn )
+            
             
     conn.commit()
     conn.close()
+    
