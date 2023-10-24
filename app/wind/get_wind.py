@@ -2,7 +2,7 @@
 from bs4 import BeautifulSoup as BS
 from urllib import request
 
-from .feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
+from wind.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 
 WIND_DATA_URL='https://aviationweather.gov/windtemp/data'
 ################################################################################
@@ -209,10 +209,3 @@ class Wind:
                     self._parse_wind_line(line)
                 else:                    
                     pass
-
-if __name__ == '__main__':
-    w = Wind()
-
-    for a in range(0,39000,500):
-        print('TUS',w.get_airdata('TUS',a))
-

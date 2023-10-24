@@ -86,6 +86,10 @@ if __name__ == '__main__':
                         action='store_true'
                         )
 
+    parser.add_argument('--range',help='Enter fuel stop range in NM ',type=int,
+                        default=700
+                        )
+    
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
                         metavar=('lon', 'lat', 'alt'),
                         help='Enter lon(deg) lat(deg) alt(m) for VIEW.kmz',
@@ -230,7 +234,8 @@ if __name__ == '__main__':
             print('total:   \t','{:4.1f}'.format(dis))
 
         
-        
+    intermediate_distance = 0
+    
     if args.proposed_route is not None:
         
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
@@ -262,6 +267,13 @@ if __name__ == '__main__':
                     non_colinear_edges.append(edge)
 
                 total_distance = total_distance + edge.distance
+
+                intermediate_distance = intermediate_distance + next_edge.distance
+                if intermediate_distance >= args.range:
+                    print('------------------------------- Fuel @ ' + str(args.range) + \
+                          'dis: ' + str(intermediate_distance) )
+                    intermediate_distance = 0
+                    
                 fix_dis = fix_dis + edge.distance
 
                 if not edge.is_colinear(next_edge):
