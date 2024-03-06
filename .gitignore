@@ -51,4 +51,6 @@ app/cifp/CI*
 app/cifp/FAA*
 app/cifp/IN*
 app/cifp/Not*
+app/aviation_weather/*.csv
+app/aviation_weather/*.json
 *.kmz
