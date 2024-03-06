@@ -5,6 +5,8 @@ from build_geojson_kml import PROPOSED_ROUTE_geom, fly_edges
 from build_geojson_kml import ROUTE_geom
 from build_geojson_kml import MERGE_RNAV_VOR
 
+from weather.stations import Stations
+
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
 
@@ -131,6 +133,11 @@ if __name__ == '__main__':
                         'this will be used later for course',action='store_true'
                         )
 
+    parser.add_argument('--weather_stations',help='Load Weather reporint locations '+\
+                        'into the database.',action='store_true'
+                        )
+
+    
     args=parser.parse_args()
 
     conn = None
@@ -186,6 +193,8 @@ if __name__ == '__main__':
         AIRWAY_geom(conn,airway_types=args.airway_types)
         AIRPORT_geom(conn)        
 
+    if args.weather_stations:
+        Stations(conn)
         
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])
