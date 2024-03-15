@@ -278,11 +278,17 @@ FIELD_REFERENCES={
     '5.267' : (noop,'varchar'),
     '5.268' : (noop,'varchar'),
     '5.269' : (noop,'varchar'),
-    '5.270' : (noop,'varchar')
+    '5.270' : (noop,'varchar'),
+    'icaoId': (noop,'varchar'),
+    'lat': (noop,'float'),
+    'lon': (noop,'float'),
+    'elev': (noop,'float'),
+    'priority': (noop,'integer')
 }
 
-
-
+GLOBAL_TABLE_IGNORE={
+    'station':['iataId','wmoId']
+}
 def field_reference_parse_lookup(arg):
 
     return FIELD_REFERENCES.get(arg,(noop,None))
