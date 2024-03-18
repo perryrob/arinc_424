@@ -6,6 +6,11 @@ from build_geojson_kml import ROUTE_geom
 from build_geojson_kml import MERGE_RNAV_VOR
 
 from weather.stations import Stations
+from weather.metars import Metars
+from weather.tafs import Tafs
+from weather.airsigmets import AirSigmets
+from weather.aircraftreport import AircraftReport
+
 
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
@@ -195,7 +200,11 @@ if __name__ == '__main__':
 
     if args.weather_stations:
         Stations(conn)
-        
+        Metars(conn)
+        Tafs(conn)
+        AirSigmets(conn)
+        AircraftReport(conn)
+
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])
 

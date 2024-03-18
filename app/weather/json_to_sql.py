@@ -15,13 +15,15 @@ class JSON_SQL:
         #
         # Expect a list of dictionaries [ {},{},{} ]
         #
-        self.json_data = json.loads(json_text)
+        try:
+            self.json_data = json.loads(json_text)
+        except TypeError as te:
+            self.json_data = json_text # See if the text to data has occured
         
         self.cols = None
         self.table_name = table_name
         
         for d in self.json_data:
-
             if self.cols is None:
                 self.cols = [k for k in  d.keys()]
                 continue            

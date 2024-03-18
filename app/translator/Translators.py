@@ -287,7 +287,11 @@ FIELD_REFERENCES={
 }
 
 GLOBAL_TABLE_IGNORE={
-    'station':['iataId','wmoId']
+    'station':['iataId','wmoId'],
+    'metar':[],
+    'aircraftreport':[],
+    'airsigmet':[],
+    'taf':[]
 }
 def field_reference_parse_lookup(arg):
 

@@ -17,7 +17,7 @@ class Stations:
             cursor.close()
             conn.commit()
         except:
-            cursor.close()
+            conn.rollback()
         
         cursor = conn.cursor()
         cursor.execute( jsql.table_create_sql() )
