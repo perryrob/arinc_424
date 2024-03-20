@@ -336,7 +336,7 @@ if __name__ == '__main__':
     
     if args.wind:
         w = Wind( time=6, conn=conn )
-            
+        print(w.get_airdata('TUS',11500))
             
     conn.commit()
     conn.close()

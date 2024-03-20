@@ -1,10 +1,9 @@
 
-from bs4 import BeautifulSoup as BS
 from urllib import request
 
 from wind.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 
-WIND_DATA_URL='https://aviationweather.gov/windtemp/data'
+WIND_DATA_URL='https://aviationweather.gov/api/data/windtemp'
 ################################################################################
 #
 #  level = (low,high)
@@ -98,21 +97,22 @@ class Wind:
     def get_station_lon_lat(self,conn):
         if conn is None: return
 
-        values = FEATURE_SQL_QUERIES['VORS'][FEATURE_VALUES]
+        values = FEATURE_SQL_QUERIES['STATION'][FEATURE_VALUES]
 
         for station in self.wind_data.keys():
-            sql = FEATURE_SQL_QUERIES['VORS'][FEATURE_SQL] % station
+            sql = FEATURE_SQL_QUERIES['STATION'][FEATURE_SQL] % station
             cursor = conn.cursor()
             cursor.execute( sql )
-            vor = cursor.fetchall()
+            station = cursor.fetchall()
             cursor.close()
             try:
-                point = [vor[values['longitude']],
-                         vor[values['longitude']]]
-                print(point)
+                point = [station[values['longitude']],
+                         station[values['longitude']]]
+                # print(point)
             except:
-                print(sql)
-
+                pass
+                # print(sql)
+                
 
     def _interp_alt(self, alt):
 
@@ -126,13 +126,15 @@ class Wind:
         a2 = None
         for a in alts:
             if alt == a:
-                a1 = a
-                a2 = alts[alts.index(a)+1]
-                break
+                a2 = a
+                a1 = 0
+                return (alt,
+                        alts.index(a),
+                        alts.index(a),
+                 1.0)
             elif alt < a and a2 is None:
                 a2 = a
                 a1= alts[alts.index(a)-1]
-                break
 
         return (alt,
                 alts.index(a1),
@@ -182,9 +184,15 @@ class Wind:
             tok = data_line[token_idx[0]:token_idx[1]]
             func = getattr(F,token_idx[2])
             self.wind_data[station].append((token_idx[3],func(tok)))
-        
-        # print(self.wind_data['TUS'])
-                      
+
+        # Post process to remove missing data because of low altitude
+        # Just copy down the higher values
+        # If the last entry in the list is None (unlikely) this will break
+        for i in range(0,len(self.wind_data[station])):
+            if self.wind_data[station][i][1] is None:
+                self.wind_data[station][i] = (self.wind_data[station][i][0],
+                                              self.wind_data[station][i+1][1])
+                
     def get_wind(self,**kwargs):
         # Build up the args
         args='?'
@@ -195,17 +203,15 @@ class Wind:
         # print(WIND_DATA_URL+args)
         
         data_page = request.urlopen(WIND_DATA_URL + args).read()
-
-        soup = BS(data_page,'html.parser')
-        for data in soup.findAll('pre'):
-            counter = 0
-            for line in data.text.split('\n'):
-                counter=counter+1
-                if len(line.strip()) ==0 : continue                           
-                if counter > self.DATA_STARTS_AFTER:
-                    # if 'TUS' in line:
-                        # print('FT  3000   6000   9000   12000    18000   24000  30000  34000  39000')
-                        # print(line)
-                    self._parse_wind_line(line)
-                else:                    
-                    pass
+        data_page = data_page.decode('utf-8')
+        counter = 0
+        for line in data_page.split('\n'):
+            counter=counter+1
+            if len(line.strip()) ==0 : continue                           
+            if counter > self.DATA_STARTS_AFTER:
+                # if 'TUS' in line:
+                    # print('FT  3000   6000   9000   12000    18000   24000  30000  34000  39000')
+                    # print(line)
+                self._parse_wind_line(line)
+            else:                    
+                pass
