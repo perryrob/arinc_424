@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from exceptions.CIFPExceptions import InvalidFloatFormat,InvalidIntegerFormat
+
 SECTION_SUBSECTION = [None,None]
 
 
@@ -168,7 +170,7 @@ def func524(arg):
         tenths = float(arg[3:4]) / 10
         return base + tenths
     except:
-        return None
+        raise InvalidFloatFormat('func524')
 
 def func525(arg):
     return func524(arg)
@@ -182,7 +184,7 @@ def func527(arg):
         tenths = float(arg[3:4]) / 10
         return base + tenths
     except:
-        return None
+        raise InvalidFloatFormat('func527')
 
 def func528(arg):
     return arg.strip()
@@ -194,28 +196,33 @@ def func530(arg):
     try:
         return int(arg)
     except:
-        return None
+        raise InvalidIntegerFormat('func530')
+
 
 def func531(arg):
     try:
         return int(arg)
     except:
-        return None
+        raise InvalidIntegerFormat('func531')
 
 def func533(arg):
     return arg.strip()
 
 def func534( arg ):
-    global SECTION_SUBSECTION
+    
+    try:
+        global SECTION_SUBSECTION
 
-    if 'D' in SECTION_SUBSECTION and ' '  in SECTION_SUBSECTION:
-        base = arg[0:3]
-        dec = arg[3:5]
-    else:
-        base = arg[0:4]
-        dec = arg[4:5]
-    return float(base + '.'+dec)
+        if 'D' in SECTION_SUBSECTION and ' '  in SECTION_SUBSECTION:
+            base = arg[0:3]
+            dec = arg[3:5]
+        else:
+            base = arg[0:4]
+            dec = arg[4:5]
 
+        return float(base + '.'+dec)
+    except:
+        raise InvalidFloatFormat('func535', {'arg':arg} )
 
 def func535( arg ):
     '''
@@ -266,7 +273,8 @@ def func536( arg ):
         secs = float(secs+'.'+dsecs) / 3600.0
         return ns * (degs + mins + secs)
     except:
-        return None
+        raise InvalidFloatFormat('func530')
+
 
 def func537( arg ):
     try:

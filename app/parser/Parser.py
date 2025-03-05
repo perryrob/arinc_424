@@ -5,6 +5,8 @@ from spec.arinc_424_18_parser import ARINC_FIELD_NAME,ARINC_FIELD_WIDTH,\
 
 from translator.Translators import TRANSLATOR_FUNC
 
+from exceptions.CIFPExceptions import InvalidFloatFormat,InvalidIntegerFormat,InvalidFormat
+
 COLUMN_NAME_POS=0
 RAW_VAL_POS=1
 TRANSLATED_VAL_POS=2
@@ -20,9 +22,9 @@ class RecordParser:
         self.parse_sections = parse_sections
         self.field_translators = field_translators
         self._parse()
-
-    def _parse(self):
         
+    def _parse(self):
+
         with self.inf as arinc_data:
             for data_line in arinc_data:
                 tokens=[]
@@ -34,8 +36,9 @@ class RecordParser:
                     else:
                         self.record_objs[(section,sub_section)] = []
                         self.record_objs[(section,sub_section)].append( tokens ) 
-        self.inf.close()
 
+
+            
     def get_record_section_subsection(self, data_line, tokens):
         parse_def = ARINC_424_PARSE_DEF[' ']
         start_parse=0
@@ -137,7 +140,14 @@ class RecordParser:
                     print( data_line )
                     print( token_parse )
                     raise(te)
-
+                except InvalidFloatFormat as iv:
+                    iv.errors['data_line'] = data_line
+                    iv.errors['token_parse'] = token_parse
+                    translated_field_val = -999.999
+                except InvalidIntegerFormat as iv:
+                    iv.errors['data_line'] = data_line
+                    iv.errors['token_parse'] = token_parse
+                    translated_field_val = 0
                 
                 tokens.append(
                     [ field_name,
@@ -163,6 +173,10 @@ class RecordParser:
         
     
     def translate_field(self, translator, val ):
-        if self.field_translators is None:
-            return val
-        return translator(val)
+        try:
+            if self.field_translators is None:
+                return val
+            return translator(val)
+        except InvalidFormat as iv:
+            iv.errors['translator'] = translator
+            raise iv
