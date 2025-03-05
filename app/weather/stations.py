@@ -32,23 +32,25 @@ class Stations:
         lines = []
         for qe in m.quadEdges:
             if qe.org is not None:
-                lines += [[[qe.org.x, qe.org.y], [qe.dest.x, qe.dest.y]]]
+                lines += [[[qe.org.x, qe.dest.x], [qe.org.y, qe.dest.y]]]
+                # lines += [[[qe.org.x, qe.org.y], [qe.dest.x, qe.dest.y]]]
 
         for line in lines:
             print(line)
+
         # plotting, for example:
+        '''
+        import matplotlib.pyplot as plt
 
-        # import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
 
-        # fig, ax = plt.subplots()
+        for line in lines:
+            start, end = line
 
-        # for line in lines:
-        #     start, end = line
+            ax.plot(start, end)
 
-        #     ax.plot(start, end)
-
-        # plt.show()
-
+        plt.show()
+        '''
 
         print(lines)
         # print(jsql.table_drop_sql())
