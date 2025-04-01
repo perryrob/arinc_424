@@ -138,6 +138,8 @@ def func515(arg):
     return arg.strip()
 
 def func516(arg):
+    # SUSAH 6N5 K6DHUDSN16YOMAN 010HUDSNK6EA0E       IF                                 + 00920     18000       HUDSN K6EA       749882502
+
     # Data can be bad for this spec
     if arg == 'O': arg = '0'
     return int(arg.strip())
