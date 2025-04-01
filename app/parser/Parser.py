@@ -1,6 +1,6 @@
 
-from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
-from spec.arinc_424_18_parser import ARINC_FIELD_NAME,ARINC_FIELD_WIDTH,\
+from spec.arinc_424_23_parser import ARINC_424_PARSE_DEF
+from spec.arinc_424_23_parser import ARINC_FIELD_NAME,ARINC_FIELD_WIDTH,\
     SECTION_CODE, SUBSECTION_CODE, FIELD_REFERENCE, IGNORE
 
 from translator.Translators import TRANSLATOR_FUNC

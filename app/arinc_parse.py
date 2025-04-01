@@ -2,7 +2,7 @@ from parser.Parser import RecordParser
 
 import sys
 
-from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
+from spec.arinc_424_23_parser import ARINC_424_PARSE_DEF
 
 from db.DB_Manager import DB_ARINC_Tables, DB_connect, DB_ARINC_data
 

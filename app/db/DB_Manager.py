@@ -1,6 +1,6 @@
 
-from spec.arinc_424_18_parser import ARINC_FIELD_NAME, FIELD_REFERENCE, IGNORE
-from spec.arinc_424_18_parser import SQL_TABLE, ADDITIONAL_SQL_LIST, SQL_DEF
+from spec.arinc_424_23_parser import ARINC_FIELD_NAME, FIELD_REFERENCE, IGNORE
+from spec.arinc_424_23_parser import SQL_TABLE, ADDITIONAL_SQL_LIST, SQL_DEF
 from translator.Translators import SQL_TYPE
 
 from parser.Parser import COLUMN_NAME_POS,RAW_VAL_POS, TRANSLATED_VAL_POS
@@ -38,7 +38,9 @@ class DB_ARINC_Tables:
                 statement = statement + additional_statement
 
             statement = statement + ');'
-            
+            # DEBUG
+            if 'NDB' in statement:
+                print(statement)
             self.create_table_statements.append(statement)
         return self.create_table_statements
 

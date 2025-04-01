@@ -16,7 +16,7 @@ from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from db.post_create_sql import POST_CREATE_SQL
 
 from translator.Translators import FIELD_REFERENCES
-from spec.arinc_424_18_parser import ARINC_424_PARSE_DEF
+from spec.arinc_424_23_parser import ARINC_424_PARSE_DEF
 
 from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
 

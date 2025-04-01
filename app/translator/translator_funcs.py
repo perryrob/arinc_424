@@ -138,7 +138,9 @@ def func515(arg):
     return arg.strip()
 
 def func516(arg):
-    return arg.strip()
+    # Data can be bad for this spec
+    if arg == 'O': arg = '0'
+    return int(arg.strip())
 
 def func517(arg):
     return arg
@@ -447,6 +449,9 @@ def func566( arg ):
         return None
 
 def func5170(arg):
+    return arg.strip()
+
+def func5158(arg):
     return arg.strip()
 
             
