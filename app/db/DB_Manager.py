@@ -38,9 +38,6 @@ class DB_ARINC_Tables:
                 statement = statement + additional_statement
 
             statement = statement + ');'
-            # DEBUG
-            if 'NDB' in statement:
-                print(statement)
             self.create_table_statements.append(statement)
         return self.create_table_statements
 

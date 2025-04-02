@@ -277,7 +277,7 @@ def func536( arg ):
         secs = float(secs+'.'+dsecs) / 3600.0
         return ns * (degs + mins + secs)
     except:
-        raise InvalidFloatFormat('func530')
+        raise InvalidFloatFormat('func536')
 
 
 def func537( arg ):
@@ -294,8 +294,8 @@ def func537( arg ):
         dsecs = arg[8:9]
         secs = float(secs+'.'+dsecs) / 3600.0
         return ew * (degs + mins + secs)
-    except:
-        return None
+    except Exception as e :
+        raise InvalidFloatFormat('func537')
 
 
 def func539(arg):
