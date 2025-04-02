@@ -226,8 +226,8 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
             geometry_collection.append(
                 Point( runway['center'],
                        properties={
-                           'name':airport_id,
-                           'description':runway['airport']['description'],
+                           'name': airport_id,
+                           'description': '<![CDATA[<a href="https://airnav.com/airport/%s"]]>' % (airport_id),
                            'icon':ap_icon
                        }
                       )
