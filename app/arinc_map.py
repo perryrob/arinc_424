@@ -20,7 +20,7 @@ from spec.arinc_424_23_parser import ARINC_424_PARSE_DEF
 
 from CONFIG import ARINC424_INPUT_FILE,ARINC_DATA_FILE
 
-from arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
+from parser.arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
@@ -199,11 +199,13 @@ if __name__ == '__main__':
         AIRPORT_geom(conn)        
 
     if args.weather_stations:
-        Stations(conn)
-        Metars(conn)
-        Tafs(conn)
-        AirSigmets(conn)
-        AircraftReport(conn)
+        s = Stations(conn)
+        PROPOSED_ROUTE_geom( s.get_delauney_edges(), file_name='delauney' )
+                
+        #Metars(conn)
+        #Tafs(conn)
+        #AirSigmets(conn)
+        #AircraftReport(conn)
 
     if  args.fly_to is not None:
         fly_center(args.fly_to[0])
@@ -335,9 +337,17 @@ if __name__ == '__main__':
 
     
     if args.wind:
-        w = Wind( time=6, conn=conn )
-        print(w.get_airdata('TUS',11500))
-            
+        w = Wind( conn=conn )
+        
+        print(w.get_airdata('TUS',6000))
+        print(w.get_airdata('TUS',11000))
+        print(w.get_airdata('TUS',11900))
+        print(w.get_airdata('TUS',12000))
+        print(w.get_airdata('TUS',16000))
+        #     3000    6000    9000   12000   18000   24000  30000  34000  39000
+        # TUS      2706+11 9900+03 2605-04 2816-19 2823-32 244545 246348 255451
+        # print('**************************************')
+        PROPOSED_ROUTE_geom( w.delauney_edges, file_name='delauney' )
     conn.commit()
     conn.close()
     

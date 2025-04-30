@@ -2,6 +2,10 @@
 from urllib import request
 
 from wind.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
+from route.graph import Fix, Edge
+from delaunay.quadedge.mesh import Mesh
+from delaunay.quadedge.point import Vertex
+from delaunay.delaunay import delaunay
 
 WIND_DATA_URL='https://aviationweather.gov/api/data/windtemp'
 ################################################################################
@@ -88,32 +92,80 @@ class Wind:
 
         self.wind_data={}
         self.station_lon_lat={}
+        self.wind_station_triangles=None
+        self.delauney_edges = []
         
         self.get_wind(
             level='low',region='all',layout='off',fcst='06',date='')
 
-        self.get_station_lon_lat(conn)
+        self.mesh = self.get_station_lon_lat_mesh(conn)
 
-    def get_station_lon_lat(self,conn):
+
+        for qe in self.mesh.quadEdges:
+            if qe.org is not None:
+                # I should put the wind/temps in the None area for easy
+                # retrieveal during interpolation
+                f_org = Fix( qe.org.weather_station,qe.org.weather_station,
+                             qe.org.x, qe.org.y, None)
+
+                f_dest = Fix( qe.dest.weather_station,
+                              qe.dest.weather_station,
+                              qe.dest.x, qe.dest.y, None)
+                
+                self.delauney_edges.append( Edge(
+                    f_org,
+                    f_dest,
+                    qe.org.weather_station+qe.dest.weather_station
+                ))
+
+    def get_station_lon_lat_mesh(self,conn):
+
         if conn is None: return
 
         values = FEATURE_SQL_QUERIES['STATION'][FEATURE_VALUES]
+        vor_values = FEATURE_SQL_QUERIES['VOR'][FEATURE_VALUES]
 
-        for station in self.wind_data.keys():
-            sql = FEATURE_SQL_QUERIES['STATION'][FEATURE_SQL] % station
+        vertices = []
+
+        for station_name in self.wind_data.keys():
+            sql = FEATURE_SQL_QUERIES['STATION'][FEATURE_SQL] % station_name
             cursor = conn.cursor()
             cursor.execute( sql )
             station = cursor.fetchall()
             cursor.close()
             try:
+                station = station[0] # Expecting one line only
                 point = [station[values['longitude']],
-                         station[values['longitude']]]
+                         station[values['latitude']]]
                 # print(point)
             except:
-                pass
-                # print(sql)
-                
+                # Station not found in STATION table so try VORs
+                cursor = conn.cursor()
+                # print(station_name)
+                sql = FEATURE_SQL_QUERIES['VOR'][FEATURE_SQL] % station_name
+                cursor.execute( sql )
+                station = cursor.fetchall()
+                cursor.close()
+                try:
+                    station = station[0] # Expecting one line only
+                    point = [station[vor_values['longitude']],
+                             station[vor_values['latitude']]]
+                    # print(point)
+                except:
+                    continue
 
+            # Only stash valid geospatial points
+            if point[0] <= 180 and point[0] >= -180 and \
+               point[1] > -90 and point[1] < 90:
+                v = Vertex(point[0],float(point[1]))
+                v.weather_station = station_name 
+                vertices.append(v)
+            
+        m = Mesh()
+        m.loadVertices(vertices)
+        delaunay(m, 0, len(vertices)-1)
+        return m
+    
     def _interp_alt(self, alt):
 
         if alt > 39000 or alt < 3000:
@@ -200,8 +252,8 @@ class Wind:
             args = args + k + '=' + kwargs[k] + '&'
         args = args[:-1]
 
-        # print(WIND_DATA_URL+args)
-        
+        print(WIND_DATA_URL+args)
+
         data_page = request.urlopen(WIND_DATA_URL + args).read()
         data_page = data_page.decode('utf-8')
         counter = 0
@@ -215,3 +267,5 @@ class Wind:
                 self._parse_wind_line(line)
             else:                    
                 pass
+        # for k in self.wind_data.keys():
+        #    print(k,self.wind_data[k])

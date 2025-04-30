@@ -9,4 +9,8 @@ FEATURE_SQL_QUERIES={
         'lon':0,
         'lat':1,
         }),
+    'VOR': ('''select longitude,latitude from VOR where vor_id  = '%s' ''',{
+        'longitude':0,
+        'latitude':1,
+        }),
 }

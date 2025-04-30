@@ -1,4 +1,4 @@
-from parser.Parser import RecordParser
+from .Parser import RecordParser
 
 import sys
 

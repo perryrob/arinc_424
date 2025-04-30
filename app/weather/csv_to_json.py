@@ -1,6 +1,4 @@
 
-
-
 class Csv_to_JSON:
 
     def __init__(self, input_file='app/aviation_weather/airsigmets.cache.csv'):
