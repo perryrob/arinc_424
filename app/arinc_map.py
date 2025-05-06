@@ -335,7 +335,7 @@ if __name__ == '__main__':
     
     if args.wind:
         w = Wind( conn=conn )
-        
+
         print(w.get_airdata('TUS',6000))
         print(w.get_airdata('TUS',11000))
         print(w.get_airdata('TUS',11900))

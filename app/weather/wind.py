@@ -5,9 +5,6 @@ from weather.stations import Stations
 
 from weather.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 from route.graph import Fix, Edge
-from delaunay.quadedge.mesh import Mesh
-from delaunay.quadedge.point import Vertex
-from delaunay.delaunay import delaunay
 
 ################################################################################
 #
@@ -72,6 +69,8 @@ class Wind:
 
 
         self.stations = Stations(conn,persist=True)
+        self.station_edges = self.stations.get_delauney_edges()
+
         
         self.IGNORE=-9999
         
@@ -174,19 +173,15 @@ class Wind:
         station = data_line[ self.TOKENS[0][0]:
                              self.TOKENS[0][1]]
         # The station might not be in ICAO format
-        s = None
-        try:
-            s = self.stations.get_by_icao(station)            
-        except:
-            try:
-                s = self.stations.get_by_icao('K'+station)
-            except:
-                try:
-                    s = self.stations.get_by_faa(station)
-                except:
-                    print(station)
-        
+
+        s = self.stations.get(station)            
+
+        if s is None: return
+
+        # Found station "s"
+                    
         self.wind_data[station] = []
+        
         for token_idx in self.TOKENS[1:]:
             tok = data_line[token_idx[0]:token_idx[1]]
             func = getattr(F,token_idx[2])
@@ -199,15 +194,19 @@ class Wind:
             if self.wind_data[station][i][1] is None:
                 self.wind_data[station][i] = (self.wind_data[station][i][0],
                                               self.wind_data[station][i+1][1])
+
+        # Set the wind data for the station
+        s.json_data['wind_data'] = self.wind_data[station] 
                 
     def get_wind_data(self,**kwargs):
         # Build up the args
         args='?'
         for k in kwargs.keys():
+            if k == 'DATA_URL': continue
             args = args + k + '=' + kwargs[k] + '&'
         args = args[:-1]
 
-        # print(kwargs['DATA_URL']+args)
+        print(kwargs['DATA_URL']+args)
 
         data_page = request.urlopen(kwargs['DATA_URL'] + args).read()
         data_page = data_page.decode('utf-8')

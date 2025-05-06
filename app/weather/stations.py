@@ -32,8 +32,13 @@ class Station:
             location=self.json_data['location']
             self.vertex = (Vertex(float(location['longitude']),
                                   float(location['latitude'])))
+        self.vertex.json_data = json_data
+        
     def is_faa(self):
         return self.station == 'FAA'
+
+    def get_vertex(self):
+        return self.vertex
     
     def get(self, k):
         return self.json_data[k]
@@ -69,11 +74,7 @@ class Stations:
             else:
                 
                 self.station_by_icaoid[s.get('identifiers')['icao']]=int(index)
-            index = index + 1
-
-            # self.mesh = Mesh()
-            # self.mesh.loadVertices(vertices)
-            # delaunay(self.mesh, 0, len(vertices)-1)
+            index = index + 1           
         
         if persist:        
             try:
@@ -96,29 +97,67 @@ class Stations:
             cursor.close()
             conn.commit()
 
+    def get(self, id):
+        retval = None
+        try:
+            retval = self.get_by_icao(id)            
+        except:
+            try:
+                retval= self.get_by_icao('K'+id)
+            except:
+                try:
+                    retval = self.stations.get_by_faa(id)
+                except:
+                    print('Could not find: ' + id)        
+        return retval
+    
     def get_by_icao(self,k):
         return self.stations[self.station_by_icaoid[k]]
+
     def get_by_faa(self,k):
         return self.stations[self.station_by_faaid[k]]
     
     def get_delauney_edges(self):
+
         delauney_edges = []
-        for qe in self.mesh.quadEdges:
+        vertices = [s.get_vertex() for s in self.stations]
+        
+        mesh = Mesh()
+        mesh.loadVertices(vertices)
+        delaunay(mesh, 0, len(vertices)-1)
+
+        
+        count=0
+        triangle = []
+        for qe in mesh.quadEdges:
+            count = count+1
             if qe.org is not None:
-                # I should put the wind/temps in the None area for easy
-                # retrieveal during interpolation
-                f_org = Fix( qe.org.iataId,
-                             qe.org.iataId,
+
+                for i in range(0,4):
+                    print(qe[i].parent.)
+
+                f_org = Fix( qe.org.json_data['iataId'],
+                             qe.org.json_data['iataId'],
                              qe.org.x, qe.org.y, None)
                 
-                f_dest = Fix( qe.dest.iataId,
-                              qe.dest.iataId,
+                f_dest = Fix( qe.dest.json_data['iataId'],
+                              qe.dest.json_data['iataId'],
                               qe.dest.x, qe.dest.y, None)
-                
+
+            if count%3 != 0:
+                triangle.append((qe.org,
+                                 qe.dest))
+            else:
+                # Lets see if we can find the triange benson is in!
+                # lon = -110.35797222222222
+                # lat = 31.999444444444446
+                print( triangle )
+                triangle=[]
+                print('-----------------')
                 delauney_edges.append( Edge(
                     f_org,
                     f_dest,
-                    qe.org.faaId+qe.dest.faaId
+                    qe.org.json_data['iataId']+qe.dest.json_data['iataId']
             ))
         return delauney_edges
 
