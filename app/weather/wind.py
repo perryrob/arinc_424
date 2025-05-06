@@ -1,13 +1,14 @@
 
 from urllib import request
 
-from wind.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
+from weather.stations import Stations
+
+from weather.feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 from route.graph import Fix, Edge
 from delaunay.quadedge.mesh import Mesh
 from delaunay.quadedge.point import Vertex
 from delaunay.delaunay import delaunay
 
-WIND_DATA_URL='https://aviationweather.gov/api/data/windtemp'
 ################################################################################
 #
 #  level = (low,high)
@@ -64,8 +65,14 @@ class F:
         return (vec,vel,tmp)
     
 class Wind:
+
+    DATA_URL='https://aviationweather.gov/api/data/windtemp'
+
     def __init__(self, time=6, conn = None):
 
+
+        self.stations = Stations(conn,persist=True)
+        
         self.IGNORE=-9999
         
         self.DATA_STARTS_AFTER = 8
@@ -91,80 +98,15 @@ class Wind:
         ]
 
         self.wind_data={}
-        self.station_lon_lat={}
-        self.wind_station_triangles=None
-        self.delauney_edges = []
         
-        self.get_wind(
-            level='low',region='all',layout='off',fcst='06',date='')
+        self.get_wind_data(
+            level='low',
+            region='all',
+            layout='off',
+            fcst='06',
+            date='',
+            DATA_URL=Wind.DATA_URL)
 
-        self.mesh = self.get_station_lon_lat_mesh(conn)
-
-
-        for qe in self.mesh.quadEdges:
-            if qe.org is not None:
-                # I should put the wind/temps in the None area for easy
-                # retrieveal during interpolation
-                f_org = Fix( qe.org.weather_station,qe.org.weather_station,
-                             qe.org.x, qe.org.y, None)
-
-                f_dest = Fix( qe.dest.weather_station,
-                              qe.dest.weather_station,
-                              qe.dest.x, qe.dest.y, None)
-                
-                self.delauney_edges.append( Edge(
-                    f_org,
-                    f_dest,
-                    qe.org.weather_station+qe.dest.weather_station
-                ))
-
-    def get_station_lon_lat_mesh(self,conn):
-
-        if conn is None: return
-
-        values = FEATURE_SQL_QUERIES['STATION'][FEATURE_VALUES]
-        vor_values = FEATURE_SQL_QUERIES['VOR'][FEATURE_VALUES]
-
-        vertices = []
-
-        for station_name in self.wind_data.keys():
-            sql = FEATURE_SQL_QUERIES['STATION'][FEATURE_SQL] % station_name
-            cursor = conn.cursor()
-            cursor.execute( sql )
-            station = cursor.fetchall()
-            cursor.close()
-            try:
-                station = station[0] # Expecting one line only
-                point = [station[values['longitude']],
-                         station[values['latitude']]]
-                # print(point)
-            except:
-                # Station not found in STATION table so try VORs
-                cursor = conn.cursor()
-                # print(station_name)
-                sql = FEATURE_SQL_QUERIES['VOR'][FEATURE_SQL] % station_name
-                cursor.execute( sql )
-                station = cursor.fetchall()
-                cursor.close()
-                try:
-                    station = station[0] # Expecting one line only
-                    point = [station[vor_values['longitude']],
-                             station[vor_values['latitude']]]
-                    # print(point)
-                except:
-                    continue
-
-            # Only stash valid geospatial points
-            if point[0] <= 180 and point[0] >= -180 and \
-               point[1] > -90 and point[1] < 90:
-                v = Vertex(point[0],float(point[1]))
-                v.weather_station = station_name 
-                vertices.append(v)
-            
-        m = Mesh()
-        m.loadVertices(vertices)
-        delaunay(m, 0, len(vertices)-1)
-        return m
     
     def _interp_alt(self, alt):
 
@@ -231,6 +173,19 @@ class Wind:
     def _parse_wind_line(self,data_line):
         station = data_line[ self.TOKENS[0][0]:
                              self.TOKENS[0][1]]
+        # The station might not be in ICAO format
+        s = None
+        try:
+            s = self.stations.get_by_icao(station)            
+        except:
+            try:
+                s = self.stations.get_by_icao('K'+station)
+            except:
+                try:
+                    s = self.stations.get_by_faa(station)
+                except:
+                    print(station)
+        
         self.wind_data[station] = []
         for token_idx in self.TOKENS[1:]:
             tok = data_line[token_idx[0]:token_idx[1]]
@@ -245,16 +200,16 @@ class Wind:
                 self.wind_data[station][i] = (self.wind_data[station][i][0],
                                               self.wind_data[station][i+1][1])
                 
-    def get_wind(self,**kwargs):
+    def get_wind_data(self,**kwargs):
         # Build up the args
         args='?'
         for k in kwargs.keys():
             args = args + k + '=' + kwargs[k] + '&'
         args = args[:-1]
 
-        print(WIND_DATA_URL+args)
+        # print(kwargs['DATA_URL']+args)
 
-        data_page = request.urlopen(WIND_DATA_URL + args).read()
+        data_page = request.urlopen(kwargs['DATA_URL'] + args).read()
         data_page = data_page.decode('utf-8')
         counter = 0
         for line in data_page.split('\n'):

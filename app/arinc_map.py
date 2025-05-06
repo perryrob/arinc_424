@@ -5,7 +5,6 @@ from build_geojson_kml import PROPOSED_ROUTE_geom, fly_edges
 from build_geojson_kml import ROUTE_geom
 from build_geojson_kml import MERGE_RNAV_VOR
 
-from weather.stations import Stations
 from weather.metars import Metars
 from weather.tafs import Tafs
 from weather.airsigmets import AirSigmets
@@ -27,7 +26,7 @@ from translator.Translators import FIELD_REFERENCES
 
 from route.find_route import distance_crs,closest_wpts,find_route
 
-from wind.get_wind import Wind
+from weather.wind import Wind
 
 import argparse
 
@@ -200,8 +199,6 @@ if __name__ == '__main__':
 
     if args.weather_stations:
         s = Stations(conn)
-        PROPOSED_ROUTE_geom( s.get_delauney_edges(), file_name='delauney' )
-                
         #Metars(conn)
         #Tafs(conn)
         #AirSigmets(conn)
@@ -347,7 +344,6 @@ if __name__ == '__main__':
         #     3000    6000    9000   12000   18000   24000  30000  34000  39000
         # TUS      2706+11 9900+03 2605-04 2816-19 2823-32 244545 246348 255451
         # print('**************************************')
-        PROPOSED_ROUTE_geom( w.delauney_edges, file_name='delauney' )
     conn.commit()
     conn.close()
     
