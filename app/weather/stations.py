@@ -121,32 +121,20 @@ class Stations:
 
         delauney_edges = []
         vertices = [s.get_vertex() for s in self.stations]
+
+        # Test
+        vertices=[Vertex(0,0),Vertex(1,1),Vertex(2,0),Vertex(1,2)]
         
         mesh = Mesh()
         mesh.loadVertices(vertices)
         delaunay(mesh, 0, len(vertices)-1)
-
         
         count=0
         triangle = []
         for qe in mesh.quadEdges:
-            count = count+1
             if qe.org is not None:
-
-                for i in range(0,4):
-                    print(qe[i].parent.)
-
-                f_org = Fix( qe.org.json_data['iataId'],
-                             qe.org.json_data['iataId'],
-                             qe.org.x, qe.org.y, None)
-                
-                f_dest = Fix( qe.dest.json_data['iataId'],
-                              qe.dest.json_data['iataId'],
-                              qe.dest.x, qe.dest.y, None)
-
-            if count%3 != 0:
-                triangle.append((qe.org,
-                                 qe.dest))
+                print(qe.org)
+                print(qe.dest)
             else:
                 # Lets see if we can find the triange benson is in!
                 # lon = -110.35797222222222
