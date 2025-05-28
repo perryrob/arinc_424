@@ -14,8 +14,8 @@ class DPoint(UserList):
 
 raw_points=[DPoint(p,random.randint(0,100)) for p in [[0, 0], [1, 1], [1, 0], [0, 1]]]
 
-points = np.array(raw_points)
-tri = Delaunay(points)
+# points = np.array(raw_points)
+tri = Delaunay(raw_points)
 
 def barycentric_weights(v,p):
     Wv1=((v[1].y()-v[2].y())*(p.x()-v[2].x()) +  \

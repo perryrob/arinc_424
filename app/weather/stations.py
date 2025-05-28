@@ -10,38 +10,48 @@ from weather.json_to_sql import JSON_SQL
 from weather.feature_sql import FEATURE_SQL_QUERIES
 from weather.feature_sql import FEATURE_SQL,FEATURE_VALUES
 
-from delaunay.quadedge.mesh import Mesh
-from delaunay.quadedge.point import Vertex
-from delaunay.delaunay import delaunay
-
 from route.graph import Fix, Edge
 
 from weather.gzip_cache import GzipCache
 
-class Station:
+from scipy.spatial import Delaunay
+from collections import UserList
 
-    def __init__(self, json_data={}):
+class Station(UserList):
+
+
+    def __init__(self, xy=[] ):
+        super().__init__(xy)
+        
+    def init_from_json(self, json_data={}):
         self.json_data = json_data
         self.station = 'FAA'
         if 'lon' in self.json_data.keys() and \
            'lat' in self.json_data.keys():
-            self.vertex = (Vertex(float(self.json_data['lon']),
-                                  float(self.json_data['lat'])))
+            self.vertex = (float(self.json_data['lon']),
+                           float(self.json_data['lat']))
         else:
             self.station = 'METEO'
             location=self.json_data['location']
-            self.vertex = (Vertex(float(location['longitude']),
-                                  float(location['latitude'])))
-        self.vertex.json_data = json_data
+            self.vertex = (float(location['longitude']),
+                           float(location['latitude']))
+
+        self.__init__(self.vertex)
         
     def is_faa(self):
         return self.station == 'FAA'
 
+    def x(self):
+        return self[0]
+    def y(self):
+        return self[1]
+    
     def get_vertex(self):
         return self.vertex
     
     def get(self, k):
         return self.json_data[k]
+    
     def __str__(self):
         return str(self.json_data)
 
@@ -53,7 +63,7 @@ class Stations:
     def __init__(
             self, conn,
             remote_file=DATA_URL,
-            local_file=LOCAL_FILE, persist=False
+            local_file=LOCAL_FILE, persist=False, filter_list=[]
     ):
 
         zc = GzipCache(remote_file,local_file)
@@ -66,15 +76,26 @@ class Stations:
 
         index=0
 
-        for s in json_data:
-            s = Station( s )
+        for jd in json_data:
+            s = Station()
+            s.init_from_json(jd)
+            # If a filter list was sent in use it to shorten the list
+            found_station=False
+            for k in ['icaoId','iataId','faaId']:            
+                if jd[k] in filter_list:
+                    found_station=True
+                    break
+
+            if not found_station: continue
+            
             self.stations.append(s)
-            if s.is_faa():
-                self.station_by_icaoid[s.get('icaoId')]=int(index)
-            else:
-                
-                self.station_by_icaoid[s.get('identifiers')['icao']]=int(index)
+            self.station_by_icaoid[k]=int(index)
             index = index + 1           
+
+
+        # Traingulate the station list.
+        self.delaunay_triangles = Delaunay(self.stations)
+
         
         if persist:        
             try:
@@ -96,7 +117,7 @@ class Stations:
 
             cursor.close()
             conn.commit()
-
+            
     def get(self, id):
         retval = None
         try:
@@ -116,39 +137,34 @@ class Stations:
 
     def get_by_faa(self,k):
         return self.stations[self.station_by_faaid[k]]
+
+    def barycentric_weights(self,v,p):
+        Wv1=((v[1].y()-v[2].y())*(p.x()-v[2].x()) +    \
+             (v[2].x()-v[1].x())*(p.y()-v[2].y())) /   \
+             ((v[1].y()-v[2].y())*(v[0].x()-v[2].x())+ \
+              (v[2].x()-v[1].x())*(v[0].y()-v[2].y()))
+        
+        Wv2=((v[2].y()-v[0].y())*(p.x()-v[2].x()) +    \
+             (v[0].x()-v[2].x())*(p.y()-v[2].y())) /   \
+             ((v[1].y()-v[2].y())*(v[0].x()-v[2].x())+ \
+              (v[2].x()-v[1].x())*(v[0].y()-v[2].y()))
+        
+        Wv3=1-Wv1-Wv2
+
+        return (Wv1,Wv2,Wv3)
     
-    def get_delauney_edges(self):
-
-        delauney_edges = []
-        vertices = [s.get_vertex() for s in self.stations]
-
-        # Test
-        vertices=[Vertex(0,0),Vertex(1,1),Vertex(2,0),Vertex(1,2)]
+    def get_barycetric_for_point(self,
+                                 yp=(-110.35797222222222,31.999444444444446)):
         
-        mesh = Mesh()
-        mesh.loadVertices(vertices)
-        delaunay(mesh, 0, len(vertices)-1)
-        
-        count=0
-        triangle = []
-        for qe in mesh.quadEdges:
-            if qe.org is not None:
-                print(qe.org)
-                print(qe.dest)
-            else:
-                # Lets see if we can find the triange benson is in!
-                # lon = -110.35797222222222
-                # lat = 31.999444444444446
-                print( triangle )
-                triangle=[]
-                print('-----------------')
-                delauney_edges.append( Edge(
-                    f_org,
-                    f_dest,
-                    qe.org.json_data['iataId']+qe.dest.json_data['iataId']
-            ))
-        return delauney_edges
+        tri_idx = self.delaunay_triangles.find_simplex(yp)
 
+        if tri_idx == -1: raise Exception("Point is outside of station triangulation")
+            
+        stations=[
+            self.stations[i] for i in self.delaunay_triangles.simplices[tri_idx]
+        ]
+        weights = self.barycentric_weights(stations,Station(yp))
+        return (stations,weights)
         
 if __name__ == '__main__':
     s=Stations(None)

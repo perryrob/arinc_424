@@ -336,11 +336,35 @@ if __name__ == '__main__':
     if args.wind:
         w = Wind( conn=conn )
 
-        print(w.get_airdata('TUS',6000))
-        print(w.get_airdata('TUS',11000))
-        print(w.get_airdata('TUS',11900))
-        print(w.get_airdata('TUS',12000))
-        print(w.get_airdata('TUS',16000))
+        print(w.get_airdata_at_station('TUS',6000))
+        print(w.get_airdata_at_station('TUS',11000))
+        print(w.get_airdata_at_station('TUS',11900))
+        print(w.get_airdata_at_station('TUS',12000))
+        print(w.get_airdata_at_station('TUS',16000))
+
+        print(w.get_airdata_at_location(11300))
+        print(w.get_airdata_at_location(10000,yp=(-111.3895544,
+                                                  32.4270147)))
+
+        total=0
+        fails=0
+        e_lon=-80
+        w_lon=-117
+        n_lat=47
+        s_lat=32
+        num_points=100
+        for t in range(0,num_points):
+            for n in range(0,num_points):
+                lon=w_lon - ((w_lon-e_lon) / num_points * n)
+                lat=s_lat + ((n_lat-s_lat) / num_points * t)
+                try:
+                    print(w.get_airdata_at_location(10000,yp=(lon,lat)))
+                    total +=1
+                except Exception as e:
+                    print(e)
+                    fails +=1
+        print(total,fails)
+        
         #     3000    6000    9000   12000   18000   24000  30000  34000  39000
         # TUS      2706+11 9900+03 2605-04 2816-19 2823-32 244545 246348 255451
         # print('**************************************')

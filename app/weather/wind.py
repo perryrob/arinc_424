@@ -67,15 +67,17 @@ class Wind:
 
     def __init__(self, time=6, conn = None):
 
+        self.wind_data={}
+        self.air_data_stations = []
 
-        self.stations = Stations(conn,persist=True)
-        self.station_edges = self.stations.get_delauney_edges()
-
-        
-        self.IGNORE=-9999
-        
+        self.IGNORE=-9999        
         self.DATA_STARTS_AFTER = 8
-        # 000
+       
+        # This gets the list of All known stations which should be a
+        # superset of the weather reporting stations
+        #
+
+        
         # FBUS31 KWNO 282000
         # FD1US1
         # DATA BASED ON 281800Z
@@ -95,8 +97,6 @@ class Wind:
             (56,62,'wind30k',34000),
             (56,62,'wind30k',39000)
         ]
-
-        self.wind_data={}
         
         self.get_wind_data(
             level='low',
@@ -106,6 +106,9 @@ class Wind:
             date='',
             DATA_URL=Wind.DATA_URL)
 
+        self.stations = Stations(conn,
+                                 persist=True,
+                                 filter_list=self.air_data_stations)
     
     def _interp_alt(self, alt):
 
@@ -132,9 +135,9 @@ class Wind:
         return (alt,
                 alts.index(a1),
                 alts.index(a2),
-                (alt-a1)/(a2-a1))
-
-    def get_airdata(self,station,alt):
+                (alt-a1)/(a2-a1))    
+    
+    def get_airdata_at_station(self,station,alt):
         
         a,idx1,idx2,interp = self._interp_alt(alt)
 
@@ -166,17 +169,48 @@ class Wind:
             r_tmp = low_data[2] + d_tmp * interp
 
             return (alt,r_vec,r_vel,r_tmp)
-        except:
-            (alt,None,None,None)
+        except Exception as e:
+            raise e
+        
+
+    # Default location is E95, Benson,AZ
+    def get_airdata_at_location(self,alt,yp=(-110.35797222222222,
+                                             31.999444444444446)):
+        stations=None
+        weights=None
+        try:
+            stations,weights = self.stations.get_barycetric_for_point(yp)
+        except Exception as e:
+            raise e
+            
+        station_air_data=[]        
+        for s in stations:
+            for k in ['icaoId','iataId','faaId']:
+                try:
+                    station_air_data.append(
+                        self.get_airdata_at_station(s.get(k),alt))
+                except KeyError:
+                    continue
+                except TypeError as te:
+                    return (alt,None,None,None)
+
+        # Now apply the delaunay weights
+        r_vec=0
+        r_vel=0
+        r_tmp=0
+        for i in range(0,3):
+            r_vec += weights[i]*station_air_data[i][1]
+            r_vel += weights[i]*station_air_data[i][2]
+            r_tmp += weights[i]*station_air_data[i][3]        
+
+        return (alt,r_vec,r_vel,r_tmp)        
         
     def _parse_wind_line(self,data_line):
         station = data_line[ self.TOKENS[0][0]:
                              self.TOKENS[0][1]]
         # The station might not be in ICAO format
 
-        s = self.stations.get(station)            
-
-        if s is None: return
+        self.air_data_stations.append(station)
 
         # Found station "s"
                     
@@ -194,9 +228,6 @@ class Wind:
             if self.wind_data[station][i][1] is None:
                 self.wind_data[station][i] = (self.wind_data[station][i][0],
                                               self.wind_data[station][i+1][1])
-
-        # Set the wind data for the station
-        s.json_data['wind_data'] = self.wind_data[station] 
                 
     def get_wind_data(self,**kwargs):
         # Build up the args
@@ -206,7 +237,7 @@ class Wind:
             args = args + k + '=' + kwargs[k] + '&'
         args = args[:-1]
 
-        print(kwargs['DATA_URL']+args)
+        # print(kwargs['DATA_URL']+args)
 
         data_page = request.urlopen(kwargs['DATA_URL'] + args).read()
         data_page = data_page.decode('utf-8')
@@ -218,7 +249,7 @@ class Wind:
                 # if 'TUS' in line:
                     # print('FT  3000   6000   9000   12000    18000   24000  30000  34000  39000')
                     # print(line)
-                self._parse_wind_line(line)
+                self._parse_wind_line(line)                
             else:                    
                 pass
         # for k in self.wind_data.keys():
