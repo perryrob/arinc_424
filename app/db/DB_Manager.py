@@ -6,6 +6,7 @@ from translator.Translators import SQL_TYPE
 from parser.Parser import COLUMN_NAME_POS,RAW_VAL_POS, TRANSLATED_VAL_POS
 
 import psycopg2
+import socket
 
 class DB_ARINC_Tables:
 
@@ -115,8 +116,15 @@ class DB_connect:
                  user='perryr',
                  password='peer',
                  debug=False):
+        ############################################################
+        #
+        # Check if the host wildcat
+        if socket.gethostname() == 'wildcat':
+            host=socket.gethostname()
+        
         try:
             self.con = psycopg2.connect(dbname=database,
+                                        host=host,
                                         user=user,
                                         password=password)
             if debug:
