@@ -24,7 +24,7 @@ from parser.arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs,closest_wpts,find_route
+from route.find_route import distance_crs,closest_wpts,find_route, Route
 
 from weather.wind import Wind
 
@@ -265,51 +265,19 @@ if __name__ == '__main__':
                                           args.airway_types,
                                           args.max_alt)
 
+        route = Route( conn, dep_edge,des_edge)
+
+        edges,total_distance = route.get_no_wind_route(args.airway_types,
+                                                       args.max_alt)
+        
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
         if args.fly_route:
             fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')
 
-        if args.format_430:            
-            next_edge = None
-            total_distance = 0.0
-            fix_dis = 0
-            non_colinear_edges = []
-            for i in range(1,len(edges)):                
-                edge = edges[i-1]
-                next_edge = edges[i]
+        if args.format_430:
+            print(route.format_430(args.range))
 
-                if i-1 == 0:
-                    print(edge.fix1)
-                    non_colinear_edges.append(edge)
-
-                total_distance = total_distance + edge.distance
-
-                intermediate_distance = intermediate_distance + next_edge.distance
-                if intermediate_distance >= args.range:
-                    print('------------------------------- Fuel @ ' + str(args.range) + \
-                          'dis: ' + str(intermediate_distance) )
-                    intermediate_distance = 0
-                    
-                fix_dis = fix_dis + edge.distance
-
-                if not edge.is_colinear(next_edge):
-                    print('\t'+edge.name+'|'+'{:3.1f}'.format(fix_dis)+'|')
-                    print(next_edge.fix1)
-                    fix_dis = 0
-                    non_colinear_edges.append(next_edge)
-                    
-            print('\t'+next_edge.name+'|'+\
-                  '{:3.1f}'.format(next_edge.distance)+'|')
-            print(next_edge.fix2)
-
-            non_colinear_edges.append(next_edge)
-            total_distance = total_distance + next_edge.distance
-
-            print('-----------------------------')
-            print('Total Distance:', '{:4.1f}'.format(total_distance))
-            if args.fly_route:
-                fly_edges(non_colinear_edges, roll=0, tilt=0,filename='VIEW.kmz')
         else:        
             if args.route_format:
                 for i in range(0,len(edges)):
@@ -319,19 +287,7 @@ if __name__ == '__main__':
                     print(edge.fix2,end=' ')
                 print('')
             else:
-                non_colinear_edges = []
-                for i in range(0,len(edges)):
-                    edge = edges[i]
-                    if i == 0:
-                        print(edge.fix1)
-                    print('\t'+edge.name+'|'+'{:3.1f}'.format(edge.distance)+'|')
-                    print(edge.fix2)
-                    non_colinear_edges.append(edge)
-                print('-----------------------------')
-                print('Total Distance:', '{:4.1f}'.format(total_distance))
-                if args.fly_route:
-                    fly_edges(non_colinear_edges, roll=0, tilt=0,filename='VIEW.kmz')
-
+                print(route)
     
     if args.wind:
         w = Wind( conn=conn )

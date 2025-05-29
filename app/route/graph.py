@@ -50,7 +50,7 @@ class Edge:
         self.distance = distance_deg( fix1.point,
                                       fix2.point )
         self.crs = true_course_deg(fix1.point,
-                                   fix2.point )
+                                   fix2.point, make_360=True)
         self.fix1.add_edge(self)
         self.fix2.add_edge(self)
 
@@ -90,6 +90,7 @@ class Edge:
     
     def __str__(self):
         return str(self.fix1) + ' | ' + self.name + \
-            ' | ' + str(self.distance) + ' | ' + str(self.fix2)
+            ' | ' + str(self.distance) + ' | ' + str(self.fix2) + \
+            '|' + str(self.crs)
 
    
