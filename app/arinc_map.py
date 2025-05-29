@@ -24,7 +24,7 @@ from parser.arinc_parse import  cleanup_db,setup_db,parse,load_db,post_create_db
 from translator import Translators
 from translator.Translators import FIELD_REFERENCES
 
-from route.find_route import distance_crs,closest_wpts,find_route, Route
+from route.find_route import distance_crs,closest_wpts, Route
 
 from weather.wind import Wind
 
@@ -258,12 +258,6 @@ if __name__ == '__main__':
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
                                         args.proposed_route[0][1],
                                         args.airway_types)
-
-        edges,total_distance = find_route(conn,
-                                          dep_edge,
-                                          des_edge,
-                                          args.airway_types,
-                                          args.max_alt)
 
         route = Route( conn, dep_edge,des_edge)
 
