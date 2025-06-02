@@ -13,6 +13,7 @@ class Fix:
         self.attrs=attrs
         
     def get_edges(self):
+        if len(self.edges) == 0: return None
         return self.edges
         
     def add_edge(self, edge):
@@ -47,19 +48,29 @@ class Edge:
 
         self.has_nav=False
         
+        self.fix1 = None
+        self.fix2 = None
+        self.name = name
+        self.next_edge = None
+        self.cerate_edge(fix1,fix2)
+
+        
+    def cerate_edge(self,fix1,fix2):
+
         self.fix1 = fix1
         self.fix2 = fix2
-        self.name = name
+
         self.distance = distance_deg( fix1.point,
                                       fix2.point )
         self.crs = true_course_deg(fix1.point,
                                    fix2.point, make_360=True)
         self.fix1.add_edge(self)
-        self.fix2.add_edge(self)
 
         self.fixes = [fix1,fix2]
         self.mid_point = [(fix1.point[0]+fix2.point[0])/2,
                           (fix1.point[1]+fix2.point[1])/2]
+
+        
     def recip(self):
         if self.crs > 180.0:
             return self.crs -180
@@ -107,7 +118,8 @@ class Edge:
     def get_distance(self):
         return self.distance
 
-    def is_colinear(self,edge):
+    def is_colinear(self,edge,extend_edge=False):
+        
         # Make sure the edge has the same name
         name_is_same=False
         for route_id in self.name.split('-'):
@@ -117,6 +129,7 @@ class Edge:
         
         if fabs(edge.crs - self.crs) <= 2.0 and name_is_same:
             return True
+
         elif fabs(edge.crs - self.recip()) <= 2.0 and name_is_same:
             return True
         

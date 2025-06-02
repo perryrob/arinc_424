@@ -12,19 +12,29 @@ from route.graph import Fix, Edge
 from dijkstar import Graph, find_path
 
 class Route:
-    def __init__(self, conn, DEP_edge, DES_edge, wind=None):
+    def __init__(self, conn, DEP_edge, DES_edge,
+                 fuel_range,
+                 max_alt,
+                 AIRWAY_TYPES,
+                 cruise_alt,
+                 cruise_speed,
+                 wind):
 
+        self.edges = None
+        self.cost = None
         self.conn=conn
         self.DEP_edge = DEP_edge
         self.DES_edge = DES_edge
-        self.edges = None
-        self.cost = None
+        self.fuel_range=fuel_range
+        self.max_alt = max_alt
+        self.AIRWAY_TYPES=AIRWAY_TYPES
+        self.cruise_alt = cruise_alt
+        self.cruise_speed = cruise_speed
         self.wind=wind
 
-    def get_wind_route(self, AIRWAY_TYPES=['V','T'], max_alt=18000,
-                       cruise_alt=12500,cruise_speed=165 ):
-
-        self.get_no_wind_route(AIRWAY_TYPES, max_alt )
+        self.get_no_wind_route()
+        
+    def get_wind_route(self):
 
         if self.wind is None:
             return (self.edges, self.cost)
@@ -33,12 +43,12 @@ class Route:
             edge = self.edges[i]
             
             COG,HEAD,SOG,TEMP,ETE = edge.get_nav(self.wind,
-                                                 cruise_speed,
-                                                 cruise_alt)
+                                                 self.cruise_speed,
+                                                 self.cruise_alt)
 
         return (self.edges, self.cost)
         
-    def get_no_wind_route(self, AIRWAY_TYPES=['V','T'], max_alt=18000 ):
+    def get_no_wind_route(self):
 
         sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
         values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
@@ -74,7 +84,7 @@ class Route:
             # Description codes of EE,NE,VE indicate end of routes
             description_code = fix[values['description_code']].strip()
         
-            if route_id[0] not in AIRWAY_TYPES:
+            if route_id[0] not in self.AIRWAY_TYPES:
                 continue
 
             # if mea is not None and mea > max_alt:
@@ -100,7 +110,7 @@ class Route:
                 fix_2 = airway_fixes[-1]
                 edge = Edge(fix_1,fix_2,route_id)
 
-                if mea is not None and mea > max_alt: continue
+                if mea is not None and mea > self.max_alt: continue
 
                 graph.add_edge( fix_1.id, fix_2.id,
                                 edge.get_distance())
@@ -132,13 +142,15 @@ class Route:
             fix2 = id_name_map[path_info.nodes[idx]]
             route_str=''
             distance = path_info.costs[idx-1]
-            for edge in fix2.get_edges():
-                if fix1 in edge and fix2 in edge:
-                    route_str = route_str + edge.name
-                    route_str = route_str + \
-                        '(mea '+ str(fix2.attrs['mea']) +  ')-' 
-                elif idx == 1: # This may be a hack, investigate later.
-                    route_str='direct '
+
+            if fix2.get_edges() is not None:
+                for edge in fix2.get_edges():
+                    if fix1 in edge and fix2 in edge:
+                        route_str = route_str + edge.name
+                        route_str = route_str + \
+                            '(mea '+ str(fix2.attrs['mea']) +  ')-' 
+                    elif idx == 1: # This may be a hack, investigate later.
+                        route_str='direct '
 
             route_str = route_str[:-1]
 
@@ -148,73 +160,66 @@ class Route:
             self.edges.append(  edge )
 
         self.cost = path_info.total_cost
-
+        '''
+        fix1 = self.DEP_edge.fix1
+        while True:
+            if fix1.get_edges() is None: break
+            fix2 = fix1.get_edges()[0].fix2
+            print(fix1,fix2)
+            fix1 = fix2
+        '''
         return (self.edges, self.cost)
     
-    def format_430(self,fuel_range=800):
+    def format_430(self):
         intermediate_distance = 0
         ret_val=''
         next_edge = None
         total_distance = 0.0
         fix_dis = 0
-        non_colinear_edges = []
         total_time=0
-        for i in range(1,len(self.edges)):                
-            edge = self.edges[i-1]
-            next_edge = self.edges[i]
 
-            if i-1 == 0:
-                ret_val += str(edge.fix1) + '\n'
-                non_colinear_edges.append(edge)
+        ############################################################
+        #
+        # Starting with the departure fix I can taverse the edges
+        # until get_edges returns a None
+        #
+        fix1 = self.DEP_edge.fix1
+        while True:
+            fix2 = fix1.get_edges()[0].fix2
 
-            total_distance = total_distance + edge.distance
+            dep_edge=fix1.get_edges()[0]
+            
+            if fix2.get_edges() is None:
+                fix1.add_edge( Edge(fix1,fix2,des_edge.name) )
+                break # We've reached the route's end
 
-            if edge.has_nav:
-                total_time+=edge.ETE
+            des_edge=fix2.get_edges()[0]
+            
+            if dep_edge.is_colinear(des_edge):
+                fix1.clear_edges()
+                fix1.add_edge( Edge(fix1,des_edge.fix2,des_edge.name) )
+            fix1 = fix2
 
-            intermediate_distance = intermediate_distance + next_edge.distance
-            if intermediate_distance >= fuel_range:
-                ret_val += '------------------------------- Fuel @ ' + \
-                    str(fuel_range) + \
-                    ' dis: ' + str(intermediate_distance) +'\n'
-                intermediate_distance = 0
+        
+        ############################################################
+        #
+        # Test iterated list
+        self.edges.clear()
+        self.cost = 0
+        fix1 = self.DEP_edge.fix1
+        while True:
+            edge = fix1.get_edges()[0]
+            self.cost += edge.distance
+            self.edges.append(edge)
+            fix2 = edge.fix2
+            if fix2.get_edges() is None: break # We've reached the route's end
+            fix1 = fix2
 
-            fix_dis = fix_dis + edge.distance
-
-            if not edge.is_colinear(next_edge):
-                ret_val += \
-                    '\t'+edge.name+\
-                    '|{:3.1f} nm'.format(fix_dis)+\
-                    '|{:3.0f} deg'.format(edge.crs)
-                if edge.has_nav:
-                    ret_val+='|{:3.0f} ktas'.format(edge.SOG)
-                    ret_val+='|{:3.0f} min|\n'.format(edge.ETE*60.0)
-                else:
-                    ret_val += '\n'
-
-                ret_val += str(next_edge.fix1) + '\n'
-                fix_dis = 0
-                non_colinear_edges.append(next_edge)
-
-        ret_val += '\t'+next_edge.name+'|'+\
-              '{:3.1f}'.format(next_edge.distance)+'|'+'\n'
-        ret_val += str(next_edge.fix2) + '\n'
-
-        non_colinear_edges.append(next_edge)
-        total_distance = total_distance + next_edge.distance
-        if edge.has_nav:
-            total_time+=next_edge.ETE
-
-        ret_val+='-----------------------------\n'
-        if edge.has_nav:
-            ret_val+='Total Distance: {:4.1f} nm | {:2.1f} hrs\n'.format(self.cost,total_time)
-        else:
-            ret_val+='Total Distance: {:4.1f}\n'.format(self.cost)
-        return ret_val
-    
     def __str__(self):
         ret_val=''
         total_time=0
+        intermediate_distance = 0
+        
         for i in range(0,len(self.edges)):
             edge = self.edges[i]
             if i == 0:                
@@ -222,6 +227,14 @@ class Route:
             ret_val += '\t'+edge.name+\
                 '|{:3.1f} nm|'.format(edge.distance)+\
                 '{:3.0f} deg'.format(edge.crs)
+
+            intermediate_distance += edge.distance
+            if intermediate_distance >= self.fuel_range:
+                ret_val += '------------------------------- Fuel @ ' + \
+                    str(self.fuel_range) + \
+                    ' dis: ' + str(intermediate_distance) +'\n'
+                intermediate_distance = 0
+            
             if edge.has_nav:
                 ret_val+='|{:3.0f} ktas'.format(edge.SOG)
                 ret_val+='|{:3.0f} min|\n'.format(edge.ETE*60.0)

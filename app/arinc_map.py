@@ -92,7 +92,7 @@ if __name__ == '__main__':
                         action='store_true'
                         )
 
-    parser.add_argument('--range',help='Enter fuel stop range in NM ',type=int,
+    parser.add_argument('--fuel_range',help='Enter fuel stop range in NM ',type=int,
                         default=800
                         )
     
@@ -268,20 +268,24 @@ if __name__ == '__main__':
         
         wind = Wind( conn=conn )
 
-        route = Route( conn, dep_edge,des_edge, wind=wind)
+        route = Route( conn, dep_edge,des_edge,
+                       fuel_range = args.fuel_range,
+                       max_alt = args.max_alt,
+                       AIRWAY_TYPES=args.airway_types,
+                       cruise_alt = args.alt,
+                       cruise_speed = args.speed,
+                       wind=wind )
+
+        if args.format_430:
+            route.format_430()
             
         if args.speed and args.alt:
-            edges,total_distance = route.get_wind_route(args.airway_types,
-                                                        args.max_alt, args.alt,args.speed)
-            
-        
+            edges,total_distance = route.get_wind_route()
+                    
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
         if args.fly_route:
             fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')
-
-        if args.format_430:
-            print(route.format_430(args.range))
 
         else:        
             if args.route_format:
