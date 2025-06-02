@@ -13,10 +13,30 @@ from dijkstar import Graph, find_path
 
 class Route:
     def __init__(self, conn, DEP_edge, DES_edge, wind=None):
+
         self.conn=conn
         self.DEP_edge = DEP_edge
         self.DES_edge = DES_edge
+        self.edges = None
+        self.cost = None
         self.wind=wind
+
+    def get_wind_route(self, AIRWAY_TYPES=['V','T'], max_alt=18000,
+                       cruise_alt=12500,cruise_speed=165 ):
+
+        self.get_no_wind_route(AIRWAY_TYPES, max_alt )
+
+        if self.wind is None:
+            return (self.edges, self.cost)
+
+        for i in range(0,len(self.edges)):
+            edge = self.edges[i]
+            
+            COG,HEAD,SOG,TEMP,ETE = edge.get_nav(self.wind,
+                                                 cruise_speed,
+                                                 cruise_alt)
+
+        return (self.edges, self.cost)
         
     def get_no_wind_route(self, AIRWAY_TYPES=['V','T'], max_alt=18000 ):
 
@@ -138,7 +158,7 @@ class Route:
         total_distance = 0.0
         fix_dis = 0
         non_colinear_edges = []
-        
+        total_time=0
         for i in range(1,len(self.edges)):                
             edge = self.edges[i-1]
             next_edge = self.edges[i]
@@ -149,11 +169,14 @@ class Route:
 
             total_distance = total_distance + edge.distance
 
+            if edge.has_nav:
+                total_time+=edge.ETE
+
             intermediate_distance = intermediate_distance + next_edge.distance
             if intermediate_distance >= fuel_range:
                 ret_val += '------------------------------- Fuel @ ' + \
                     str(fuel_range) + \
-                    'dis: ' + str(intermediate_distance) +'\n'
+                    ' dis: ' + str(intermediate_distance) +'\n'
                 intermediate_distance = 0
 
             fix_dis = fix_dis + edge.distance
@@ -161,8 +184,14 @@ class Route:
             if not edge.is_colinear(next_edge):
                 ret_val += \
                     '\t'+edge.name+\
-                    '|'+'{:3.1f}'.format(fix_dis)+\
-                    '|' + '{:3.0f}'.format(edge.crs)+'->'+'\n'
+                    '|{:3.1f} nm'.format(fix_dis)+\
+                    '|{:3.0f} deg'.format(edge.crs)
+                if edge.has_nav:
+                    ret_val+='|{:3.0f} ktas'.format(edge.SOG)
+                    ret_val+='|{:3.0f} min|\n'.format(edge.ETE*60.0)
+                else:
+                    ret_val += '\n'
+
                 ret_val += str(next_edge.fix1) + '\n'
                 fix_dis = 0
                 non_colinear_edges.append(next_edge)
@@ -173,23 +202,38 @@ class Route:
 
         non_colinear_edges.append(next_edge)
         total_distance = total_distance + next_edge.distance
+        if edge.has_nav:
+            total_time+=next_edge.ETE
 
-        ret_val+='-----------------------------'+'\n'
-        ret_val += 'Total Distance: ' + '{:4.1f}'.format(total_distance) + '\n'
+        ret_val+='-----------------------------\n'
+        if edge.has_nav:
+            ret_val+='Total Distance: {:4.1f} nm | {:2.1f} hrs\n'.format(self.cost,total_time)
+        else:
+            ret_val+='Total Distance: {:4.1f}\n'.format(self.cost)
         return ret_val
     
     def __str__(self):
         ret_val=''
+        total_time=0
         for i in range(0,len(self.edges)):
             edge = self.edges[i]
             if i == 0:                
                 ret_val += str(edge.fix1) + '\n'
             ret_val += '\t'+edge.name+\
-                '|'+'{:3.1f}'.format(edge.distance)+'|'+\
-                '{:3.0f}'.format(edge.crs)+'->'+ '\n'
+                '|{:3.1f} nm|'.format(edge.distance)+\
+                '{:3.0f} deg'.format(edge.crs)
+            if edge.has_nav:
+                ret_val+='|{:3.0f} ktas'.format(edge.SOG)
+                ret_val+='|{:3.0f} min|\n'.format(edge.ETE*60.0)
+                total_time+=edge.ETE
+            else:
+                ret_val += '\n'
             ret_val+= str(edge.fix2) + '\n'
-        ret_val+='-----------------------------' + '\n'
-        ret_val+='Total Distance: ' + '{:4.1f}'.format(self.cost) + '\n'
+        ret_val+='-----------------------------\n'
+        if edge.has_nav:
+            ret_val+='Total Distance: {:4.1f} nm | {:2.1f} hrs\n'.format(self.cost,total_time)
+        else:
+            ret_val+='Total Distance: {:4.1f}\n'.format(self.cost)
         return ret_val
         
 def line_distance(f1,f2,f0):

@@ -111,22 +111,30 @@ class DB_ARINC_data:
     
 class DB_connect:
 
-    def __init__(self, host='localhost',
+    def __init__(self, host=None,
                  database='arinc_424',
                  user='perryr',
                  password='peer',
                  debug=False):
         ############################################################
         #
-        # Check if the host wildcat
-        if socket.gethostname() == 'wildcat':
-            host=socket.gethostname()
-        
+        # Check if the host wildcat        
         try:
-            self.con = psycopg2.connect(dbname=database,
-                                        host=host,
-                                        user=user,
-                                        password=password)
+            if socket.gethostname() == 'wildcat':
+                host=socket.gethostname()
+                self.con = psycopg2.connect(dbname=database,
+                                            host=host,
+                                            user=user,
+                                            password=password)
+            elif host == None:
+                self.con = psycopg2.connect(dbname=database,
+                                            user=user,
+                                            password=password)
+            else:
+                self.con = psycopg2.connect(dbname=database,
+                                            host=host,
+                                            user=user,
+                                            password=password)
             if debug:
                 cur = self.con.cursor()
                 print('PostgresSQL version:')

@@ -1,7 +1,7 @@
 
-from geo_json.geometry import distance_deg,true_course_deg
+from geo_json.geometry import distance_deg,true_course_deg,deg_to_rad,rad_to_deg
 
-from math import fabs,pi
+from math import fabs,pi,sin,cos,asin,sqrt,fmod
 
 class Fix:
     def __init__(self, id, fix_id,
@@ -26,8 +26,8 @@ class Fix:
             print('-> ' +  str(e))
 
     def rad_points(self):
-        return (self.point[0] * pi / 180.0,
-                self.point[1] * pi / 180.0)
+        return (deg_to_rad(self.point[0]),
+                deg_to_rad(self.point[1]))
 
     def get_attrs(self):
         return self.attrs
@@ -44,6 +44,9 @@ class Fix:
     
 class Edge:
     def __init__(self,fix1,fix2,name):
+
+        self.has_nav=False
+        
         self.fix1 = fix1
         self.fix2 = fix2
         self.name = name
@@ -61,6 +64,45 @@ class Edge:
         if self.crs > 180.0:
             return self.crs -180
         return self.crs +180
+
+    def get_nav(self,wind,speed,alt):
+        # COG = Course over ground
+        # HEAD = Heading to offset wind
+        # SOG = speed over ground
+        # TEMP = Temperature at edge mid-point
+        # ETE = estimated time enroute for the edge
+        self.has_nav=True
+
+        self.COG=None
+        self.HEAD=None
+        self.SOG=None
+        self.TEMP=None
+        self.ETE=None
+
+        cruise_alt,wind_dir,wind_speed,temp =  wind.get_airdata_at_location(alt,
+                                                                            self.mid_point)
+
+        self.TEMP=temp
+        SWC = wind_speed/speed*sin(deg_to_rad(wind_dir)/deg_to_rad(self.crs))
+        if fabs(SWC) > 1:
+            raise Exception('Cannot fly leg wind exceeds performance')
+
+        self.HEAD = deg_to_rad(self.crs) + asin(SWC)
+        self.HEAD = fmod(self.HEAD,2*pi)
+        self.SOG = speed*sqrt(1-SWC**2)-\
+            wind_speed*cos(deg_to_rad(wind_dir)-deg_to_rad(self.crs))
+        if self.SOG <= 0:
+            raise Exception('Cannot fly leg wind exceeds performance')
+        
+        # return (COG,HEAD,SOG,TEMP,ETE)
+        self.HEAD=rad_to_deg(self.HEAD),
+        self.ETE = self.distance/self.SOG
+    
+        return (self.crs,
+                self.HEAD,
+                self.SOG,
+                self.TEMP,
+                self.ETE)
     
     def get_distance(self):
         return self.distance

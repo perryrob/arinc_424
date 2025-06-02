@@ -93,7 +93,7 @@ if __name__ == '__main__':
                         )
 
     parser.add_argument('--range',help='Enter fuel stop range in NM ',type=int,
-                        default=700
+                        default=800
                         )
     
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
@@ -140,10 +140,6 @@ if __name__ == '__main__':
                         default='ROUTE'
                         )
     
-
-    parser.add_argument('--wind',help='For now, just run the wind code. '+\
-                        'this will be used later for course',action='store_true'
-                        )
 
     parser.add_argument('--weather_stations',help='Load Weather reporint locations '+\
                         'into the database.',action='store_true'
@@ -267,17 +263,17 @@ if __name__ == '__main__':
                                         args.proposed_route[0][1],
                                         args.airway_types)
         wind = None
-        if args.alt:
-            w = Wind( conn=conn,alt=args.alt)
+        edges = None
+        total_distance = None
+        
+        wind = Wind( conn=conn )
 
-        if args.speed:
-            w = Wind( conn=conn,alt=args.alt,speed=args.speed)
-
-            
         route = Route( conn, dep_edge,des_edge, wind=wind)
-
-        edges,total_distance = route.get_no_wind_route(args.airway_types,
-                                                       args.max_alt)
+            
+        if args.speed and args.alt:
+            edges,total_distance = route.get_wind_route(args.airway_types,
+                                                        args.max_alt, args.alt,args.speed)
+            
         
         PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
 
@@ -298,39 +294,6 @@ if __name__ == '__main__':
             else:
                 print(route)
     
-    if args.wind:
-        print(w.get_airdata_at_station('TUS',6000))
-        print(w.get_airdata_at_station('TUS',11000))
-        print(w.get_airdata_at_station('TUS',11900))
-        print(w.get_airdata_at_station('TUS',12000))
-        print(w.get_airdata_at_station('TUS',16000))
-
-        print(w.get_airdata_at_location(11300))
-        print(w.get_airdata_at_location(10000,yp=(-111.3895544,
-                                                  32.4270147)))
-
-        total=0
-        fails=0
-        e_lon=-80
-        w_lon=-117
-        n_lat=47
-        s_lat=32
-        num_points=100
-        for t in range(0,num_points):
-            for n in range(0,num_points):
-                lon=w_lon - ((w_lon-e_lon) / num_points * n)
-                lat=s_lat + ((n_lat-s_lat) / num_points * t)
-                try:
-                    print(w.get_airdata_at_location_alt(yp=(lon,lat)))
-                    total +=1
-                except Exception as e:
-                    print(e)
-                    fails +=1
-        print(total,fails)
-        
-        #     3000    6000    9000   12000   18000   24000  30000  34000  39000
-        # TUS      2706+11 9900+03 2605-04 2816-19 2823-32 244545 246348 255451
-        # print('**************************************')
     conn.commit()
     conn.close()
     
