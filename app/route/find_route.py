@@ -229,11 +229,6 @@ class Route:
                 '{:3.0f} deg'.format(edge.crs)
 
             intermediate_distance += edge.distance
-            if intermediate_distance >= self.fuel_range:
-                ret_val += '------------------------------- Fuel @ ' + \
-                    str(self.fuel_range) + \
-                    ' dis: ' + str(intermediate_distance) +'\n'
-                intermediate_distance = 0
             
             if edge.has_nav:
                 ret_val+='|{:3.0f} ktas'.format(edge.SOG)
@@ -241,6 +236,13 @@ class Route:
                 total_time+=edge.ETE
             else:
                 ret_val += '\n'
+
+            if intermediate_distance >= self.fuel_range:
+                ret_val += '\n------------------------------- Fuel @ ' + \
+                    str(self.fuel_range) + \
+                    ' dis: ' + str(intermediate_distance) +'\n'
+                intermediate_distance = 0
+
             ret_val+= str(edge.fix2) + '\n'
         ret_val+='-----------------------------\n'
         if edge.has_nav:
