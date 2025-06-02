@@ -5,7 +5,6 @@ import requests
 
 class GzipCache:
     def __init__(self,remote_file,local_file,no_cache=True):
-        print(remote_file)
         response = requests.get(remote_file)
         self.unzipped_data = None
         if response.status_code == 200:
