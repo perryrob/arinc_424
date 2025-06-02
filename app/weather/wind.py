@@ -65,14 +65,16 @@ class Wind:
 
     DATA_URL='https://aviationweather.gov/api/data/windtemp'
 
-    def __init__(self, time=6, conn = None):
+    def __init__(self, conn = None,time=6, alt=12000,speed=165):
 
         self.wind_data={}
         self.air_data_stations = []
 
         self.IGNORE=-9999        
         self.DATA_STARTS_AFTER = 8
-       
+
+        self.alt=alt
+        self.speed=speed
         # This gets the list of All known stations which should be a
         # superset of the weather reporting stations
         #
@@ -173,11 +175,15 @@ class Wind:
             raise e
         
 
+    def get_airdata_at_location_alt(self,yp=(-110.35797222222222,
+                                             31.999444444444446)):
+        return self.get_airdata_at_location(self.alt,yp)
     # Default location is E95, Benson,AZ
     def get_airdata_at_location(self,alt,yp=(-110.35797222222222,
                                              31.999444444444446)):
         stations=None
         weights=None
+        
         try:
             stations,weights = self.stations.get_barycetric_for_point(yp)
         except Exception as e:

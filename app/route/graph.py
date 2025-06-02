@@ -55,8 +55,8 @@ class Edge:
         self.fix2.add_edge(self)
 
         self.fixes = [fix1,fix2]
-
-        
+        self.mid_point = [(fix1.point[0]+fix2.point[0])/2,
+                          (fix1.point[1]+fix2.point[1])/2]
     def recip(self):
         if self.crs > 180.0:
             return self.crs -180

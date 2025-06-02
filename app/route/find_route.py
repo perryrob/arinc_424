@@ -12,10 +12,11 @@ from route.graph import Fix, Edge
 from dijkstar import Graph, find_path
 
 class Route:
-    def __init__(self, conn, DEP_edge, DES_edge):
+    def __init__(self, conn, DEP_edge, DES_edge, wind=None):
         self.conn=conn
         self.DEP_edge = DEP_edge
         self.DES_edge = DES_edge
+        self.wind=wind
         
     def get_no_wind_route(self, AIRWAY_TYPES=['V','T'], max_alt=18000 ):
 
@@ -168,7 +169,7 @@ class Route:
 
         ret_val += '\t'+next_edge.name+'|'+\
               '{:3.1f}'.format(next_edge.distance)+'|'+'\n'
-        ret_val += str(next_edge.fix2)
+        ret_val += str(next_edge.fix2) + '\n'
 
         non_colinear_edges.append(next_edge)
         total_distance = total_distance + next_edge.distance

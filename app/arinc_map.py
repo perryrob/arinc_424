@@ -106,6 +106,14 @@ if __name__ == '__main__':
                         help='Enter maximum desired altitude for routing',
                         default=18000
                         )
+    parser.add_argument('-a','--alt', type=int,
+                        help='Enter altitude altitude for wind'
+                        )
+
+    parser.add_argument('-s','--speed', type=int,
+                        help='Enter true airspeed.',
+                        default=165
+                        )
 
     
     parser.add_argument('--airway_types', nargs='+', type=str,
@@ -258,8 +266,15 @@ if __name__ == '__main__':
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
                                         args.proposed_route[0][1],
                                         args.airway_types)
+        wind = None
+        if args.alt:
+            w = Wind( conn=conn,alt=args.alt)
 
-        route = Route( conn, dep_edge,des_edge)
+        if args.speed:
+            w = Wind( conn=conn,alt=args.alt,speed=args.speed)
+
+            
+        route = Route( conn, dep_edge,des_edge, wind=wind)
 
         edges,total_distance = route.get_no_wind_route(args.airway_types,
                                                        args.max_alt)
@@ -284,8 +299,6 @@ if __name__ == '__main__':
                 print(route)
     
     if args.wind:
-        w = Wind( conn=conn )
-
         print(w.get_airdata_at_station('TUS',6000))
         print(w.get_airdata_at_station('TUS',11000))
         print(w.get_airdata_at_station('TUS',11900))
@@ -308,7 +321,7 @@ if __name__ == '__main__':
                 lon=w_lon - ((w_lon-e_lon) / num_points * n)
                 lat=s_lat + ((n_lat-s_lat) / num_points * t)
                 try:
-                    print(w.get_airdata_at_location(10000,yp=(lon,lat)))
+                    print(w.get_airdata_at_location_alt(yp=(lon,lat)))
                     total +=1
                 except Exception as e:
                     print(e)
