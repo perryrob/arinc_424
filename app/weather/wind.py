@@ -65,7 +65,7 @@ class Wind:
 
     DATA_URL='https://aviationweather.gov/api/data/windtemp'
 
-    def __init__(self, conn = None,time=6):
+    def __init__(self, conn = None, time=6):
 
         self.wind_data={}
         self.air_data_stations = []
@@ -102,7 +102,7 @@ class Wind:
             level='low',
             region='all',
             layout='off',
-            fcst='06',
+            fcst='{:02d}'.format(time),
             date='',
             DATA_URL=Wind.DATA_URL)
 

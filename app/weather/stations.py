@@ -94,7 +94,11 @@ class Stations:
 
 
         # Traingulate the station list.
-        self.delaunay_triangles = Delaunay(self.stations)
+        try:
+            self.delaunay_triangles = Delaunay(self.stations)
+        except ValueError as ve:
+            print('filter left: ' + str(len(self.stations))+' stations!')
+            raise Exception('Could not triangulate station data. Maybe the filter list removed all of the points')
 
         
         if persist:        
