@@ -139,6 +139,7 @@ class Stations:
         return self.stations[self.station_by_faaid[k]]
 
     def barycentric_weights(self,v,p):
+        
         Wv1=((v[1].y()-v[2].y())*(p.x()-v[2].x()) +    \
              (v[2].x()-v[1].x())*(p.y()-v[2].y())) /   \
              ((v[1].y()-v[2].y())*(v[0].x()-v[2].x())+ \
@@ -165,6 +166,32 @@ class Stations:
         ]
         weights = self.barycentric_weights(stations,Station(yp))
         return (stations,weights)
+    
+    def get_edges(self):
+        edges=[]
+        for tri_pts in self.delaunay_triangles.simplices:
+            station_des = None
+            for i in range(0,3):
+                if i < 2:
+                    station_dep = self.stations[tri_pts[i]]
+                    station_des = self.stations[tri_pts[i+1]]
+                    edges.append(Edge( Fix( i,'foo',
+                                            station_dep[0],
+                                            station_dep[1],{}),
+                                       Fix( i,i,
+                                            station_des[0],
+                                            station_des[1],{}),
+                                       ''))
+                else:
+                    edges.append(Edge( Fix( i,'foo',
+                                            station_des[0],
+                                            station_des[1],{}),
+                                       Fix( i,'foo',
+                                            self.stations[tri_pts[0]][0],
+                                            self.stations[tri_pts[0]][1],{}),
+                                       ''))
+                    
+        return edges
         
 if __name__ == '__main__':
     s=Stations(None)

@@ -67,6 +67,8 @@ if __name__ == '__main__':
         parser.add_argument('--'+val, help='create '+val+' KMZ and/or json file',
                         action='store_true')
 
+    parser.add_argument('--debug', help='set debug',
+                        action='store_true')
 
     parser.add_argument('--clean_db',help='Purge all data and tabless. '+\
                         'then recreate db with blank schema.',action='store_true'
@@ -92,8 +94,11 @@ if __name__ == '__main__':
                         action='store_true'
                         )
 
-    parser.add_argument('--fuel_range',help='Enter fuel stop range in NM ',type=int,
-                        default=800
+    parser.add_argument('--fuel_range',help='Enter fuel stop range in NM or hours. '+\
+                        'The code will assume anything over 40 hours is actual range '+\
+                        'and anything less is time in hours.',
+                        type=int,
+                        default=5
                         )
     
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
@@ -269,13 +274,16 @@ if __name__ == '__main__':
         wind = Wind( conn=conn )
 
         route = Route( conn, dep_edge,des_edge,
-                       fuel_range = args.fuel_range,
+                       fuel_duration = args.fuel_range,
                        max_alt = args.max_alt,
                        AIRWAY_TYPES=args.airway_types,
                        cruise_alt = args.alt,
                        cruise_speed = args.speed,
                        wind=wind )
 
+        if args.debug:
+            PROPOSED_ROUTE_geom( wind. get_delaunay_edges(), file_name='station_delauney')
+        
         if args.format_430:
             route.format_430()
             

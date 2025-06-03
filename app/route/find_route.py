@@ -13,7 +13,7 @@ from dijkstar import Graph, find_path
 
 class Route:
     def __init__(self, conn, DEP_edge, DES_edge,
-                 fuel_range,
+                 fuel_duration,
                  max_alt,
                  AIRWAY_TYPES,
                  cruise_alt,
@@ -25,7 +25,10 @@ class Route:
         self.conn=conn
         self.DEP_edge = DEP_edge
         self.DES_edge = DES_edge
-        self.fuel_range=fuel_range
+        self.limit_duration = True
+        if fuel_duration > 40:
+            self.limit_duration = False
+        self.fuel_duration=fuel_duration
         self.max_alt = max_alt
         self.AIRWAY_TYPES=AIRWAY_TYPES
         self.cruise_alt = cruise_alt
@@ -218,7 +221,7 @@ class Route:
     def __str__(self):
         ret_val=''
         total_time=0
-        intermediate_distance = 0
+        intermediate_duration = 0
         
         for i in range(0,len(self.edges)):
             edge = self.edges[i]
@@ -228,7 +231,11 @@ class Route:
                 '|{:3.1f} nm|'.format(edge.distance)+\
                 '{:3.0f} deg'.format(edge.crs)
 
-            intermediate_distance += edge.distance
+            if self.limit_duration:
+                if edge.has_nav:
+                    intermediate_duration += edge.ETE
+            else:
+                intermediate_duration += edge.distance
             
             if edge.has_nav:
                 ret_val+='|{:3.0f} ktas'.format(edge.SOG)
@@ -237,11 +244,17 @@ class Route:
             else:
                 ret_val += '\n'
 
-            if intermediate_distance >= self.fuel_range:
-                ret_val += '\n------------------------------- Fuel @ ' + \
-                    str(self.fuel_range) + \
-                    ' dis: ' + str(intermediate_distance) +'\n'
-                intermediate_distance = 0
+            if intermediate_duration >= self.fuel_duration:
+                if self.limit_duration:
+                    ret_val += '\n------------------------------- Fuel @ ' + \
+                        str(self.fuel_duration) + \
+                        ' time: {:2.1f} hrs\n'.format(intermediate_duration)
+
+                else:
+                    ret_val += '\n------------------------------- Fuel @ ' + \
+                        str(self.fuel_duration) + \
+                        ' dis: ' + str(intermediate_duration) +'nm\n'
+                intermediate_duration = 0
 
             ret_val+= str(edge.fix2) + '\n'
         ret_val+='-----------------------------\n'

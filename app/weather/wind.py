@@ -258,3 +258,7 @@ class Wind:
                 pass
         # for k in self.wind_data.keys():
         #    print(k,self.wind_data[k])
+        
+    def get_delaunay_edges(self):
+
+        return  self.stations.get_edges()
