@@ -18,9 +18,10 @@ class Route:
                  AIRWAY_TYPES,
                  cruise_alt,
                  cruise_speed,
-                 wind):
+                 wind,
+                 edges=None):
 
-        self.edges = None
+        self.edges = edges
         self.cost = None
         self.conn=conn
         self.DEP_edge = DEP_edge
@@ -35,7 +36,8 @@ class Route:
         self.cruise_speed = cruise_speed
         self.wind=wind
 
-        self.get_no_wind_route()
+        if self.edges is None:
+            self.get_no_wind_route()
         
     def get_wind_route(self):
 
@@ -187,13 +189,17 @@ class Route:
         # until get_edges returns a None
         #
         fix1 = self.DEP_edge.fix1
+        des_edge = None
         while True:
             fix2 = fix1.get_edges()[0].fix2
 
             dep_edge=fix1.get_edges()[0]
             
             if fix2.get_edges() is None:
-                fix1.add_edge( Edge(fix1,fix2,des_edge.name) )
+                if des_edge is None:
+                    fix1.add_edge( Edge(fix1,fix2,'direct') )
+                else:
+                    fix1.add_edge( Edge(fix1,fix2,des_edge.name) )
                 break # We've reached the route's end
 
             des_edge=fix2.get_edges()[0]

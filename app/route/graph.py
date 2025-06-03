@@ -119,7 +119,7 @@ class Edge:
         return self.distance
 
     def is_colinear(self,edge,extend_edge=False):
-        
+
         # Make sure the edge has the same name
         name_is_same=False
         for route_id in self.name.split('-'):

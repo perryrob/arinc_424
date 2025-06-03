@@ -225,46 +225,38 @@ if __name__ == '__main__':
 
         edges,fixes = distance_crs( conn, args.route )
 
-        ROUTE_geom( fixes,file_name=args.route_file )
+        wind = Wind( conn=conn , time=args.wind_fcast)
 
-        if args.format_430:
-            next_edge = None
-            total_distance = 0.0
-            fix_dis = 0
-            for i in range(1,len(edges)):                
-                edge = edges[i-1]
-                next_edge = edges[i]
-
-                if i-1 == 0:
-                    print(edge.fix1)
-                total_distance = total_distance + edge.distance
-                fix_dis = fix_dis + edge.distance
-                if not edge.is_colinear(next_edge):
-                    print('\t'+edge.name+'|'+'{:3.1f}'.format(fix_dis)+'|')
-                    print(next_edge.fix1)
-                    fix_dis = 0
-                    
-            print('\t'+next_edge.name+'|'+\
-                  '{:3.1f}'.format(next_edge.distance)+'|')
-            print(next_edge.fix2)
-            total_distance = total_distance + next_edge.distance
-            print('-----------------------------')
-            print('Total Distance:', '{:4.1f}'.format(total_distance))
-        else:
-            print('FIX\tCRS(t)\t   DIS(nm)')
-            print('===========================')
-            dis=0
-            for f in fixes[1:]: # Gotta figure out why the 0th one dups
-                dis = dis + f.get_edges()[0].get_distance()
-                print(f.get_edges()[0].fix1,'\t',
-                      f.get_edges()[0].fix2,'\t',
-                      '{:3.1f}'.format(f.get_edges()[0].get_distance()))
-                
-            print('---------------------------')
-            print('total:   \t','{:4.1f}'.format(dis))
-
+        route = Route( conn, edges[0],edges[len(edges)-1],
+                       fuel_duration = args.fuel_range,
+                       max_alt = args.max_alt,
+                       AIRWAY_TYPES=args.airway_types,
+                       cruise_alt = args.alt,
+                       cruise_speed = args.speed,
+                       wind=wind,
+                       edges=edges)
         
-    intermediate_distance = 0
+        if args.format_430:
+            route.format_430()
+
+        if args.speed and args.alt:
+            edges,total_distance = route.get_wind_route()
+            
+        PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
+
+        if args.fly_route:
+            fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')
+
+        else:        
+            if args.route_format:
+                for i in range(0,len(edges)):
+                    edge = edges[i]
+                    if i == 0:
+                        print(edge.fix1,end=' ')
+                    print(edge.fix2,end=' ')
+                print('')
+            else:
+                print(route)
     
     if args.proposed_route is not None:
         
