@@ -38,7 +38,7 @@ class Fix:
 
     def __eq__(self,other):
         if not isinstance(other,Fix): return False
-        return self.id == other.id
+        return self.fix_id == other.fix_id
     
     def __str__(self):
         return self.fix_id
@@ -48,27 +48,24 @@ class Edge:
 
         self.has_nav=False
         
-        self.fix1 = None
-        self.fix2 = None
-        self.name = name
-        self.next_edge = None
-        self.cerate_edge(fix1,fix2)
-
-        
-    def cerate_edge(self,fix1,fix2):
-
         self.fix1 = fix1
         self.fix2 = fix2
+        self.name = name
+        self.next_edge = None
+        self.cerate_edge()
 
-        self.distance = distance_deg( fix1.point,
-                                      fix2.point )
-        self.crs = true_course_deg(fix1.point,
-                                   fix2.point, make_360=True)
+        
+    def cerate_edge(self):
+
+        self.distance = distance_deg( self.fix1.point,
+                                      self.fix2.point )
+        self.crs = true_course_deg(self.fix1.point,
+                                   self.fix2.point, make_360=True)
         self.fix1.add_edge(self)
 
-        self.fixes = [fix1,fix2]
-        self.mid_point = [(fix1.point[0]+fix2.point[0])/2,
-                          (fix1.point[1]+fix2.point[1])/2]
+        self.fixes = [self.fix1,self.fix2]
+        self.mid_point = [(self.fix1.point[0]+self.fix2.point[0])/2,
+                          (self.fix1.point[1]+self.fix2.point[1])/2]
 
         
     def recip(self):
@@ -145,7 +142,7 @@ class Edge:
     
     def __str__(self):
         return str(self.fix1) + ' | ' + self.name + \
-            ' | ' + str(self.distance) + ' | ' + str(self.fix2) + \
-            '|' + str(self.crs)
+            ' | {:4.1f} nm'.format(self.distance) + ' | ' + str(self.fix2) + \
+            ' | {:3.0f} deg'.format(self.crs)
 
    

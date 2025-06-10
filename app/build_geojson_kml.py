@@ -19,7 +19,7 @@ INCLUDE_WAYPOINT_TYPES=['W  ','C  ','R  ','W  ']
 def save_kmz(collection=[], file_name='UNK'):
     f_collection = FeatureCollection(collection)
     kml = kml_conversion( f_collection )
-    print(file_name)
+    # print(file_name)
     kml.savekmz( file_name, format=False )
 
 def save_json(connection=[], file_name='UNK'):

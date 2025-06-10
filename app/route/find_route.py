@@ -55,9 +55,12 @@ class Route:
         
     def get_no_wind_route(self):
 
+        direct_edge = Edge(self.DEP_edge.fix1, self.DES_edge.fix1, 'direct')
+
+        # Westbound course 181-360
         sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
         values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
-    
+
         cursor = self.conn.cursor()
         cursor.execute( sql )
 
@@ -71,6 +74,7 @@ class Route:
         # Initialize the "direct" portion of the lookup table
         id_name_map[self.DEP_edge.fix1.id] = self.DEP_edge.fix1
         id_name_map[self.DES_edge.fix1.id] = self.DES_edge.fix1
+
         fix_map[self.DEP_edge.fix1.fix_id] = self.DEP_edge.fix1
         fix_map[self.DES_edge.fix1.fix_id] = self.DES_edge.fix1
 
@@ -85,15 +89,15 @@ class Route:
             longitude = fix[values['longitude']]
             latitude  = fix[values['latitude']]
             mea = fix[values['mea']]
+            distance = fix[values['distance']]
         
             # Description codes of EE,NE,VE indicate end of routes
             description_code = fix[values['description_code']].strip()
-        
+
+            # Filter out the airways not requested by the user. Jet
+            # routes is an example.
             if route_id[0] not in self.AIRWAY_TYPES:
                 continue
-
-            # if mea is not None and mea > max_alt:
-            #    continue
 
             fix_node = None
         
@@ -113,10 +117,11 @@ class Route:
             if len(airway_fixes) >= 2:
                 fix_1 = airway_fixes[-2]
                 fix_2 = airway_fixes[-1]
-                edge = Edge(fix_1,fix_2,route_id)
-
+                
                 if mea is not None and mea > self.max_alt: continue
-
+                
+                edge = Edge(fix_1,fix_2,route_id)
+                edge = Edge(fix_2,fix_1,route_id)
                 graph.add_edge( fix_1.id, fix_2.id,
                                 edge.get_distance())
             
@@ -143,22 +148,22 @@ class Route:
         self.edges = []
 
         for idx in range(1,len(path_info.nodes)):
+
             fix1 = id_name_map[path_info.nodes[idx-1]]
             fix2 = id_name_map[path_info.nodes[idx]]
-            route_str=''
+           
             distance = path_info.costs[idx-1]
-
+            route_str=''
+            
             if fix2.get_edges() is not None:
                 for edge in fix2.get_edges():
                     if fix1 in edge and fix2 in edge:
-                        route_str = route_str + edge.name
+                        route_str =  edge.name
                         route_str = route_str + \
                             '(mea '+ str(fix2.attrs['mea']) +  ')-' 
-                    elif idx == 1: # This may be a hack, investigate later.
-                        route_str='direct '
-
-            route_str = route_str[:-1]
-
+                if route_str == '':
+                    route_str='direct'
+            
             fix1.clear_edges()
             fix2.clear_edges()
             edge = Edge(fix1,fix2,route_str)
@@ -357,10 +362,14 @@ def distance_crs( conn, fixes ):
 def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
 
     edges,fix_points = distance_crs( conn, [[dep,dest]] )
+    
+    direct_edge = edges[0]
+    to_crs = direct_edge.crs
+    from_crs = direct_edge.recip()
 
     # print(dep_fix,dest_fix) # Fix objects
     
-    # Find the closest VOR
+    # Find the closest waypoint
     sql = FEATURE_SQL_QUERIES['ALL_WAYPOINTS'][FEATURE_SQL]
     values = FEATURE_SQL_QUERIES['ALL_WAYPOINTS'][FEATURE_VALUES]
 
@@ -373,10 +382,18 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
     end_points = [fix_points[0],fix_points[1]]
     closest_edges = [None,None]
 
+
+    # direct_edge = Edge(self.DEP_edge.fix1, self.DES_edge.fix1, 'direct')
+    
     # Loop through all the waypoints and find the closest one to the departure
-    # point. I need to extend this and take into acount of where the departure
+    # point. I need to extend this and take into acount where the departure
     # point starts and the destination point ends. I need to find the closest
     # point from the direction for the departure point.
+
+    OFF_COURSE=30
+    des_list=[]
+    dep_list=[]
+    
     for wpt in wpts:
 
         if wpt[values['route_id']][0] not in AIRWAY_TYPES: continue
@@ -385,20 +402,33 @@ def closest_wpts( conn, dep='KTUS', dest='KMYF', AIRWAY_TYPES=['V','T','J'] ):
                     wpt[values['name']],
                     wpt[values['longitude']],wpt[values['latitude']],
                     {'mea':0})
-        
-        
-        for i in range(0,2):
 
-            dis,on_line = line_distance( end_points[0], 
-                                         end_points[1],
-                                         p_fix )
-            
-            edge = Edge( end_points[i], p_fix, 'direct')
-            if closest_edges[i] is None :
-                closest_edges[i] = edge
-            else:
-                if closest_edges[i].get_distance() > edge.get_distance() and \
-                   on_line:
-                    closest_edges[i] = edge
-                 
-    return closest_edges
+
+
+        dep_edge = Edge( end_points[0], p_fix, 'direct')
+        des_edge = Edge( end_points[1], p_fix, 'direct')
+
+        dep_list.append(dep_edge)
+        des_list.append(des_edge)
+
+    # Now sort by distance.
+    dep_list.sort(key=lambda x: x.distance)
+    des_list.sort(key=lambda x: x.distance)
+
+    ret_val = [None,None]
+
+    # Sort through the sorted closest waypoints from the
+    # departure and destination airports
+    for edge in dep_list[:20]:
+        if ret_val[0] is None:
+            ret_val[0] = edge
+        elif fabs(ret_val[0].crs-to_crs) > fabs(edge.crs-to_crs):
+            ret_val[0] = edge
+
+    for edge in des_list[:20]:
+        if ret_val[1] is None:
+            ret_val[1] = edge
+        elif fabs(ret_val[1].crs-from_crs) > fabs(edge.crs-from_crs):
+            ret_val[1] = edge
+
+    return (ret_val[0],ret_val[1])
