@@ -102,7 +102,7 @@ if __name__ == '__main__':
                         )
     parser.add_argument('--wind_fcast',help='Enter the wind forcast time 6,12,24 ',
                         type=int,
-                        default=6
+                        default=None
                         )
     
     parser.add_argument('--fly_to', nargs=3, action='append', type=float,
@@ -267,9 +267,12 @@ if __name__ == '__main__':
         edges = None
         total_distance = None
 
-        if args.wind_fcast not in [6,12,24]:
+        if args.wind_fcast not in [6,12,24,None]:
             raise Exception( 'Warning wind forcast must be 6,12,24 hours not '+str(args.wind_fcast))
-        wind = Wind( conn=conn , time=args.wind_fcast)
+
+        wind = None
+        if args.wind_fcast:
+            wind = Wind( conn=conn , time=args.wind_fcast)
 
         route = Route( conn, dep_edge,des_edge,
                        fuel_duration = args.fuel_range,
