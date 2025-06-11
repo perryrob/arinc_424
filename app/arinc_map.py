@@ -280,7 +280,7 @@ if __name__ == '__main__':
                        wind=wind )
 
         if args.debug:
-            PROPOSED_ROUTE_geom( wind. get_delaunay_edges(), file_name='station_delauney')
+            PROPOSED_ROUTE_geom( wind. get_delaunay_edges(), file_name='station_delauney',color_override='aqua')
         
         if args.format_430:
             route.format_430()

@@ -22,10 +22,13 @@ def get_color( color ):
     }
     return switch.get(color, skml.Color.black)
                       
-def geojson_to_kml_primitives( geom, kml ):
+def geojson_to_kml_primitives( geom, kml , color_override=None):
 
     geom_type = geom['type']
     properties = geom.get('properties',{} )
+
+    if color_override is not None:
+        properties['line_color'] = color_override
 
     if geom_type == 'Polygon':
         shp = kml.newpolygon(name=properties.get('name','UNK'),
@@ -85,7 +88,7 @@ def geojson_to_kml_primitives( geom, kml ):
     else:
         print("ERROR: unknown type:", geom_type)
         
-def kml_conversion( json_data, kml = None ):
+def kml_conversion( json_data, kml = None, color_override=None):
 
     if kml is None:
         kml = skml.Kml()
@@ -94,8 +97,9 @@ def kml_conversion( json_data, kml = None ):
         geom = feature['geometry']
         geom_type = geom['type']
         if geom_type in ['Polygon', 'LineString',
-                         'Point', 'GeometryCollection']: 
-            geojson_to_kml_primitives( geom, kml )
+                         'Point', 'GeometryCollection']:
+            geojson_to_kml_primitives( geom, kml,
+                                       color_override=color_override)
         else:
             print("ERROR: unknown type:", geom_type)
 

@@ -267,9 +267,13 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
             }
     return runways
 
-def ROUTE( edges = [] ):
+def ROUTE( edges = [] , color_override=None):
 
     geometry_collection=[]
+    color = 'magenta'
+    
+    if color_override is not None:
+        color=color_override
     
     for i in range(0,len(edges)):
         edge = edges[i]
@@ -296,7 +300,7 @@ def ROUTE( edges = [] ):
         )
         geometry_collection.append(LineString(
             [f1.point,f2.point],
-            properties={'line_color':'magenta',
+            properties={'line_color':color,
                         'line_width':5,
 
                         }

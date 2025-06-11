@@ -223,10 +223,10 @@ def MERGE_RNAV_VOR( conn ):
     sql_tupple[etl.ETL_SCRIPT](conn,sql_tupple)
 
     
-def PROPOSED_ROUTE_geom( edges=[] , file_name='ROUTE.kmz', save_json=False):
+def PROPOSED_ROUTE_geom( edges=[] , file_name='ROUTE.kmz', save_json=False, color_override=None):
 
     collection=[]
-    collection.append( ROUTE(edges) )
+    collection.append( ROUTE(edges , color_override=color_override ))
     
     save_kmz(collection, file_name = file_name+'.kmz')
 

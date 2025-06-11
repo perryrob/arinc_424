@@ -18,7 +18,7 @@ class Route:
                  AIRWAY_TYPES,
                  cruise_alt,
                  cruise_speed,
-                 wind,
+                 wind=None,
                  edges=None):
 
         self.edges = edges
@@ -122,8 +122,28 @@ class Route:
                 
                 edge = Edge(fix_1,fix_2,route_id)
                 edge = Edge(fix_2,fix_1,route_id)
-                graph.add_edge( fix_1.id, fix_2.id,
-                                edge.get_distance())
+
+
+                ############################################################
+                #
+                # Hey, if the wind object is not none use ETE as the
+                # cost function.
+                #
+                if self.wind is not None:
+                    try:
+                        COG,HEAD,SOG,TEMP,ETE = edge.get_nav(self.wind,
+                                                             self.cruise_speed,
+                                                             self.cruise_alt)
+                        graph.add_edge( fix_1.id, fix_2.id,
+                                        ETE)
+
+                    except Exception as e:
+                        # Edge is outside of weather coverage.
+                        continue
+
+                else:
+                    graph.add_edge( fix_1.id, fix_2.id,
+                                    edge.get_distance())
             
             # Clear the prevoius route and start a new one.
             if description_code in ['EE','NE','VE']:
@@ -270,7 +290,7 @@ class Route:
             ret_val+= str(edge.fix2) + '\n'
         ret_val+='-----------------------------\n'
         if edge.has_nav:
-            ret_val+='Total Distance: {:4.1f} nm | {:2.1f} hrs\n'.format(self.cost,total_time)
+            ret_val+='Total Distance: {:4.1f} nm | {:2.1f} hrs | {:4.1f} ktas\n'.format(self.cost,total_time,self.cost/total_time)
         else:
             ret_val+='Total Distance: {:4.1f}\n'.format(self.cost)
         return ret_val
