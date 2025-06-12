@@ -223,6 +223,7 @@ if __name__ == '__main__':
 
     if args.route is not None:
 
+        fuel_stops =[]
         edges,fixes = distance_crs( conn, args.route )
 
         wind = Wind( conn=conn , time=args.wind_fcast)
@@ -240,9 +241,9 @@ if __name__ == '__main__':
             route.format_430()
 
         if args.speed and args.alt:
-            edges,total_distance = route.get_wind_route()
+            edges,total_distance,fuel_stops = route.get_wind_route()
             
-        PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
+        PROPOSED_ROUTE_geom( edges, fuel_stops, file_name=args.route_file )
 
         if args.fly_route:
             fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')
@@ -259,6 +260,8 @@ if __name__ == '__main__':
                 print(route)
     
     if args.proposed_route is not None:
+
+        fuel_stops =[]
         
         dep_edge,des_edge = closest_wpts( conn, args.proposed_route[0][0],
                                         args.proposed_route[0][1],
@@ -289,9 +292,9 @@ if __name__ == '__main__':
             route.format_430()
             
         if args.speed and args.alt:
-            edges,total_distance = route.get_wind_route()
+            edges,total_distance,fuel_stops = route.get_wind_route()
                     
-        PROPOSED_ROUTE_geom( edges, file_name=args.route_file )
+        PROPOSED_ROUTE_geom( edges, fuel_stops, file_name=args.route_file )
 
         if args.fly_route:
             fly_edges(edges, roll=0, tilt=0,filename='VIEW.kmz')

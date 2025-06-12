@@ -41,17 +41,43 @@ class Route:
         
     def get_wind_route(self):
 
+        intermediate_duration = 0
+        fuel_stops = []
+        
         if self.wind is None:
-            return (self.edges, self.cost)
+            for edge in self.edges:
+                intermediate_duration += edge.distance
+                if intermediate_duration >= self.fuel_duration:
+                    intermediate_duration = 0
+                    fuel_stops.append(Fix(0,
+                                          'Fuel Stop',
+                                          edge.fix1.point[0],
+                                          edge.fix1.point[1],{}))
 
-        for i in range(0,len(self.edges)):
-            edge = self.edges[i]
-            
-            COG,HEAD,SOG,TEMP,ETE = edge.get_nav(self.wind,
-                                                 self.cruise_speed,
-                                                 self.cruise_alt)
+                intermediate_duration = 0
 
-        return (self.edges, self.cost)
+                
+        else:
+            for i in range(0,len(self.edges)):
+                edge = self.edges[i]
+                # Calling get_nav with a wind populates the edge
+                # with all of the requied nav data.
+                COG,HEAD,SOG,TEMP,ETE = edge.get_nav(self.wind,
+                                                     self.cruise_speed,
+                                                     self.cruise_alt)
+                if  self.limit_duration: # Duration is distance
+                    intermediate_duration += ETE
+                else:
+                    intermediate_duration += edge.distance
+                    
+                if intermediate_duration >= self.fuel_duration:  
+                    intermediate_duration = 0
+                    fuel_stops.append(Fix(0,
+                                          'Fuel Stop',
+                                          edge.fix1.point[0],
+                                          edge.fix1.point[1],{}))
+
+        return (self.edges, self.cost, fuel_stops)
         
     def get_no_wind_route(self):
 
@@ -166,7 +192,7 @@ class Route:
                               self.DES_edge.fix1.id)
 
         self.edges = []
-
+        
         for idx in range(1,len(path_info.nodes)):
 
             fix1 = id_name_map[path_info.nodes[idx-1]]
@@ -180,24 +206,19 @@ class Route:
                     if fix1 in edge and fix2 in edge:
                         route_str =  edge.name
                         route_str = route_str + \
-                            '(mea '+ str(fix2.attrs['mea']) +  ')-' 
+                            '(mea '+ str(fix2.attrs['mea']) +  ')' 
                 if route_str == '':
                     route_str='direct'
             
             fix1.clear_edges()
             fix2.clear_edges()
+            
             edge = Edge(fix1,fix2,route_str)
+            
             self.edges.append(  edge )
 
         self.cost = path_info.total_cost
-        '''
-        fix1 = self.DEP_edge.fix1
-        while True:
-            if fix1.get_edges() is None: break
-            fix2 = fix1.get_edges()[0].fix2
-            print(fix1,fix2)
-            fix1 = fix2
-        '''
+
         return (self.edges, self.cost)
     
     def format_430(self):

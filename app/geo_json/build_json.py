@@ -54,7 +54,6 @@ def VOR( radius=1, segments=36, center=(0,0), variation=0, properties={} ):
     return Feature(geometry=gc)
 
 def NDB( radius=1, segments=36, center=(0,0), properties={} ):
-
     geometry_collection = [
         Polygon(
             circle_center_polygon(radius, segments, center),
@@ -267,7 +266,7 @@ def RUNWAY(runways={},airport_id='',rwy=[], feature_values={}):
             }
     return runways
 
-def ROUTE( edges = [] , color_override=None):
+def ROUTE( edges = [] , fuel_stops=[], color_override=None):
 
     geometry_collection=[]
     color = 'magenta'
@@ -307,6 +306,20 @@ def ROUTE( edges = [] , color_override=None):
             )
 
         )
+
+    for fix in fuel_stops:
+        geometry_collection.append(
+            Polygon(
+                circle_center_polygon(1, 40, fix.point),
+                properties={'line_color':'red',
+                            'line_width':0,
+                            'fill_color':'red',
+                            'alpha':80,
+                            'name':'fuel stop',
+                            'description':'fuel stop'
+                }
+            ))
+
     gc = GeometryCollection( geometry_collection ,
                              properties={} )
 
