@@ -310,11 +310,11 @@ def ROUTE( edges = [] , fuel_stops=[], color_override=None):
     for fix in fuel_stops:
         geometry_collection.append(
             Polygon(
-                circle_center_polygon(1, 40, fix.point),
+                circle_center_polygon(10, 40, fix.point),
                 properties={'line_color':'red',
-                            'line_width':0,
+                            'line_width':5,
                             'fill_color':'red',
-                            'alpha':80,
+                            'alpha':99,
                             'name':'fuel stop',
                             'description':'fuel stop'
                 }

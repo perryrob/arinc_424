@@ -1,5 +1,7 @@
 # find_route
 
+import pdb
+
 from .feature_sql import FEATURE_SQL_QUERIES,FEATURE_SQL,FEATURE_VALUES
 from db.DB_Manager import  DB_ARINC_Tables, DB_connect, DB_ARINC_data
 from geo_json.geometry import true_course_deg, distance_deg
@@ -80,10 +82,14 @@ class Route:
         return (self.edges, self.cost, fuel_stops)
         
     def get_no_wind_route(self):
+        ############################################################
+        #
+        # This method creates the edge graph used to find the optimal
+        # route. The cost metric is either distance or ETE. Query the
+        # database for all of the airways and build the edges that
+        # match the desired airway useage.
 
-        direct_edge = Edge(self.DEP_edge.fix1, self.DES_edge.fix1, 'direct')
-
-        # Westbound course 181-360
+        # Get a list of the airways
         sql = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_SQL]
         values = FEATURE_SQL_QUERIES['FIX_SEQUENCE'][FEATURE_VALUES]
 
@@ -96,16 +102,28 @@ class Route:
         fix_map = {}
         id_name_map = {}
         airway_fixes = []
-    
+
+        ############################################################
+        #
         # Initialize the "direct" portion of the lookup table
+        # I'm using a lookup dict that indexes on id and fix_id.
+        # Fix_id is the is the FAA name of the waypoint or VOR
         id_name_map[self.DEP_edge.fix1.id] = self.DEP_edge.fix1
         id_name_map[self.DES_edge.fix1.id] = self.DES_edge.fix1
 
         fix_map[self.DEP_edge.fix1.fix_id] = self.DEP_edge.fix1
         fix_map[self.DES_edge.fix1.fix_id] = self.DES_edge.fix1
 
+        # The graph object will do the dijkstra lowest cost
+        # routing.
         graph = Graph(undirected=True)
-    
+
+        # This loop builds the connected graph and respects the
+        # user's selected airways and MEAs if cruising altitude is
+        # defined.
+
+        last_airway=None
+        
         for fix in airways:
 
             id = fix[values['id']]
@@ -116,7 +134,14 @@ class Route:
             latitude  = fix[values['latitude']]
             mea = fix[values['mea']]
             distance = fix[values['distance']]
-        
+
+            # If the airway name changes, we've come to the end so
+            # clear the airway_fixes
+            if last_airway != route_id:
+                airway_fixes.clear()
+                last_airway = route_id
+                
+            
             # Description codes of EE,NE,VE indicate end of routes
             description_code = fix[values['description_code']].strip()
 
@@ -125,15 +150,22 @@ class Route:
             if route_id[0] not in self.AIRWAY_TYPES:
                 continue
 
+            # Initialize fix_node to None, becuase I'll set it below
+            # based on whether it'ts in the fix_maps.
             fix_node = None
-        
+
+            # If ive seen the fix before, just update the MEA and
+            # move on.
             if fix_id in fix_map.keys():
                 fix_node = fix_map[fix_id]
                 if fix_node.attrs['mea'] is None and mea is not None:
                     fix_node.attrs['mea'] = mea
+
+            # Or add it to the dicts used for looking them up after
+            # the lowest cost route is found.
             else:
                 fix_node = Fix(
-                    id, fix_id, longitude, latitude, {'mea':mea}
+                    id, fix_id, longitude, latitude, {'mea':mea }
                 )
                 fix_map[fix_id] = fix_node
                 id_name_map[id] = fix_node
@@ -143,16 +175,17 @@ class Route:
             if len(airway_fixes) >= 2:
                 fix_1 = airway_fixes[-2]
                 fix_2 = airway_fixes[-1]
-                
+
+                # Filter out MEAs if they are too hing.
                 if mea is not None and mea > self.max_alt: continue
-                
+    
                 edge = Edge(fix_1,fix_2,route_id)
                 edge = Edge(fix_2,fix_1,route_id)
 
 
                 ############################################################
                 #
-                # Hey, if the wind object is not none use ETE as the
+                # If the wind object is not none use ETE as the
                 # cost function.
                 #
                 if self.wind is not None:
@@ -170,11 +203,10 @@ class Route:
                 else:
                     graph.add_edge( fix_1.id, fix_2.id,
                                     edge.get_distance())
-            
+
             # Clear the prevoius route and start a new one.
             if description_code in ['EE','NE','VE']:
                 airway_fixes.clear()
-
 
         # Add the small direct portion of the airports to the first
         # fix to the graph
@@ -186,7 +218,12 @@ class Route:
         graph.add_edge( fix_map[self.DES_edge.fix1.fix_id].id,
                         fix_map[self.DES_edge.fix2.fix_id].id,
                         self.DES_edge.get_distance())
-    
+
+
+        ############################################################
+        #
+        # This is where the magic happens and the lowest cost path is
+        # found.
         path_info = find_path(graph,
                               self.DEP_edge.fix1.id,
                               self.DES_edge.fix1.id)

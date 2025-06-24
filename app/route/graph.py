@@ -3,6 +3,8 @@ from geo_json.geometry import distance_deg,true_course_deg,deg_to_rad,rad_to_deg
 
 from math import fabs,pi,sin,cos,asin,sqrt,fmod
 
+import json
+
 class Fix:
     def __init__(self, id, fix_id,
                  longitude,latitude,attrs):
@@ -39,7 +41,7 @@ class Fix:
     def __eq__(self,other):
         if not isinstance(other,Fix): return False
         return self.fix_id == other.fix_id
-    
+
     def __str__(self):
         return self.fix_id
     
