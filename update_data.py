@@ -13,7 +13,7 @@ TMP_SAVE_PATH='app/cifp'
 WEATHER_SAVE_PATH='app/aviation_weather'
 
 METAR_CACHE ='metars.cache.csv.gz'
-TAF_CACHE='tafs.cache.csv.gz'
+TAF_CACHE='tafs.cache.xml.gz'
 AIRSIGMET_CACHE='airsigmets.cache.csv.gz'
 PIREP_CACHE='aircraftreports.cache.csv.gz'
 STATIONS_CACHE='stations.cache.json.gz'
@@ -69,5 +69,5 @@ def update_weather():
             with open(WEATHER_SAVE_PATH+'/'+'.'.join(weather_product.split('.')[:-1]),'w') as f:
                 f.write(content)
         
-update_cifp()
+#update_cifp()
 update_weather()

@@ -1,5 +1,5 @@
 import json
-
+from parser.Parser import RAW_VAL_POS
 from translator.Translators import FIELD_REFERENCES
 from translator.Translators import GLOBAL_TABLE_IGNORE,SQL_TYPE
 from translator.translator_funcs import *
@@ -126,9 +126,12 @@ class JSON_SQL:
         # To do, need to insert the text from a list by concatinating it
         # then putting in quotes
         elif isinstance( ret_val, type([]) ):
+            ret_val = 'NULL'
+            '''
             ret_val = str(field_val[RAW_VAL_POS])
             ret_val = ret_val.replace("'","")
             ret_val = "'" + ret_val + "'"
+            '''
         else:
             # Assume here that everything is a number (float or int)
             ret_val = str(ret_val)

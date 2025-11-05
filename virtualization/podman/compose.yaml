@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  postgres_16:
+    image: postgres:16 # Or your desired PostgreSQL version
+    restart: always
+    environment:
+      POSTGRES_DB: arinc_424
+      POSTGRES_USER: perryr
+      POSTGRES_PASSWORD: perryr
+    volumes:
+      - /opt/pg/data:/var/lib/postgresql/data:z # Mount a local directory for persistent data
+    ports:
+      - "5432:5432" # Expose PostgreSQL port to the host
+
+volumes:
+   /opt/pg/data: {}

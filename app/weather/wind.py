@@ -106,6 +106,7 @@ class Wind:
             date='',
             DATA_URL=Wind.DATA_URL)
 
+
         self.stations = Stations(conn,
                                  persist=True,
                                  filter_list=self.air_data_stations)

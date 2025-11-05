@@ -114,13 +114,15 @@ class DB_connect:
     def __init__(self, host=None,
                  database='arinc_424',
                  user='perryr',
-                 password='peer',
+                 password='perryr',
                  debug=False):
         ############################################################
         #
-        # Check if the host wildcat        
+        # Check if the host wildcat
+        #
         try:
-            if socket.gethostname() == 'wildcat':
+            if socket.gethostname() == 'wildcat' or \
+               socket.gethostname() == 'perryr2228.tma.leidos.com':
                 host=socket.gethostname()
                 self.con = psycopg2.connect(dbname=database,
                                             host=host,
@@ -143,6 +145,7 @@ class DB_connect:
                 print(version)
                 cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
+            print(socket.gethostname())
             print(error)
 
     def get_connection(self):

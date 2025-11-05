@@ -211,7 +211,7 @@ if __name__ == '__main__':
         AIRPORT_geom(conn)        
 
     if args.weather_stations:
-        s = Stations(conn)
+        print('not implemented')
         #Metars(conn)
         #Tafs(conn)
         #AirSigmets(conn)
